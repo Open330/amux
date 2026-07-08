@@ -1007,6 +1007,25 @@ if [[ -x "$CMUXD_SRC" ]]; then
   cp "$CMUXD_SRC" "$BIN_DIR/cmuxd"
   chmod +x "$BIN_DIR/cmuxd"
 fi
+# amux runtime: bundle the pinned tmux + muxa binaries so the app is
+# self-contained (see scripts/build-amux-runtime.sh). Copied before the
+# ad-hoc codesign below so they get signed with the app. Opt out with
+# CMUX_SKIP_AMUX_RUNTIME=1; auto-staged on first run if the stage is empty.
+if [[ "${CMUX_SKIP_AMUX_RUNTIME:-}" != "1" ]]; then
+  AMUX_RUNTIME_STAGE="$PWD/vendor/amux-runtime/bin"
+  if [[ ! -d "$AMUX_RUNTIME_STAGE" || -z "$(ls -A "$AMUX_RUNTIME_STAGE" 2>/dev/null)" ]]; then
+    "$PWD/scripts/build-amux-runtime.sh" || echo "warning: amux runtime staging failed; bundling whatever exists" >&2
+  fi
+  if [[ -d "$AMUX_RUNTIME_STAGE" && -n "$(ls -A "$AMUX_RUNTIME_STAGE" 2>/dev/null)" ]]; then
+    BIN_DIR="$APP_PATH/Contents/Resources/bin"
+    mkdir -p "$BIN_DIR"
+    for rt in "$AMUX_RUNTIME_STAGE"/*; do
+      cp "$rt" "$BIN_DIR/$(basename "$rt")"
+      chmod +x "$BIN_DIR/$(basename "$rt")"
+    done
+    echo "Bundled amux runtime: $(ls -1 "$AMUX_RUNTIME_STAGE" | tr '\n' ' ')"
+  fi
+fi
 if command -v xattr >/dev/null 2>&1; then
   xattr -cr "$APP_PATH" || true
 fi
