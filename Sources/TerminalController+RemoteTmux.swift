@@ -39,6 +39,13 @@ extension TerminalController {
     /// at the trust boundary is defense in depth against ssh option injection
     /// (`-oProxyCommand=…` → local command execution).
     nonisolated static func remoteTmuxHost(from params: [String: Any]) -> RemoteTmuxHost? {
+        // `local: true` addresses the amux local engine — a fixed endpoint
+        // with no SSH fields, so none of the destination validation below
+        // applies (and a caller-supplied `host` string could never resolve to
+        // it: the local kind is part of the connection hash).
+        if params["local"] as? Bool == true {
+            return .amuxLocal()
+        }
         guard let destination = (params["host"] as? String)?
             .trimmingCharacters(in: .whitespacesAndNewlines),
             !destination.isEmpty,

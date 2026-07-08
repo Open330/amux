@@ -45,7 +45,7 @@ final class RemoteTmuxController {
     }
 
     /// Returns (creating if needed) the transport for a host.
-    func transport(for host: RemoteTmuxHost) -> RemoteTmuxSSHTransport {
+    func transport(for host: RemoteTmuxHost) -> any RemoteTmuxTransport {
         transportRegistry.transport(for: host)
     }
 
@@ -1057,7 +1057,7 @@ final class RemoteTmuxController {
     /// (bounded by `timeout`) so the session is gone before cmux exits. No
     /// `spawnControlMasterExit` — the kill multiplexes over the live master (ControlPersist reaps it).
     func killMarkedSessionsBeforeTerminate(timeout: Duration = .seconds(3)) async {
-        var jobs: [(transport: RemoteTmuxSSHTransport, target: String)] = []
+        var jobs: [(transport: any RemoteTmuxTransport, target: String)] = []
         for windowId in windowRegistry.windowsMarkedForKillOnClose() {
             guard windowRegistry.consumeKillSessionsOnClose(windowId: windowId),
                   let host = windowRegistry.host(forWindowId: windowId) else { continue }
