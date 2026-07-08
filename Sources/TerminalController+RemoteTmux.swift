@@ -392,5 +392,33 @@ extension TerminalController {
             }
         }
     }
+
+    /// `debug.amux.parse_choices` — DEBUG-only verification for the
+    /// waiting_choice sheet's capture→parse chain (the sheet itself is a
+    /// modal NSAlert that can't be driven headlessly). Captures the
+    /// workspace's agent pane and returns the parsed numbered options.
+    /// Params: `workspace_id` (required UUID/ref).
+    nonisolated func v2AmuxParseChoices(id: Any?, params: [String: Any]) -> String {
+        let workspaceId: UUID? = v2MainSync {
+            self.v2RefreshKnownRefs()
+            return self.v2UUID(params, "workspace_id")
+        }
+        guard let workspaceId else {
+            return v2Error(id: id, code: "invalid_params", message: "workspace_id required")
+        }
+        return v2VmCall(id: id, timeoutSeconds: 15) {
+            let agentPane = await MainActor.run {
+                AppDelegate.shared?.amuxAgentStatusService.agentPane(inWorkspace: workspaceId)
+            }
+            guard let controller = await MainActor.run(body: { AppDelegate.shared?.remoteTmuxController }) else {
+                throw RemoteTmuxError.unreachable("app not ready")
+            }
+            let text = await controller.captureMirrorPaneText(workspaceId: workspaceId, tmuxPane: agentPane)
+            let choices = text.map(AmuxChoiceParser.parse) ?? []
+            return [
+                "choices": choices.map { ["number": $0.number, "label": $0.label] },
+            ]
+        }
+    }
 #endif
 }

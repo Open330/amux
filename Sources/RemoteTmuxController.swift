@@ -523,6 +523,21 @@ final class RemoteTmuxController {
             .workspace
     }
 
+    /// Captures the visible text of `workspaceId`'s mirrored agent pane via
+    /// `tmux capture-pane -p` (a one-shot read against the same server the
+    /// control stream is attached to). Targets `tmuxPane` when given and
+    /// present, else the session's prompt-target pane. `nil` when the
+    /// workspace is not a live mirror or the capture fails.
+    func captureMirrorPaneText(workspaceId: UUID, tmuxPane: Int?) async -> String? {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return nil }
+        let result = try? await transport(for: mirror.host).runTmux(
+            ["capture-pane", "-t", "%\(pane)", "-p"]
+        )
+        guard let result, result.succeeded else { return nil }
+        return result.stdout
+    }
+
     /// Sends `text` (plus Enter) into `workspaceId`'s mirrored session
     /// without touching focus — to `tmuxPane` when given and still present,
     /// else the session's prompt-target pane. `false` when the workspace is

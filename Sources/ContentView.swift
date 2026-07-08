@@ -6787,6 +6787,15 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxRespondChoice",
+                title: constant(String(localized: "command.amuxRespondChoice.title", defaultValue: "Respond to Agent Choice…")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "agent", "choice", "menu", "respond", "option"],
+                when: { $0.bool(CommandPaletteContextKeys.hasWorkspace) }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.moveWorkspaceUp",
                 title: constant(String(localized: "contextMenu.moveUp", defaultValue: "Move Up")),
                 subtitle: workspaceSubtitle,
@@ -7830,6 +7839,13 @@ struct ContentView: View {
             if AppDelegate.shared?.amuxAttend() != true {
                 NSSound.beep()
             }
+        }
+        registry.register(commandId: "palette.amuxRespondChoice") {
+            guard let workspace = tabManager.selectedWorkspace else {
+                NSSound.beep()
+                return
+            }
+            AppDelegate.shared?.amuxPresentChoiceSheet(for: workspace)
         }
         registry.register(commandId: "palette.moveWorkspaceUp") {
             moveSelectedWorkspace(by: -1)

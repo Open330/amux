@@ -85,6 +85,47 @@ extension AppDelegate {
         }
     }
 
+    /// Promotes a `waiting_choice` agent's numbered menu to a native sheet:
+    /// captures the agent pane, parses the options, and presents a button
+    /// per option (falling back to the free-text composer when nothing
+    /// parses). Selecting an option sends its number (plus Enter) to the
+    /// pane. The `workspace` should be the agent's mirror workspace.
+    @MainActor
+    func amuxPresentChoiceSheet(for workspace: Workspace) {
+        let agentPane = amuxAgentStatusService.agentPane(inWorkspace: workspace.id)
+        Task { @MainActor in
+            let text = await remoteTmuxController.captureMirrorPaneText(
+                workspaceId: workspace.id,
+                tmuxPane: agentPane
+            )
+            let choices = text.map(AmuxChoiceParser.parse) ?? []
+            guard !choices.isEmpty else {
+                // No parseable menu — fall back to the free-text composer.
+                self.amuxPresentPromptComposer(for: workspace)
+                return
+            }
+            let alert = NSAlert()
+            alert.messageText = String(
+                localized: "amux.choice.title",
+                defaultValue: "Agent Needs a Choice"
+            )
+            alert.informativeText = workspace.customTitle ?? ""
+            // One button per option (AppKit stacks them right-to-left, so add
+            // in order and map the response back by index), then Cancel.
+            for choice in choices {
+                alert.addButton(withTitle: "\(choice.number). \(choice.label)")
+            }
+            alert.addButton(withTitle: String(localized: "amux.choice.cancel", defaultValue: "Cancel"))
+            let response = alert.runModal()
+            let index = response.rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+            guard index >= 0, index < choices.count else { return }
+            let picked = choices[index]
+            if !self.amuxSendPrompt("\(picked.number)", to: workspace) {
+                NSSound.beep()
+            }
+        }
+    }
+
     /// Attend: selects the workspace (and focuses the tmux pane) of the
     /// agent that has been blocked on the user the longest. Shared action
     /// path for the Debug menu item and the `amux.attend` socket RPC.

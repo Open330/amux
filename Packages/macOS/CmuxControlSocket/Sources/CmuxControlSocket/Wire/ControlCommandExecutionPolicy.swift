@@ -140,6 +140,9 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         // finishes — that wait must happen on a socket worker, never on the
         // main actor (same shape as the remote.tmux.* methods above).
         "debug.amux.mirror_local",
+        // debug.amux.parse_choices captures a pane via the local transport
+        // (an await), so it parks on v2VmCall's semaphore — worker lane.
+        "debug.amux.parse_choices",
         // Browser automation methods that wait on page JavaScript, WebKit
         // cookies, or capture callbacks run on the socket worker: on the main
         // actor they block SwiftUI updates for their full duration, and on a
