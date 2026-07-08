@@ -41,6 +41,93 @@ extension AppDelegate {
     /// server socket (see ``RemoteTmuxHost/amuxLocal()``), so repeated
     /// invocations after the mirror workspace is closed re-attach to the same
     /// live session — the detach-survives-the-app property under test.
+    /// Creates a fresh amux tmux-backed workspace in the key window (the
+    /// headline "new workspace = tmux session" action) and selects it.
+    /// Shared path for the Command Palette / menu / `amux.new_session` RPC.
+    func amuxCreateWorkspace() {
+        guard let manager = tabManager else { NSSound.beep(); return }
+        Task { @MainActor in
+            do {
+                let name = try await self.remoteTmuxController.createLocalAmuxWorkspace(into: manager)
+                if let workspace = self.remoteTmuxController.localMirrorWorkspace(sessionName: name) {
+                    manager.selectWorkspace(workspace)
+                }
+            } catch {
+                NSSound.beep()
+                #if DEBUG
+                cmuxDebugLog("amux: create workspace failed: \(error)")
+                #endif
+            }
+        }
+    }
+
+    /// Presents a picker of detached amux sessions (sessions on the local
+    /// server not currently mirrored) and mirrors + selects the chosen one.
+    /// No detached sessions → a brief informational alert.
+    func amuxPresentDetachedSessionPicker() {
+        guard let manager = tabManager else { NSSound.beep(); return }
+        Task { @MainActor in
+            let sessions = (try? await self.remoteTmuxController.localAmuxSessions()) ?? []
+            let detached = sessions.filter { !$0.mirrored }.map(\.session.name)
+            let alert = NSAlert()
+            guard !detached.isEmpty else {
+                alert.messageText = String(
+                    localized: "amux.detached.none.title",
+                    defaultValue: "No Detached Sessions"
+                )
+                alert.informativeText = String(
+                    localized: "amux.detached.none.body",
+                    defaultValue: "Every amux tmux session is already open as a workspace."
+                )
+                alert.runModal()
+                return
+            }
+            alert.messageText = String(
+                localized: "amux.detached.pick.title",
+                defaultValue: "Attach Detached Session"
+            )
+            for name in detached {
+                alert.addButton(withTitle: name)
+            }
+            alert.addButton(withTitle: String(localized: "amux.detached.cancel", defaultValue: "Cancel"))
+            let index = alert.runModal().rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+            guard index >= 0, index < detached.count else { return }
+            self.amuxAttachSession(named: detached[index], in: manager)
+        }
+    }
+
+    /// Mirrors the detached amux session `name` into `manager` and selects
+    /// it. Returns `false` when the mirror could not be created.
+    @discardableResult
+    func amuxAttachSession(named name: String, in manager: TabManager) -> Bool {
+        do {
+            try remoteTmuxController.mirrorSession(host: .amuxLocal(), sessionName: name, into: manager)
+            if let workspace = remoteTmuxController.localMirrorWorkspace(sessionName: name) {
+                manager.selectWorkspace(workspace)
+            }
+            return true
+        } catch {
+            #if DEBUG
+            cmuxDebugLog("amux: attach detached session \(name) failed: \(error)")
+            #endif
+            return false
+        }
+    }
+
+    /// Closes `workspace` AND kills its amux tmux session (the explicit
+    /// opt-out of detach-by-default). Kills the session first so the
+    /// subsequent tab close is a no-op mirror teardown, then removes the tab.
+    /// Returns `false` when the workspace isn't a live amux mirror.
+    @discardableResult
+    func amuxCloseAndKillWorkspace(_ workspace: Workspace) -> Bool {
+        guard remoteTmuxController.isLocalAmuxMirrorWorkspace(workspace.id) else { return false }
+        remoteTmuxController.handleWorkspaceClosed(workspaceId: workspace.id, forceKill: true)
+        if let (manager, _) = amuxWorkspace(withId: workspace.id) {
+            manager.closeWorkspace(workspace)
+        }
+        return true
+    }
+
     /// Sends `text` into `workspace`'s mirrored session — to its most
     /// relevant agent's pane when muxa tracks one, else the session's
     /// prompt-target pane — without attaching or changing focus. Shared

@@ -1395,6 +1395,12 @@ class TerminalController {
             return v2Result(id: request.id, v2CustomSidebarSelect(params: request.params))
         case "sidebar.custom.open":
             return v2Result(id: request.id, v2CustomSidebarOpen(params: request.params))
+        case "amux.new_session":
+            return v2AmuxNewSession(id: request.id, params: request.params)
+        case "amux.sessions":
+            return v2AmuxSessions(id: request.id, params: request.params)
+        case "amux.attach_session":
+            return v2AmuxAttachSession(id: request.id, params: request.params)
 #if DEBUG
         case "debug.sidebar.simulate_drag":
             return v2Result(id: request.id, v2DebugSidebarSimulateDrag(params: request.params))
@@ -2246,6 +2252,10 @@ class TerminalController {
         // amux: headless prompt into a mirror workspace (data-only, no focus).
         case "amux.send_prompt":
             return v2Result(id: id, self.v2AmuxSendPrompt(params: params))
+
+        // amux: close a mirror workspace and kill its tmux session.
+        case "amux.close_kill":
+            return v2Result(id: id, self.v2AmuxCloseKill(params: params))
 
 
         // Surfaces / input: surface.list/current/focus/split/respawn/create/close/move/

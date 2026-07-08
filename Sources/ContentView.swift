@@ -6796,6 +6796,33 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxNewSession",
+                title: constant(String(localized: "command.amuxNewSession.title", defaultValue: "New tmux Workspace")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "tmux", "new", "workspace", "session"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
+                commandId: "palette.amuxAttachDetached",
+                title: constant(String(localized: "command.amuxAttachDetached.title", defaultValue: "Attach Detached tmux Session…")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "tmux", "detached", "attach", "session", "reattach"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
+                commandId: "palette.amuxCloseAndKill",
+                title: constant(String(localized: "command.amuxCloseAndKill.title", defaultValue: "Close Workspace and Kill tmux Session")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "tmux", "close", "kill", "session", "workspace"],
+                when: { $0.bool(CommandPaletteContextKeys.hasWorkspace) }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.moveWorkspaceUp",
                 title: constant(String(localized: "contextMenu.moveUp", defaultValue: "Move Up")),
                 subtitle: workspaceSubtitle,
@@ -7846,6 +7873,19 @@ struct ContentView: View {
                 return
             }
             AppDelegate.shared?.amuxPresentChoiceSheet(for: workspace)
+        }
+        registry.register(commandId: "palette.amuxNewSession") {
+            AppDelegate.shared?.amuxCreateWorkspace()
+        }
+        registry.register(commandId: "palette.amuxAttachDetached") {
+            AppDelegate.shared?.amuxPresentDetachedSessionPicker()
+        }
+        registry.register(commandId: "palette.amuxCloseAndKill") {
+            guard let workspace = tabManager.selectedWorkspace,
+                  AppDelegate.shared?.amuxCloseAndKillWorkspace(workspace) == true else {
+                NSSound.beep()
+                return
+            }
         }
         registry.register(commandId: "palette.moveWorkspaceUp") {
             moveSelectedWorkspace(by: -1)

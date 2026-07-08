@@ -125,6 +125,14 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         "remote.tmux.state",
         "remote.tmux.mirror",
         "remote.tmux.window",
+        // amux.new_session / .sessions / .attach_session drive the local
+        // tmux engine through v2VmCall (semaphore park on an await), so they
+        // stay on the worker lane like the remote.tmux.* family. (amux.attend
+        // and amux.send_prompt take only a quick v2MainSync hop and stay on
+        // the main lane.)
+        "amux.new_session",
+        "amux.sessions",
+        "amux.attach_session",
         "sidebar.custom.validate",
         "sidebar.custom.reload",
         "sidebar.custom.select",

@@ -165,8 +165,17 @@ extension RemoteTmuxController {
     nonisolated static func workspaceCloseKillTarget(
         connectionExited: Bool,
         sessionId: Int?,
-        sessionName: String
+        sessionName: String,
+        hostKind: RemoteTmuxHostKind = .ssh,
+        forceKill: Bool = false
     ) -> String? {
+        // amux local engine: close = detach by default (the session outlives
+        // the app — that is the whole point of the local tmux backend), so a
+        // plain close never kills. Only an explicit "Close and Kill" (or the
+        // app-quit kill marker) sets `forceKill`.
+        if hostKind == .localAmux, !forceKill {
+            return nil
+        }
         guard !connectionExited else { return nil }
         return sessionId.map { "$\($0)" } ?? sessionName
     }

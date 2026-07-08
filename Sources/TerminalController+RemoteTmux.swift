@@ -345,6 +345,108 @@ extension TerminalController {
         }
     }
 
+    /// `amux.new_session` — create a fresh amux tmux-backed workspace (new
+    /// `-L amux` session + mirror). No params. Worker lane (awaits tmux).
+    /// Returns `{session, workspace_id}`.
+    nonisolated func v2AmuxNewSession(id: Any?, params _: [String: Any]) -> String {
+        v2VmCall(id: id, timeoutSeconds: 30) {
+            guard let (controller, manager) = await MainActor.run(body: {
+                AppDelegate.shared.flatMap { app in app.tabManager.map { (app.remoteTmuxController, $0) } }
+            }) else {
+                throw RemoteTmuxError.unreachable("app not ready")
+            }
+            let name = try await controller.createLocalAmuxWorkspace(into: manager)
+            let workspaceId = await MainActor.run {
+                controller.localMirrorWorkspace(sessionName: name)?.id.uuidString
+            }
+            return ["session": name, "workspace_id": workspaceId ?? ""]
+        }
+    }
+
+    /// `amux.sessions` — list amux local-server sessions with a `mirrored`
+    /// flag (the Detached-section data). No params. Worker lane.
+    nonisolated func v2AmuxSessions(id: Any?, params _: [String: Any]) -> String {
+        v2VmCall(id: id, timeoutSeconds: 15) {
+            guard let controller = await MainActor.run(body: { AppDelegate.shared?.remoteTmuxController }) else {
+                throw RemoteTmuxError.unreachable("app not ready")
+            }
+            let sessions = try await controller.localAmuxSessions()
+            return [
+                "sessions": sessions.map { entry in
+                    var payload = Self.sessionPayload(entry.session)
+                    payload["mirrored"] = entry.mirrored
+                    return payload
+                },
+            ]
+        }
+    }
+
+    /// `amux.attach_session` — mirror a detached amux session as a
+    /// workspace. Params: `session` (required). Worker lane. NOT
+    /// focus-intent (mirror creation only; selection stays with the app's
+    /// own new-workspace behavior).
+    nonisolated func v2AmuxAttachSession(id: Any?, params: [String: Any]) -> String {
+        guard let name = (params["session"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else {
+            return v2Error(
+                id: id,
+                code: "invalid_params",
+                message: String(localized: "socket.remoteTmux.sessionRequired", defaultValue: "session is required")
+            )
+        }
+        return v2VmCall(id: id, timeoutSeconds: 30) {
+            guard let controller = await MainActor.run(body: { AppDelegate.shared?.remoteTmuxController }) else {
+                throw RemoteTmuxError.unreachable("app not ready")
+            }
+            // Verify the session actually exists on the amux server before
+            // mirroring, so a typo'd/dead name fails cleanly instead of
+            // leaving an orphan workspace whose control stream errors out.
+            let sessions = try await controller.localAmuxSessions()
+            guard sessions.contains(where: { $0.session.name == name }) else {
+                throw RemoteTmuxError.commandFailed(exitCode: -1, stderr: "no such amux session: \(name)")
+            }
+            return try await MainActor.run {
+                guard let appDelegate = AppDelegate.shared, let manager = appDelegate.tabManager else {
+                    throw RemoteTmuxError.unreachable("app not ready")
+                }
+                guard appDelegate.amuxAttachSession(named: name, in: manager) else {
+                    throw RemoteTmuxError.commandFailed(exitCode: -1, stderr: "attach failed")
+                }
+                let workspaceId = appDelegate.remoteTmuxController
+                    .localMirrorWorkspace(sessionName: name)?.id.uuidString
+                return ["session": name, "workspace_id": workspaceId ?? ""]
+            }
+        }
+    }
+
+    /// `amux.close_kill` — close a mirror workspace AND kill its amux tmux
+    /// session (opt-out of detach-by-default). Params: `workspace_id`
+    /// (required). Main lane (UI mutation via v2MainSync).
+    nonisolated func v2AmuxCloseKill(params: [String: Any]) -> V2CallResult {
+        v2MainSync {
+            self.v2RefreshKnownRefs()
+            guard let workspaceId = self.v2UUID(params, "workspace_id") else {
+                return .err(code: "invalid_params", message: "workspace_id required", data: nil)
+            }
+            guard let appDelegate = AppDelegate.shared,
+                  let workspace = appDelegate.amuxWorkspace(withId: workspaceId)?.workspace else {
+                return .err(
+                    code: "not_found",
+                    message: String(localized: "socket.amux.workspaceNotFound", defaultValue: "Workspace not found"),
+                    data: nil
+                )
+            }
+            guard appDelegate.amuxCloseAndKillWorkspace(workspace) else {
+                return .err(
+                    code: "not_mirror",
+                    message: String(localized: "socket.amux.notMirror", defaultValue: "Workspace is not a live tmux mirror"),
+                    data: nil
+                )
+            }
+            return .ok(["killed": true])
+        }
+    }
+
     /// `amux.attend` — jump to the agent that has been blocked on the user
     /// the longest: selects its workspace and focuses its tmux pane. An
     /// explicit focus-intent command under the socket focus policy — moving

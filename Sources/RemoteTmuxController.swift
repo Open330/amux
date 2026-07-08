@@ -514,6 +514,53 @@ final class RemoteTmuxController {
         )
     }
 
+    /// Creates a fresh detached session on the amux local server and mirrors
+    /// it into `tabManager`, returning the auto-assigned session name. The
+    /// headline "workspace = tmux session" action: unlike
+    /// ``mirrorLocalAmuxSession(sessionName:into:)`` it never reuses an
+    /// existing session, so each invocation is a brand-new workspace.
+    @discardableResult
+    func createLocalAmuxWorkspace(into tabManager: TabManager) async throws -> String {
+        let host = RemoteTmuxHost.amuxLocal()
+        let result = try await transport(for: host).runTmux(
+            ["new-session", "-d", "-P", "-F", "#{session_name}"]
+        )
+        let name = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard result.succeeded, !name.isEmpty else {
+            throw RemoteTmuxError.commandFailed(exitCode: result.exitCode, stderr: result.stderr)
+        }
+        try mirrorSession(host: host, sessionName: name, into: tabManager)
+        return name
+    }
+
+    /// Every session on the amux local server paired with whether it is
+    /// currently mirrored as a workspace — the data behind the Detached
+    /// sidebar section and the attach picker.
+    func localAmuxSessions() async throws -> [(session: RemoteTmuxSession, mirrored: Bool)] {
+        let host = RemoteTmuxHost.amuxLocal()
+        let sessions = try await transport(for: host).listSessions()
+        let mirrored = Set(
+            sessionMirrors.values
+                .filter { $0.host.kind == .localAmux }
+                .map(\.sessionName)
+        )
+        return sessions.map { ($0, mirrored.contains($0.name)) }
+    }
+
+    /// Whether `workspaceId` is a live amux local-engine mirror workspace.
+    func isLocalAmuxMirrorWorkspace(_ workspaceId: UUID) -> Bool {
+        sessionMirrors.values.contains {
+            $0.host.kind == .localAmux && $0.mirroredWorkspaceId == workspaceId
+        }
+    }
+
+    /// Whether a local amux session named `sessionName` is already mirrored.
+    func isLocalAmuxSessionMirrored(_ sessionName: String) -> Bool {
+        sessionMirrors.values.contains {
+            $0.host.kind == .localAmux && $0.sessionName == sessionName
+        }
+    }
+
     /// The workspace mirroring `sessionName` on the amux local engine, if
     /// any — the join key between muxad agent rows (which carry the tmux
     /// session name) and sidebar workspaces.
@@ -1181,7 +1228,7 @@ final class RemoteTmuxController {
     }
 
     /// User-initiated mirrored workspace close detaches locally and kills the remote session.
-    func handleWorkspaceClosed(workspaceId: UUID) {
+    func handleWorkspaceClosed(workspaceId: UUID, forceKill: Bool = false) {
         guard let entry = sessionMirrors.first(where: { $0.value.mirroredWorkspaceId == workspaceId })
         else { return }
         let mirror = entry.value
@@ -1190,11 +1237,15 @@ final class RemoteTmuxController {
         // Kill by the stable session id when known, so a prior rename-session
         // can't leave us targeting a stale name. If the control client already
         // ended (for example after deliberate detach), closing leftover local
-        // chrome must not kill the remote session (#7364).
+        // chrome must not kill the remote session (#7364). Local amux sessions
+        // detach-by-default; only `forceKill` (explicit "Close and Kill") ends
+        // them.
         let killTarget = Self.workspaceCloseKillTarget(
             connectionExited: mirror.connection.exited,
             sessionId: mirror.connection.sessionId,
-            sessionName: sessionName
+            sessionName: sessionName,
+            hostKind: host.kind,
+            forceKill: forceKill
         )
         sessionMirrors.removeValue(forKey: entry.key)
         mirror.detachObserver()
