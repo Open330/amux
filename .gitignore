@@ -68,3 +68,8 @@ tmux-*.log
 
 # amux bundled runtime (built by scripts/build-amux-runtime.sh)
 vendor/amux-runtime/
+
+# signed release artifacts
+*.dmg
+build-signed/
+build-amux-release/

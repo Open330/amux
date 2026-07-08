@@ -7265,7 +7265,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         event: NSEvent? = nil,
         debugSource: String = "newWorkspace"
     ) -> Bool {
-        performNewWorkspaceCreationAction(
+        // amux: when opted in, a new terminal workspace is a fresh tmux-backed
+        // session (the "workspace = tmux session" default). Only redirects the
+        // terminal path — the browser workspace action is separate.
+        if amuxNewWorkspaceUsesTmux {
+            amuxCreateWorkspace(in: preferredTabManager)
+            return true
+        }
+        return performNewWorkspaceCreationAction(
             initialSurface: .terminal,
             preferredTabManager: preferredTabManager,
             event: event,
