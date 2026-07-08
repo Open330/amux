@@ -24,9 +24,19 @@ actor RemoteTmuxLocalTransport: RemoteTmuxTransport {
 
     @discardableResult
     func runTmux(_ args: [String]) async throws -> RemoteTmuxCommandResult {
-        try await Self.run(
-            executablePath: RemoteTmuxHost.localTmuxExecutablePath(),
-            arguments: ["-f", "/dev/null", "-L", RemoteTmuxHost.amuxLocalSocketName] + args
+        let tmuxPath = RemoteTmuxHost.localTmuxExecutablePath()
+        let executablePath: String
+        let arguments: [String]
+        if tmuxPath.contains("/") {
+            executablePath = tmuxPath
+            arguments = ["-f", "/dev/null", "-L", RemoteTmuxHost.amuxLocalSocketName] + args
+        } else {
+            executablePath = "/usr/bin/env"
+            arguments = [tmuxPath, "-f", "/dev/null", "-L", RemoteTmuxHost.amuxLocalSocketName] + args
+        }
+        return try await Self.run(
+            executablePath: executablePath,
+            arguments: arguments
         )
     }
 

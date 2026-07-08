@@ -495,7 +495,7 @@ final class RemoteTmuxController {
 
     /// The default local amux spike session name shared by every entrypoint
     /// (Debug menu, `debug.amux.mirror_local` socket RPC).
-    static let amuxSpikeSessionName = "amux-spike"
+    nonisolated static let amuxSpikeSessionName = "amux-spike"
 
     /// Shared amux Phase 0 entry: attach-or-create `sessionName` on the local
     /// `-L amux` tmux server (see ``RemoteTmuxHost/amuxLocal()``) and mirror

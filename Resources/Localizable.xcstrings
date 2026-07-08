@@ -69240,6 +69240,40 @@
         }
       }
     },
+    "debug.amux.attendLongestBlockedAgent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux: Attend Longest-Blocked Agent"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux: 最も長く待機中のエージェントへ移動"
+          }
+        }
+      }
+    },
+    "debug.amux.mirrorLocalTmuxSession": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux: Mirror Local tmux Session"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux: ローカル tmux セッションをミラー"
+          }
+        }
+      }
+    },
     "debug.bonsplitTabBarDebug.actionLaneBorder": {
       "localizations": {
         "en": {
@@ -200738,6 +200772,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "cmux おやすみモードのロックを解除"
+          }
+        }
+      }
+    },
+    "socket.amux.appNotReady": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App is not ready"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリの準備ができていません"
           }
         }
       }

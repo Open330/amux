@@ -523,11 +523,17 @@ struct cmuxApp: App {
                     appDelegate.openDebugScrollbackTab(nil)
                 }
 
-                Button("amux: Mirror Local tmux Session") {
+                Button(String(
+                    localized: "debug.amux.mirrorLocalTmuxSession",
+                    defaultValue: "amux: Mirror Local tmux Session"
+                )) {
                     appDelegate.openDebugAmuxLocalTmuxMirror(nil)
                 }
 
-                Button("amux: Attend Longest-Blocked Agent") {
+                Button(String(
+                    localized: "debug.amux.attendLongestBlockedAgent",
+                    defaultValue: "amux: Attend Longest-Blocked Agent"
+                )) {
                     appDelegate.amuxAttendAction(nil)
                 }
 

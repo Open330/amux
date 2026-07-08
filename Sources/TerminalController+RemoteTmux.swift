@@ -311,7 +311,11 @@ extension TerminalController {
         }
         return v2MainSync {
             guard let appDelegate = AppDelegate.shared else {
-                return .err(code: "unavailable", message: "app not ready", data: nil)
+                return .err(
+                    code: "unavailable",
+                    message: String(localized: "socket.amux.appNotReady", defaultValue: "App is not ready"),
+                    data: nil
+                )
             }
             self.v2RefreshKnownRefs()
             let workspace: Workspace?
@@ -349,7 +353,11 @@ extension TerminalController {
     nonisolated func v2AmuxAttend(params _: [String: Any]) -> V2CallResult {
         v2MainSync {
             guard let appDelegate = AppDelegate.shared else {
-                return .err(code: "unavailable", message: "app not ready", data: nil)
+                return .err(
+                    code: "unavailable",
+                    message: String(localized: "socket.amux.appNotReady", defaultValue: "App is not ready"),
+                    data: nil
+                )
             }
             let attended = appDelegate.amuxAttend()
             return .ok(["attended": attended])

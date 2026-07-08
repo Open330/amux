@@ -408,10 +408,9 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
     }
 
     /// Resolves the local tmux binary for the amux engine, preferring Homebrew
-    /// and MacPorts install locations. Falls back to a bare `tmux` (resolved
-    /// via `script(1)`'s PATH search) so a missing binary surfaces as a launch
-    /// error on the connection instead of a crash. Phase 1 replaces this with
-    /// the app-bundled pinned tmux.
+    /// and MacPorts install locations. Falls back to a bare `tmux`; callers
+    /// that execute it directly must use `/usr/bin/env` so PATH lookup applies.
+    /// Phase 1 replaces this with the app-bundled pinned tmux.
     static func localTmuxExecutablePath() -> String {
         let candidates = [
             "/opt/homebrew/bin/tmux",
