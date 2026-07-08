@@ -315,9 +315,10 @@ extension TerminalController {
         case .unresolved(let resolution): return resolution
         case .surface(let id): surfaceId = id
         }
-        guard let terminalPanel = ws.terminalPanel(for: surfaceId) else {
+        guard let resolvedPanel = ws.terminalPanel(for: surfaceId) else {
             return .surfaceNotTerminal(surfaceId)
         }
+        let terminalPanel = remoteTmuxSocketPanel(resolvedPanel, panelId: surfaceId, in: ws)
         let queued: Bool
         switch terminalPanel.sendInputResult(text) {
         case .sent:
@@ -395,9 +396,10 @@ extension TerminalController {
         case .unresolved(let resolution): return resolution
         case .surface(let id): surfaceId = id
         }
-        guard let terminalPanel = ws.terminalPanel(for: surfaceId) else {
+        guard let resolvedPanel = ws.terminalPanel(for: surfaceId) else {
             return .surfaceNotTerminal(surfaceId)
         }
+        let terminalPanel = remoteTmuxSocketPanel(resolvedPanel, panelId: surfaceId, in: ws)
         let sendResult = terminalPanel.sendNamedKeyResult(key)
         switch sendResult {
         case .sent:

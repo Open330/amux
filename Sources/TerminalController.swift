@@ -5467,7 +5467,7 @@ class TerminalController {
                     ))
                 }
                 workspaceID = ws.id
-                terminalPanel = wsPanel
+                terminalPanel = self.remoteTmuxSocketPanel(wsPanel, panelId: surfaceId, in: ws)
                 resolvedWindowID = self.v2ResolveWindowId(tabManager: tabManager)
             }
             guard let rawSnapshot = self.readTerminalTextRawSnapshot(

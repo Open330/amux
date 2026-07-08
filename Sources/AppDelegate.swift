@@ -1543,6 +1543,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             }
         }
 #endif
+        reconcileLocalAmuxSessionsAtLaunch()
     }
 
     private nonisolated static func feedWorkstreamTitle(for event: WorkstreamEvent) -> String? {

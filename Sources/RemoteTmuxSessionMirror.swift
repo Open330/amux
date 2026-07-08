@@ -174,6 +174,16 @@ final class RemoteTmuxSessionMirror {
         panelIdByWindow.first(where: { $0.value == panelId })?.key
     }
 
+    /// The panel socket send/read should target when `panelId` is a mirrored
+    /// window-tab whose window renders the in-tab multipane view — that tab
+    /// panel's own surface is disconnected from tmux, so I/O must go to the
+    /// active pane's panel. `nil` when the tab's own surface is the live one
+    /// (single-pane window) or `panelId` is not a mirrored tab.
+    func socketTargetPanel(forPanel panelId: UUID) -> TerminalPanel? {
+        guard let windowId = windowId(forPanel: panelId) else { return nil }
+        return windowMirrorByWindowId[windowId]?.socketTargetPanel
+    }
+
     /// Deregisters this mirror's connection observer and tears down all per-window
     /// multi-pane renderers (called when the mirror is torn down so its callbacks
     /// don't linger on a shared connection and its pane surfaces don't leak).

@@ -125,6 +125,21 @@ final class RemoteTmuxWindowMirror {
         return true
     }
 
+    /// The pane panel socket I/O should target for this window: the mirror's
+    /// focused pane when known, else the connection's tracked tmux-active
+    /// pane (seeded from the attach-time `list-windows` snapshot), else the
+    /// lowest pane id as a last resort.
+    var socketTargetPanel: TerminalPanel? {
+        if let active = activePaneId, let panel = panelsByPaneId[active] {
+            return panel
+        }
+        if let tmuxActive = connection?.activePaneByWindow[windowId],
+           let panel = panelsByPaneId[tmuxActive] {
+            return panel
+        }
+        return panelsByPaneId.min(by: { $0.key < $1.key })?.value
+    }
+
     /// Records the user-focused pane and asks tmux to make it active.
     func focus(pane tmuxPaneId: Int) {
         if activePaneId != tmuxPaneId { activePaneId = tmuxPaneId }

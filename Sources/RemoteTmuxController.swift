@@ -514,6 +514,16 @@ final class RemoteTmuxController {
         )
     }
 
+    /// The panel socket send/read should target inside `workspaceId` when
+    /// `panelId` is a mirrored multipane window-tab (see
+    /// ``RemoteTmuxSessionMirror/socketTargetPanel(forPanel:)``); `nil` when
+    /// no redirect applies and the caller should use the panel it resolved.
+    func socketTargetPanel(workspaceId: UUID, panelId: UUID) -> TerminalPanel? {
+        sessionMirrors.values
+            .first { $0.mirroredWorkspaceId == workspaceId }?
+            .socketTargetPanel(forPanel: panelId)
+    }
+
     /// Mirrors a single tmux session into a new workspace in `tabManager` (idempotent).
     /// `sessionId` seeds discovery's stable id for de-dup before the stream reports it.
     @discardableResult

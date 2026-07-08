@@ -1,6 +1,25 @@
 import AppKit
 
 extension AppDelegate {
+    /// Launch-time reconcile for the amux local engine: any session left on
+    /// the dedicated local server (detach-by-default means the server
+    /// outlives the app) is re-mirrored as a workspace, so a restart brings
+    /// the user's sessions back without a manual attach. A missing server or
+    /// empty session list is a silent no-op (`discoverMirrorSessions` with
+    /// `createIfEmpty: false` never creates sessions).
+    func reconcileLocalAmuxSessionsAtLaunch() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await self.remoteTmuxController.mirrorHost(host: .amuxLocal())
+            } catch {
+                #if DEBUG
+                cmuxDebugLog("amux: launch reconcile failed: \(error)")
+                #endif
+            }
+        }
+    }
+
     /// Debug entrypoint for the amux Phase 0 spike: mirrors a local tmux
     /// session into a workspace through the RemoteTmux control-mode stack.
     ///

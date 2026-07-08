@@ -269,6 +269,20 @@ extension TerminalController {
     }
 
     /// Serializes a session for the socket response.
+    /// Socket I/O target for `panel` in `workspace`: mirrored multipane
+    /// window-tabs redirect to the active pane's panel (the tab's own surface
+    /// is disconnected from tmux and would silently swallow input); every
+    /// other panel passes through unchanged.
+    @MainActor
+    func remoteTmuxSocketPanel(_ panel: TerminalPanel, panelId: UUID, in workspace: Workspace) -> TerminalPanel {
+        let redirected = AppDelegate.shared?.remoteTmuxController
+            .socketTargetPanel(workspaceId: workspace.id, panelId: panelId)
+        #if DEBUG
+        cmuxDebugLog("amux.socketRedirect panel=\(panelId) -> \(redirected.map { String(describing: $0.id) } ?? "nil (passthrough)")")
+        #endif
+        return redirected ?? panel
+    }
+
     nonisolated static func sessionPayload(_ session: RemoteTmuxSession) -> [String: Any] {
         var dict: [String: Any] = [
             "id": session.id,
