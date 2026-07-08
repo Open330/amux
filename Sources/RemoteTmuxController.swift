@@ -514,6 +514,28 @@ final class RemoteTmuxController {
         )
     }
 
+    /// The workspace mirroring `sessionName` on the amux local engine, if
+    /// any — the join key between muxad agent rows (which carry the tmux
+    /// session name) and sidebar workspaces.
+    func localMirrorWorkspace(sessionName: String) -> Workspace? {
+        sessionMirrors.values
+            .first { $0.host.kind == .localAmux && $0.sessionName == sessionName }?
+            .workspace
+    }
+
+    /// The local-engine workspace whose mirrored session currently contains
+    /// tmux pane `%paneId`, if any. Pane-id join fallback for muxad agent
+    /// rows: the installed daemon (protocol v3) no longer emits
+    /// `tmux_session`, and agents inside amux panes report the amux server's
+    /// pane ids. Pane ids are only unique per tmux server, so an agent from
+    /// another server sharing the id can mismatch — acceptable for a status
+    /// badge; revisit when muxa regains session names on the wire.
+    func localMirrorWorkspace(containingPane paneId: Int) -> Workspace? {
+        sessionMirrors.values
+            .first { $0.host.kind == .localAmux && $0.containsPane(paneId) }?
+            .workspace
+    }
+
     /// The panel socket send/read should target inside `workspaceId` when
     /// `panelId` is a mirrored multipane window-tab (see
     /// ``RemoteTmuxSessionMirror/socketTargetPanel(forPanel:)``); `nil` when

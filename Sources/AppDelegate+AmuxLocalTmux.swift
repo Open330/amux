@@ -1,6 +1,20 @@
 import AppKit
 
 extension AppDelegate {
+    /// Builds the muxa agent-status service, joining muxad rows to amux
+    /// local-engine mirror workspaces (composition root wiring; the service
+    /// itself takes closures so it stays testable without an AppDelegate).
+    func makeAmuxAgentStatusService() -> AmuxAgentStatusService {
+        AmuxAgentStatusService(
+            workspaceForSession: { [weak self] sessionName in
+                self?.remoteTmuxController.localMirrorWorkspace(sessionName: sessionName)
+            },
+            workspaceForPane: { [weak self] paneId in
+                self?.remoteTmuxController.localMirrorWorkspace(containingPane: paneId)
+            }
+        )
+    }
+
     /// Launch-time reconcile for the amux local engine: any session left on
     /// the dedicated local server (detach-by-default means the server
     /// outlives the app) is re-mirrored as a workspace, so a restart brings

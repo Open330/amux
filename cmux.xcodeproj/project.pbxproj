@@ -72,6 +72,7 @@
 		A9F200000000000000000014 /* AgentSessionWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F100000000000000000014 /* AgentSessionWebView.swift */; };
 		REE0CA0000000000000000F2 /* AIAccountCredentialSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = REE0CA0000000000000000F1 /* AIAccountCredentialSources.swift */; };
 		REE0CA0000000000000000E2 /* AIAccountsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = REE0CA0000000000000000E1 /* AIAccountsClient.swift */; };
+		1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */; };
 		F4350A110000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */; };
 		F4350A120000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */; };
 		6F4D7FB8E98E231A6DA8F7A6 /* AppDelegate+AmuxLocalTmux.swift in Sources */ = {isa = PBXBuildFile; fileRef = E761B3D025E9AF34360B7369 /* AppDelegate+AmuxLocalTmux.swift */; };
@@ -1566,6 +1567,7 @@
 		A9F100000000000000000014 /* AgentSessionWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Panels/AgentSessionWebView.swift; sourceTree = "<group>"; };
 		REE0CA0000000000000000F1 /* AIAccountCredentialSources.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIAccountCredentialSources.swift; sourceTree = "<group>"; };
 		REE0CA0000000000000000E1 /* AIAccountsClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIAccountsClient.swift; sourceTree = "<group>"; };
+		FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentStatusService.swift"; sourceTree = "<group>"; };
 		F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppBundleIconPersistencePolicy.swift; sourceTree = "<group>"; };
 		E761B3D025E9AF34360B7369 /* AppDelegate+AmuxLocalTmux.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+AmuxLocalTmux.swift"; sourceTree = "<group>"; };
 		C4A570010000000000000002 /* AppDelegate+CanvasShortcutRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+CanvasShortcutRouting.swift"; sourceTree = "<group>"; };
@@ -3821,6 +3823,7 @@
 					50FE16F529BD6FBA4FBDECFC /* RemoteTmuxController.swift */,
 					736200000000000000000001 /* RemoteTmuxController+Decisions.swift */,
 					9E3E94F6022485BB12789444 /* RemoteTmuxSessionEndAction.swift */,
+					FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */,
 					E1C0FE8EE0A38F9F2FE7FF17 /* RemoteTmuxLocalTransport.swift */,
 					E0FACC363EAAC64617102784 /* RemoteTmuxTransport.swift */,
 					E761B3D025E9AF34360B7369 /* AppDelegate+AmuxLocalTmux.swift */,
@@ -4876,6 +4879,7 @@
 				A9F200000000000000000014 /* AgentSessionWebView.swift in Sources */,
 				REE0CA0000000000000000F2 /* AIAccountCredentialSources.swift in Sources */,
 				REE0CA0000000000000000E2 /* AIAccountsClient.swift in Sources */,
+				1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */,
 				F4350A110000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */,
 				6F4D7FB8E98E231A6DA8F7A6 /* AppDelegate+AmuxLocalTmux.swift in Sources */,
 				C4A570010000000000000001 /* AppDelegate+CanvasShortcutRouting.swift in Sources */,

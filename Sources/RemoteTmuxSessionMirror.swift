@@ -46,7 +46,7 @@ final class RemoteTmuxSessionMirror {
     }
 
     private weak var tabManager: TabManager?
-    private weak var workspace: Workspace?
+    private(set) weak var workspace: Workspace?
     /// The workspace currently backing this mirror, if it has not been released.
     var mirroredWorkspace: Workspace? { workspace }
     private let defaultPanelIds: [UUID]
@@ -206,6 +206,12 @@ final class RemoteTmuxSessionMirror {
     /// The tmux window id (if any) whose layout currently contains `paneId`.
     private func windowIdContaining(pane paneId: Int) -> Int? {
         connection.windowsByID.first(where: { $0.value.paneIDsInOrder.contains(paneId) })?.key
+    }
+
+    /// Whether this mirrored session's current layout contains tmux pane
+    /// `%paneId` (the muxa agent-row join key when session names are absent).
+    func containsPane(_ paneId: Int) -> Bool {
+        windowIdContaining(pane: paneId) != nil
     }
 
     /// Adds a tab for any window that doesn't yet have one, refreshes existing
