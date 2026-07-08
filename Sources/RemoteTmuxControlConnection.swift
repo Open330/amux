@@ -329,11 +329,12 @@ final class RemoteTmuxControlConnection {
         enterReceived = false
 
         let proc = Process()
-        proc.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
-        proc.arguments = host.controlModeArguments(
+        let invocation = host.controlProcessInvocation(
             sessionName: sessionName,
             createIfMissing: createIfMissing
         )
+        proc.executableURL = URL(fileURLWithPath: invocation.executablePath)
+        proc.arguments = invocation.arguments
         let inPipe = Pipe(), outPipe = Pipe(), errPipe = Pipe()
         proc.standardInput = inPipe
         proc.standardOutput = outPipe

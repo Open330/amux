@@ -274,4 +274,34 @@ extension TerminalController {
         }
         return dict
     }
+
+#if DEBUG
+    /// `debug.amux.mirror_local` — DEBUG-only verification/dogfood entry for
+    /// the amux Phase 0 spike: attach-or-create a session on the local
+    /// `-L amux` tmux server and mirror it as a workspace. Same action path
+    /// as the Debug menu item (both forward to
+    /// `RemoteTmuxController.mirrorLocalAmuxSession`). Params: optional
+    /// `session` (defaults to the shared spike session name).
+    ///
+    /// Runs the mutation on the main actor via `v2VmCall` because mirroring
+    /// creates workspace/UI state; it selects nothing and raises no window,
+    /// so it carries no focus intent (socket focus policy).
+    nonisolated func v2AmuxMirrorLocal(id: Any?, params: [String: Any]) -> String {
+        let session = (params["session"] as? String)
+            .flatMap { $0.isEmpty ? nil : $0 } ?? RemoteTmuxController.amuxSpikeSessionName
+        return v2VmCall(id: id, timeoutSeconds: 30) {
+            try await MainActor.run {
+                guard let appDelegate = AppDelegate.shared,
+                      let manager = appDelegate.tabManager else {
+                    throw RemoteTmuxError.unreachable("app not ready")
+                }
+                let mirrored = try appDelegate.remoteTmuxController.mirrorLocalAmuxSession(
+                    sessionName: session,
+                    into: manager
+                )
+                return ["session": session, "mirrored": mirrored]
+            }
+        }
+    }
+#endif
 }

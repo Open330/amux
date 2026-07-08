@@ -135,6 +135,11 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         // v2MainSync). Running on .mainActor would deadlock the UI for the
         // entire simulation, defeating the profiling workload.
         "debug.sidebar.simulate_drag",
+        // debug.amux.mirror_local bridges to the main actor through v2VmCall,
+        // which parks the calling thread on a semaphore until the async work
+        // finishes — that wait must happen on a socket worker, never on the
+        // main actor (same shape as the remote.tmux.* methods above).
+        "debug.amux.mirror_local",
         // Browser automation methods that wait on page JavaScript, WebKit
         // cookies, or capture callbacks run on the socket worker: on the main
         // actor they block SwiftUI updates for their full duration, and on a

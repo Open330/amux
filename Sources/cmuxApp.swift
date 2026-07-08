@@ -523,6 +523,10 @@ struct cmuxApp: App {
                     appDelegate.openDebugScrollbackTab(nil)
                 }
 
+                Button("amux: Mirror Local tmux Session") {
+                    appDelegate.openDebugAmuxLocalTmuxMirror(nil)
+                }
+
                 AgentSessionDebugMenuButtons(
                     openReact: { appDelegate.openDebugAgentSessionReact(nil) },
                     openSolid: { appDelegate.openDebugAgentSessionSolid(nil) }

@@ -491,6 +491,29 @@ final class RemoteTmuxController {
         return true
     }
 
+    // MARK: - amux local engine (Phase 0 spike)
+
+    /// The default local amux spike session name shared by every entrypoint
+    /// (Debug menu, `debug.amux.mirror_local` socket RPC).
+    static let amuxSpikeSessionName = "amux-spike"
+
+    /// Shared amux Phase 0 entry: attach-or-create `sessionName` on the local
+    /// `-L amux` tmux server (see ``RemoteTmuxHost/amuxLocal()``) and mirror
+    /// it into `tabManager`. Idempotent — returns `false` when that session
+    /// is already mirrored.
+    @discardableResult
+    func mirrorLocalAmuxSession(
+        sessionName: String = RemoteTmuxController.amuxSpikeSessionName,
+        into tabManager: TabManager
+    ) throws -> Bool {
+        try mirrorSession(
+            host: .amuxLocal(),
+            sessionName: sessionName,
+            createIfMissing: true,
+            into: tabManager
+        )
+    }
+
     /// Mirrors a single tmux session into a new workspace in `tabManager` (idempotent).
     /// `sessionId` seeds discovery's stable id for de-dup before the stream reports it.
     @discardableResult
@@ -498,6 +521,7 @@ final class RemoteTmuxController {
         host: RemoteTmuxHost,
         sessionName: String,
         sessionId: Int? = nil,
+        createIfMissing: Bool = false,
         into tabManager: TabManager
     ) throws -> Bool {
         let key = Self.connectionKey(host: host, sessionName: sessionName)
@@ -505,7 +529,7 @@ final class RemoteTmuxController {
         // Attach (and start the ssh process) BEFORE creating the workspace, so a
         // failed connection doesn't leave an orphaned empty mirror workspace in
         // the sidebar.
-        let connection = try attach(host: host, sessionName: sessionName)
+        let connection = try attach(host: host, sessionName: sessionName, createIfMissing: createIfMissing)
         let workspace = tabManager.addWorkspace(
             title: sessionName,
             select: false,

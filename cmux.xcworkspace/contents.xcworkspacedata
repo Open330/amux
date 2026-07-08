@@ -127,6 +127,9 @@
          location = "group:CmuxLiveEval">
       </FileRef>
       <FileRef
+         location = "group:CmuxMuxa">
+      </FileRef>
+      <FileRef
          location = "group:CmuxNotifications">
       </FileRef>
       <FileRef

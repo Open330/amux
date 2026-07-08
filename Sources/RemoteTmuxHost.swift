@@ -18,6 +18,11 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
     /// Optional explicit identity file (`-i`). `nil` defers to `~/.ssh/config`.
     let identityFile: String?
 
+    /// How this host's tmux server is reached (SSH remote vs the amux local
+    /// engine). Defaults to ``RemoteTmuxHostKind/ssh`` so every existing call
+    /// site keeps its behavior.
+    let kind: RemoteTmuxHostKind
+
     /// Stable identity matching the connection-uniqueness key. Two hosts with the
     /// same destination but a different port/identity are distinct endpoints (see
     /// ``connectionHash``), so `id` uses ``connectionHash`` rather than the
@@ -25,10 +30,29 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
     /// ``RemoteTmuxController`` keys its per-endpoint state.
     var id: String { connectionHash }
 
-    init(destination: String, port: Int? = nil, identityFile: String? = nil) {
+    init(
+        destination: String,
+        port: Int? = nil,
+        identityFile: String? = nil,
+        kind: RemoteTmuxHostKind = .ssh
+    ) {
         self.destination = destination
         self.port = port
         self.identityFile = identityFile
+        self.kind = kind
+    }
+
+    /// The dedicated local tmux server socket name (`tmux -L amux`) for
+    /// amux-owned sessions, isolating them from the user's default tmux server
+    /// so client/server version and config never collide.
+    static let amuxLocalSocketName = "amux"
+
+    /// The endpoint for the amux local tmux engine. `destination` is a fixed
+    /// display label — ``kind`` (not the destination string) is what routes
+    /// spawning away from SSH, and ``connectionHash`` mixes the kind in so this
+    /// can never collide with a real SSH host named `amux-local`.
+    static func amuxLocal() -> RemoteTmuxHost {
+        RemoteTmuxHost(destination: "amux-local", kind: .localAmux)
     }
 
     /// A human-readable (but lossy) slug for the destination, used only for
@@ -61,7 +85,11 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
     /// distinct endpoints must never collapse onto one socket and risk routing a
     /// command to the wrong server.
     var connectionHash: String {
-        let fingerprint = "\(destination)\u{1f}\(port.map(String.init) ?? "")\u{1f}\(identityFile ?? "")"
+        // The `local-amux` marker is appended (never prepended or reformatted)
+        // so every existing SSH host keeps its historical hash — those hashes
+        // key ControlMaster socket filenames and persisted registries.
+        var fingerprint = "\(destination)\u{1f}\(port.map(String.init) ?? "")\u{1f}\(identityFile ?? "")"
+        if kind == .localAmux { fingerprint += "\u{1f}local-amux" }
         var hash: UInt64 = 0xcbf2_9ce4_8422_2325 // FNV offset basis
         for byte in fingerprint.utf8 {
             hash ^= UInt64(byte)
@@ -343,6 +371,57 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
             : ["-CC", "attach-session", "-t", sessionName])
         args.append(contentsOf: ["--", destination, remoteCommand])
         return args
+    }
+
+    /// The executable + argv (for direct `Process` execution, no shell) that
+    /// runs the `tmux -CC` control client for `sessionName` on this host —
+    /// `ssh` for remote hosts, a `script(1)`-wrapped local `tmux` for the amux
+    /// local engine.
+    ///
+    /// The local client is wrapped in `script -q /dev/null` because a tmux
+    /// client requires a controlling tty even in control mode (`tcgetattr`
+    /// fails on plain pipes); the SSH path gets its tty from `-tt`, so both
+    /// paths feed the parser the same pty-flavored (CRLF) control stream.
+    func controlProcessInvocation(
+        sessionName: String,
+        createIfMissing: Bool
+    ) -> (executablePath: String, arguments: [String]) {
+        switch kind {
+        case .ssh:
+            return ("/usr/bin/ssh", controlModeArguments(
+                sessionName: sessionName,
+                createIfMissing: createIfMissing
+            ))
+        case .localAmux:
+            var args = ["-q", "/dev/null", Self.localTmuxExecutablePath()]
+            // `-f /dev/null` isolates the amux server from the user's
+            // ~/.tmux.conf — without it, plugins like tmux-resurrect restore
+            // the user's entire session list onto the amux server on first
+            // start (verified empirically). Phase 1 replaces this with a
+            // managed amux.conf.
+            args.append(contentsOf: ["-f", "/dev/null", "-L", Self.amuxLocalSocketName, "-u", "-CC"])
+            args.append(contentsOf: createIfMissing
+                ? ["new-session", "-A", "-s", sessionName]
+                : ["attach-session", "-t", sessionName])
+            return ("/usr/bin/script", args)
+        }
+    }
+
+    /// Resolves the local tmux binary for the amux engine, preferring Homebrew
+    /// and MacPorts install locations. Falls back to a bare `tmux` (resolved
+    /// via `script(1)`'s PATH search) so a missing binary surfaces as a launch
+    /// error on the connection instead of a crash. Phase 1 replaces this with
+    /// the app-bundled pinned tmux.
+    static func localTmuxExecutablePath() -> String {
+        let candidates = [
+            "/opt/homebrew/bin/tmux",
+            "/usr/local/bin/tmux",
+            "/opt/local/bin/tmux",
+        ]
+        for candidate in candidates where FileManager.default.isExecutableFile(atPath: candidate) {
+            return candidate
+        }
+        return "tmux"
     }
 
     /// Builds a ``DetectedSSHSession`` that uploads files to this host over SSH,
