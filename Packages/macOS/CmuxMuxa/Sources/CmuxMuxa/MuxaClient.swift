@@ -45,6 +45,19 @@ public actor MuxaClient {
         try await ensureShared()
     }
 
+    /// Whether a muxad is answering on the socket right now (a `hello`
+    /// round trip succeeds). Used to decide whether amux should manage its
+    /// own daemon or defer to an already-running one. Never throws — a
+    /// missing daemon / any failure is simply `false`.
+    public func isReachable() async -> Bool {
+        do {
+            _ = try await hello()
+            return true
+        } catch {
+            return false
+        }
+    }
+
     /// All currently tracked agents.
     public func snapshot() async throws -> [MuxaAgent] {
         let payload = try await request(kind: "snapshot")

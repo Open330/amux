@@ -18100,6 +18100,720 @@
         }
       }
     },
+    "amux.daemon.deferred": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يوجد muxad قيد التشغيل بالفعل، لذا سيستخدمه amux. لم يتم تثبيت أي خدمة خلفية."
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad već radi, pa će ga amux koristiti. Pozadinski servis nije instaliran."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En muxad kører allerede, så amux bruger den. Ingen baggrundsdæmon blev installeret."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es läuft bereits ein muxad, daher verwendet amux ihn. Es wurde kein Hintergrunddienst installiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A muxad is already running, so amux will use it. No background agent was installed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya hay un muxad en ejecución, así que amux lo usará. No se instaló ningún agente en segundo plano."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un muxad est déjà en cours d'exécution, donc amux l'utilisera. Aucun agent d'arrière-plan n'a été installé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un muxad è già in esecuzione, quindi amux lo userà. Nessun agente in background è stato installato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad はすでに実行中のため、amux はそれを使用します。バックグラウンドエージェントはインストールされていません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad가 이미 실행 중이어서 amux가 그것을 사용합니다. 백그라운드 에이전트는 설치하지 않았습니다."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En muxad kjører allerede, så amux bruker den. Ingen bakgrunnstjeneste ble installert."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad już działa, więc amux go użyje. Nie zainstalowano agenta w tle."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um muxad já está em execução, então o amux o usará. Nenhum agente em segundo plano foi instalado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad уже запущен, поэтому amux будет использовать его. Фоновый агент не установлен."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad กำลังทำงานอยู่แล้ว amux จะใช้ตัวนั้น ไม่ได้ติดตั้งเอเจนต์เบื้องหลัง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaten çalışan bir muxad var, amux onu kullanacak. Arka plan servisi kurulmadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad уже працює, тож amux використає його. Фоновий агент не встановлено."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad 已在运行，amux 将使用它。未安装后台代理。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "muxad 已在執行，amux 將使用它。未安裝背景代理。"
+          }
+        }
+      }
+    },
+    "amux.daemon.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر تثبيت الخدمة الخلفية."
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nije moguće instalirati pozadinski servis."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kunne ikke installere baggrundsdæmonen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Hintergrunddienst konnte nicht installiert werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not install the background daemon."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo instalar el demonio en segundo plano."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d'installer le démon d'arrière-plan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile installare il daemon in background."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バックグラウンドデーモンをインストールできませんでした。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "백그라운드 데몬을 설치할 수 없습니다."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kunne ikke installere bakgrunnstjenesten."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie można zainstalować demona w tle."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível instalar o daemon em segundo plano."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось установить фоновый демон."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่สามารถติดตั้งเดมอนเบื้องหลังได้"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arka plan servisi kurulamadı."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалося встановити фоновий демон."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法安装后台守护进程。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法安裝背景守護程序。"
+          }
+        }
+      }
+    },
+    "amux.daemon.installed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم التثبيت. يعمل muxad الآن في الخلفية ويواصل مراقبة وكلائك حتى عند إغلاق amux."
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalirano. muxad sada radi u pozadini i nastavlja pratiti vaše agente čak i kada je amux zatvoren."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installeret. muxad kører nu i baggrunden og observerer dine agenter, selv når amux er lukket."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installiert. muxad läuft jetzt im Hintergrund und beobachtet deine Agenten weiter, auch wenn amux geschlossen ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed. muxad now runs in the background and keeps observing your agents even when amux is closed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalado. muxad ahora se ejecuta en segundo plano y sigue observando tus agentes aunque amux esté cerrado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installé. muxad s'exécute désormais en arrière-plan et continue d'observer vos agents même quand amux est fermé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installato. muxad ora è in esecuzione in background e continua a osservare i tuoi agenti anche quando amux è chiuso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "インストールしました。muxad はバックグラウンドで実行され、amux を閉じてもエージェントを観測し続けます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설치되었습니다. 이제 muxad가 백그라운드에서 실행되어 amux를 닫아도 에이전트를 계속 관측합니다."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installert. muxad kjører nå i bakgrunnen og fortsetter å observere agentene dine selv når amux er lukket."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zainstalowano. muxad działa teraz w tle i nadal obserwuje agentów, nawet gdy amux jest zamknięty."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalado. O muxad agora roda em segundo plano e continua observando seus agentes mesmo com o amux fechado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлено. muxad теперь работает в фоне и продолжает наблюдать за агентами, даже когда amux закрыт."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ติดตั้งแล้ว muxad ทำงานเบื้องหลังและเฝ้าดูเอเจนต์ของคุณต่อไปแม้ปิด amux"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuruldu. muxad artık arka planda çalışıyor ve amux kapalıyken bile ajanlarınızı gözlemlemeye devam ediyor."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Встановлено. muxad тепер працює у фоні й продовжує спостерігати за агентами навіть коли amux закрито."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安装。muxad 现在在后台运行，即使关闭 amux 也会持续观测你的智能体。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已安裝。muxad 現在在背景執行，即使關閉 amux 也會持續觀測你的智慧代理。"
+          }
+        }
+      }
+    },
+    "amux.daemon.noBundled": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يحتوي هذا الإصدار على muxad مضمّن. شغّل إصدار إطلاق أو ابدأ muxad بنفسك."
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ova verzija nema ugrađeni muxad. Pokrenite release verziju ili sami pokrenite muxad."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denne build har ingen indbygget muxad. Kør en release-build eller start muxad selv."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Build enthält keinen gebündelten muxad. Führe einen Release-Build aus oder starte muxad selbst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build has no bundled muxad. Run a release build or start muxad yourself."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta compilación no tiene muxad incluido. Ejecuta una compilación de lanzamiento o inicia muxad tú mismo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette build n'a pas de muxad intégré. Lancez une build de release ou démarrez muxad vous-même."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa build non include muxad. Esegui una build di release o avvia muxad manualmente."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このビルドには muxad が同梱されていません。リリースビルドを使うか、自分で muxad を起動してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 빌드에는 muxad가 번들되어 있지 않습니다. 릴리스 빌드를 사용하거나 직접 muxad를 실행하세요."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denne builden har ingen innebygd muxad. Kjør en release-build eller start muxad selv."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta kompilacja nie zawiera dołączonego muxad. Uruchom kompilację release lub uruchom muxad samodzielnie."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta build não tem muxad embutido. Use uma build de release ou inicie o muxad você mesmo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этой сборке нет встроенного muxad. Запустите релизную сборку или запустите muxad вручную."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บิลด์นี้ไม่มี muxad มาให้ ใช้บิลด์รีลีสหรือเริ่ม muxad เอง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu derlemede paketlenmiş muxad yok. Bir release derlemesi çalıştırın veya muxad'ı kendiniz başlatın."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ця збірка не має вбудованого muxad. Запустіть release-збірку або запустіть muxad самостійно."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本未捆绑 muxad。请使用发布版本或自行启动 muxad。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本未捆綁 muxad。請使用發佈版本或自行啟動 muxad。"
+          }
+        }
+      }
+    },
+    "amux.daemon.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خدمة amux الخلفية"
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux pozadinski servis"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux baggrundsdæmon"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux-Hintergrunddienst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux Background Daemon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demonio en segundo plano de amux"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Démon d'arrière-plan amux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daemon in background di amux"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux バックグラウンドデーモン"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux 백그라운드 데몬"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux bakgrunnstjeneste"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demon w tle amux"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daemon em segundo plano do amux"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фоновый демон amux"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เดมอนเบื้องหลังของ amux"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux arka plan servisi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фоновий демон amux"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux 后台守护进程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux 背景守護程序"
+          }
+        }
+      }
+    },
+    "amux.daemon.uninstalled": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تمت إزالة خدمة amux الخلفية. يظل muxad الذي بدأته بنفسك قيد التشغيل."
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uklonjen amux pozadinski servis. muxad koji ste sami pokrenuli ostaje pokrenut."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fjernede amux' baggrundsdæmon. En muxad du selv startede, kører videre."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux-Hintergrunddienst entfernt. Ein von dir selbst gestarteter muxad läuft weiter."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed amux's background daemon. A muxad you started yourself is left running."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se eliminó el demonio en segundo plano de amux. Un muxad que iniciaste tú sigue en ejecución."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Démon d'arrière-plan d'amux supprimé. Un muxad que vous avez démarré vous-même reste actif."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimosso il daemon in background di amux. Un muxad avviato da te resta in esecuzione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux のバックグラウンドデーモンを削除しました。自分で起動した muxad はそのまま実行され続けます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux의 백그라운드 데몬을 제거했습니다. 직접 실행한 muxad는 계속 실행됩니다."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fjernet amux sin bakgrunnstjeneste. En muxad du startet selv, kjører videre."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usunięto demona w tle amux. muxad uruchomiony samodzielnie nadal działa."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removido o daemon em segundo plano do amux. Um muxad iniciado por você continua em execução."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фоновый демон amux удалён. muxad, запущенный вами вручную, продолжает работать."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลบเดมอนเบื้องหลังของ amux แล้ว muxad ที่คุณเริ่มเองยังทำงานต่อไป"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux'un arka plan servisi kaldırıldı. Kendiniz başlattığınız bir muxad çalışmaya devam ediyor."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалено фоновий демон amux. muxad, який ви запустили самі, продовжує працювати."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已移除 amux 的后台守护进程。你自己启动的 muxad 仍在运行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已移除 amux 的背景守護程序。你自己啟動的 muxad 仍在執行。"
+          }
+        }
+      }
+    },
     "amux.detached.cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -45242,6 +45956,125 @@
         }
       }
     },
+    "command.amuxInstallDaemon.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تثبيت خدمة amux الخلفية"
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instaliraj amux pozadinski servis"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installér amux baggrundsdæmon"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux-Hintergrunddienst installieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install amux Background Daemon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar demonio en segundo plano de amux"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer le démon d'arrière-plan amux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installa il daemon in background di amux"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux バックグラウンドデーモンをインストール"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux 백그라운드 데몬 설치"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer amux bakgrunnstjeneste"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zainstaluj demona w tle amux"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar daemon em segundo plano do amux"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить фоновый демон amux"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ติดตั้งเดมอนเบื้องหลังของ amux"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux arka plan servisini kur"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Встановити фоновий демон amux"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安装 amux 后台守护进程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安裝 amux 背景守護程序"
+          }
+        }
+      }
+    },
     "command.amuxNewSession.title": {
       "extractionState": "manual",
       "localizations": {
@@ -45714,6 +46547,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "向智慧代理傳送提示…"
+          }
+        }
+      }
+    },
+    "command.amuxUninstallDaemon.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إزالة خدمة amux الخلفية"
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukloni amux pozadinski servis"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fjern amux baggrundsdæmon"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux-Hintergrunddienst entfernen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove amux Background Daemon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar demonio en segundo plano de amux"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le démon d'arrière-plan amux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimuovi il daemon in background di amux"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux バックグラウンドデーモンを削除"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux 백그라운드 데몬 제거"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fjern amux bakgrunnstjeneste"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuń demona w tle amux"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover daemon em segundo plano do amux"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить фоновый демон amux"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลบเดมอนเบื้องหลังของ amux"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux arka plan servisini kaldır"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалити фоновий демон amux"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除 amux 后台守护进程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除 amux 背景守護程序"
           }
         }
       }
