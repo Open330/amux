@@ -35,6 +35,12 @@ struct AmuxOnboarding {
     }
 
     /// Presents the onboarding prompt (the Command Palette entry point).
+    ///
+    /// Attaches as a window sheet when a window is available so it never
+    /// blocks the main runloop — critical on first launch, where a blocking
+    /// `runModal()` would freeze the app's socket/CLI until dismissed and hang
+    /// any script driving a fresh amux. Falls back to a modal only when no
+    /// window exists yet.
     func present(isFirstRun: Bool = false) {
         let alert = NSAlert()
         alert.messageText = String(
@@ -47,8 +53,22 @@ struct AmuxOnboarding {
         )
         alert.addButton(withTitle: String(localized: "amux.onboarding.setUp", defaultValue: "Set Up"))
         alert.addButton(withTitle: String(localized: "amux.onboarding.notNow", defaultValue: "Not Now"))
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        runSetup()
+        Self.present(alert) { response in
+            if response == .alertFirstButtonReturn { runSetup() }
+        }
+    }
+
+    /// Presents `alert` as a non-blocking window sheet (key window preferred),
+    /// or a blocking modal when no window is available. The completion runs on
+    /// the main actor with the chosen response.
+    static func present(_ alert: NSAlert, completion: @escaping @MainActor (NSApplication.ModalResponse) -> Void) {
+        if let window = NSApp.keyWindow ?? NSApp.windows.first(where: { $0.isVisible }) {
+            alert.beginSheetModal(for: window) { response in
+                MainActor.assumeIsolated { completion(response) }
+            }
+        } else {
+            completion(alert.runModal())
+        }
     }
 
     /// Runs the consented setup: install the LaunchAgent (coexisting with a
@@ -145,6 +165,6 @@ struct AmuxOnboarding {
             lines.append(String(localized: "amux.onboarding.hooksFailed", defaultValue: "• Agent hooks could not be wired."))
         }
         alert.informativeText = lines.joined(separator: "\n")
-        alert.runModal()
+        present(alert) { _ in }
     }
 }
