@@ -118,6 +118,39 @@ final class AmuxAgentStatusService {
         return nil
     }
 
+    /// The tmux pane of `workspaceId`'s most relevant agent — blocked agents
+    /// first (longest wait first), then the most recently active — the
+    /// preferred headless-prompt target. `nil` when no tracked agent
+    /// resolves to this workspace.
+    func agentPane(inWorkspace workspaceId: UUID) -> Int? {
+        let candidates = agentsBySessionId.values.compactMap { agent -> (agent: MuxaAgent, pane: Int)? in
+            guard let pane = Self.paneNumber(agent.pane) else { return nil }
+            let workspace: Workspace?
+            if let session = agent.tmuxSession {
+                workspace = workspaceForSession(session)
+            } else {
+                workspace = workspaceForPane(pane)
+            }
+            guard workspace?.id == workspaceId else { return nil }
+            return (agent, pane)
+        }
+        let best = candidates.sorted { lhs, rhs in
+            switch (lhs.agent.state.needsAttention, rhs.agent.state.needsAttention) {
+            case (true, false): return true
+            case (false, true): return false
+            case (true, true):
+                let l = lhs.agent.stateEnteredDate ?? .distantPast
+                let r = rhs.agent.stateEnteredDate ?? .distantPast
+                return l < r
+            case (false, false):
+                let l = lhs.agent.lastActivityDate ?? .distantPast
+                let r = rhs.agent.lastActivityDate ?? .distantPast
+                return l > r
+            }
+        }.first
+        return best?.pane
+    }
+
     /// Parses muxad's `%N` pane id into its numeric part.
     static func paneNumber(_ pane: String?) -> Int? {
         guard let pane, pane.hasPrefix("%") else { return nil }

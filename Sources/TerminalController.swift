@@ -2241,6 +2241,10 @@ class TerminalController {
         case "amux.attend":
             return v2Result(id: id, self.v2AmuxAttend(params: params))
 
+        // amux: headless prompt into a mirror workspace (data-only, no focus).
+        case "amux.send_prompt":
+            return v2Result(id: id, self.v2AmuxSendPrompt(params: params))
+
 
         // Surfaces / input: surface.list/current/focus/split/respawn/create/close/move/
         // reorder handled by ControlCommandCoordinator (surface.move forwards to the

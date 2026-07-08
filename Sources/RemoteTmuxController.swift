@@ -523,6 +523,17 @@ final class RemoteTmuxController {
             .workspace
     }
 
+    /// Sends `text` (plus Enter) into `workspaceId`'s mirrored session
+    /// without touching focus — to `tmuxPane` when given and still present,
+    /// else the session's prompt-target pane. `false` when the workspace is
+    /// not a live mirror.
+    @discardableResult
+    func sendPromptToMirror(workspaceId: UUID, tmuxPane: Int?, text: String) -> Bool {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return false }
+        return mirror.sendPrompt(text, toPane: pane)
+    }
+
     /// Focuses tmux pane `%tmuxPane` inside `workspaceId`'s mirror (selects
     /// the window-tab and, for multipane windows, the pane). No-op when the
     /// workspace isn't a mirror or the pane left its layout.

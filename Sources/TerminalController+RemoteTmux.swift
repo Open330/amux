@@ -296,6 +296,51 @@ extension TerminalController {
         return dict
     }
 
+    /// `amux.send_prompt` — headless prompt into a mirror workspace's agent
+    /// pane. Params: `text` (required), `workspace_id` (optional UUID/ref;
+    /// defaults to the key window's selected workspace). NOT focus-intent:
+    /// the send is data-only and must never steal focus.
+    nonisolated func v2AmuxSendPrompt(params: [String: Any]) -> V2CallResult {
+        guard let text = params["text"] as? String,
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return .err(
+                code: "invalid_params",
+                message: String(localized: "socket.amux.textRequired", defaultValue: "text is required"),
+                data: nil
+            )
+        }
+        return v2MainSync {
+            guard let appDelegate = AppDelegate.shared else {
+                return .err(code: "unavailable", message: "app not ready", data: nil)
+            }
+            self.v2RefreshKnownRefs()
+            let workspace: Workspace?
+            if let workspaceId = self.v2UUID(params, "workspace_id") {
+                workspace = appDelegate.amuxWorkspace(withId: workspaceId)?.workspace
+            } else {
+                workspace = appDelegate.tabManager?.selectedTab
+            }
+            guard let workspace else {
+                return .err(
+                    code: "not_found",
+                    message: String(localized: "socket.amux.workspaceNotFound", defaultValue: "Workspace not found"),
+                    data: nil
+                )
+            }
+            guard appDelegate.amuxSendPrompt(text, to: workspace) else {
+                return .err(
+                    code: "not_mirror",
+                    message: String(
+                        localized: "socket.amux.notMirror",
+                        defaultValue: "Workspace is not a live tmux mirror"
+                    ),
+                    data: nil
+                )
+            }
+            return .ok(["sent": true, "workspace_id": workspace.id.uuidString])
+        }
+    }
+
     /// `amux.attend` — jump to the agent that has been blocked on the user
     /// the longest: selects its workspace and focuses its tmux pane. An
     /// explicit focus-intent command under the socket focus policy — moving

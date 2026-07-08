@@ -6769,6 +6769,24 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxSendPrompt",
+                title: constant(String(localized: "command.amuxSendPrompt.title", defaultValue: "Send Prompt to Agent…")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "agent", "prompt", "send", "tmux"],
+                when: { $0.bool(CommandPaletteContextKeys.hasWorkspace) }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
+                commandId: "palette.amuxAttend",
+                title: constant(String(localized: "command.amuxAttend.title", defaultValue: "Attend Longest-Blocked Agent")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "agent", "attend", "blocked", "jump"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.moveWorkspaceUp",
                 title: constant(String(localized: "contextMenu.moveUp", defaultValue: "Move Up")),
                 subtitle: workspaceSubtitle,
@@ -7800,6 +7818,18 @@ struct ContentView: View {
         }
         registry.register(commandId: "palette.previousWorkspace") {
             tabManager.selectPreviousTab()
+        }
+        registry.register(commandId: "palette.amuxSendPrompt") {
+            guard let workspace = tabManager.selectedWorkspace else {
+                NSSound.beep()
+                return
+            }
+            AppDelegate.shared?.amuxPresentPromptComposer(for: workspace)
+        }
+        registry.register(commandId: "palette.amuxAttend") {
+            if AppDelegate.shared?.amuxAttend() != true {
+                NSSound.beep()
+            }
         }
         registry.register(commandId: "palette.moveWorkspaceUp") {
             moveSelectedWorkspace(by: -1)

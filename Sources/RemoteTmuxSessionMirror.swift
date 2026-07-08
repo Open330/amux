@@ -214,6 +214,27 @@ final class RemoteTmuxSessionMirror {
         windowIdContaining(pane: paneId) != nil
     }
 
+    /// The tmux pane a headless prompt should land in: `preferred` when it
+    /// is still in the layout, else the first window with a known active
+    /// pane, else the first pane of the first window.
+    func promptTargetPane(preferring preferred: Int?) -> Int? {
+        if let preferred, containsPane(preferred) { return preferred }
+        for windowId in connection.windowOrder {
+            if let pane = connection.activePaneByWindow[windowId] { return pane }
+        }
+        return connection.windowOrder.first
+            .flatMap { connection.windowsByID[$0]?.paneIDsInOrder.first }
+    }
+
+    /// Sends literal `text` followed by Enter to `%paneId` over the control
+    /// stream (binary-safe `send-keys -H`, same path as typed input).
+    @discardableResult
+    func sendPrompt(_ text: String, toPane paneId: Int) -> Bool {
+        var data = Data(text.utf8)
+        data.append(0x0d)
+        return connection.sendKeys(paneId: paneId, data: data)
+    }
+
     /// Focuses tmux pane `%paneId` inside this mirror: selects the mirrored
     /// window-tab panel in the workspace and, for multipane windows, asks
     /// tmux to make the pane active (the mirror view follows the resulting
