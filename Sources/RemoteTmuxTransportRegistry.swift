@@ -11,14 +11,20 @@ import Foundation
 /// controller sequences around its own `await` gaps.
 @MainActor
 final class RemoteTmuxTransportRegistry {
-    private var transports: [String: RemoteTmuxSSHTransport] = [:]
+    private var transports: [String: any RemoteTmuxTransport] = [:]
 
-    /// Returns (creating if needed) the transport for a host.
-    func transport(for host: RemoteTmuxHost) -> RemoteTmuxSSHTransport {
+    /// Returns (creating if needed) the transport for a host — SSH for remote
+    /// hosts, the local process runner for the amux engine. The two kinds can
+    /// never collide on a cache slot: ``RemoteTmuxHost/connectionHash`` mixes
+    /// the kind into the digest.
+    func transport(for host: RemoteTmuxHost) -> any RemoteTmuxTransport {
         if let existing = transports[host.connectionHash] {
             return existing
         }
-        let transport = RemoteTmuxSSHTransport(host: host)
+        let transport: any RemoteTmuxTransport = switch host.kind {
+        case .ssh: RemoteTmuxSSHTransport(host: host)
+        case .localAmux: RemoteTmuxLocalTransport(host: host)
+        }
         transports[host.connectionHash] = transport
         return transport
     }
@@ -36,7 +42,7 @@ final class RemoteTmuxTransportRegistry {
 
     /// Removes and returns the transport for `connectionHash`, if any.
     @discardableResult
-    func remove(connectionHash: String) -> RemoteTmuxSSHTransport? {
+    func remove(connectionHash: String) -> (any RemoteTmuxTransport)? {
         transports.removeValue(forKey: connectionHash)
     }
 

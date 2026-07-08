@@ -45,7 +45,7 @@ final class RemoteTmuxController {
     }
 
     /// Returns (creating if needed) the transport for a host.
-    func transport(for host: RemoteTmuxHost) -> RemoteTmuxSSHTransport {
+    func transport(for host: RemoteTmuxHost) -> any RemoteTmuxTransport {
         transportRegistry.transport(for: host)
     }
 
@@ -491,6 +491,143 @@ final class RemoteTmuxController {
         return true
     }
 
+    // MARK: - amux local engine (Phase 0 spike)
+
+    /// The default local amux spike session name shared by every entrypoint
+    /// (Debug menu, `debug.amux.mirror_local` socket RPC).
+    nonisolated static let amuxSpikeSessionName = "amux-spike"
+
+    /// Shared amux Phase 0 entry: attach-or-create `sessionName` on the local
+    /// `-L amux` tmux server (see ``RemoteTmuxHost/amuxLocal()``) and mirror
+    /// it into `tabManager`. Idempotent — returns `false` when that session
+    /// is already mirrored.
+    @discardableResult
+    func mirrorLocalAmuxSession(
+        sessionName: String = RemoteTmuxController.amuxSpikeSessionName,
+        into tabManager: TabManager
+    ) throws -> Bool {
+        try mirrorSession(
+            host: .amuxLocal(),
+            sessionName: sessionName,
+            createIfMissing: true,
+            into: tabManager
+        )
+    }
+
+    /// Creates a fresh detached session on the amux local server and mirrors
+    /// it into `tabManager`, returning the auto-assigned session name. The
+    /// headline "workspace = tmux session" action: unlike
+    /// ``mirrorLocalAmuxSession(sessionName:into:)`` it never reuses an
+    /// existing session, so each invocation is a brand-new workspace.
+    @discardableResult
+    func createLocalAmuxWorkspace(into tabManager: TabManager) async throws -> String {
+        let host = RemoteTmuxHost.amuxLocal()
+        let result = try await transport(for: host).runTmux(
+            ["new-session", "-d", "-P", "-F", "#{session_name}"]
+        )
+        let name = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard result.succeeded, !name.isEmpty else {
+            throw RemoteTmuxError.commandFailed(exitCode: result.exitCode, stderr: result.stderr)
+        }
+        try mirrorSession(host: host, sessionName: name, into: tabManager)
+        return name
+    }
+
+    /// Every session on the amux local server paired with whether it is
+    /// currently mirrored as a workspace — the data behind the Detached
+    /// sidebar section and the attach picker.
+    func localAmuxSessions() async throws -> [(session: RemoteTmuxSession, mirrored: Bool)] {
+        let host = RemoteTmuxHost.amuxLocal()
+        let sessions = try await transport(for: host).listSessions()
+        let mirrored = Set(
+            sessionMirrors.values
+                .filter { $0.host.kind == .localAmux }
+                .map(\.sessionName)
+        )
+        return sessions.map { ($0, mirrored.contains($0.name)) }
+    }
+
+    /// Whether `workspaceId` is a live amux local-engine mirror workspace.
+    func isLocalAmuxMirrorWorkspace(_ workspaceId: UUID) -> Bool {
+        sessionMirrors.values.contains {
+            $0.host.kind == .localAmux && $0.mirroredWorkspaceId == workspaceId
+        }
+    }
+
+    /// Whether a local amux session named `sessionName` is already mirrored.
+    func isLocalAmuxSessionMirrored(_ sessionName: String) -> Bool {
+        sessionMirrors.values.contains {
+            $0.host.kind == .localAmux && $0.sessionName == sessionName
+        }
+    }
+
+    /// The workspace mirroring `sessionName` on the amux local engine, if
+    /// any — the join key between muxad agent rows (which carry the tmux
+    /// session name) and sidebar workspaces.
+    func localMirrorWorkspace(sessionName: String) -> Workspace? {
+        sessionMirrors.values
+            .first { $0.host.kind == .localAmux && $0.sessionName == sessionName }?
+            .workspace
+    }
+
+    /// Captures the visible text of `workspaceId`'s mirrored agent pane via
+    /// `tmux capture-pane -p` (a one-shot read against the same server the
+    /// control stream is attached to). Targets `tmuxPane` when given and
+    /// present, else the session's prompt-target pane. `nil` when the
+    /// workspace is not a live mirror or the capture fails.
+    func captureMirrorPaneText(workspaceId: UUID, tmuxPane: Int?) async -> String? {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return nil }
+        let result = try? await transport(for: mirror.host).runTmux(
+            ["capture-pane", "-t", "%\(pane)", "-p"]
+        )
+        guard let result, result.succeeded else { return nil }
+        return result.stdout
+    }
+
+    /// Sends `text` (plus Enter) into `workspaceId`'s mirrored session
+    /// without touching focus — to `tmuxPane` when given and still present,
+    /// else the session's prompt-target pane. `false` when the workspace is
+    /// not a live mirror.
+    @discardableResult
+    func sendPromptToMirror(workspaceId: UUID, tmuxPane: Int?, text: String) -> Bool {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return false }
+        return mirror.sendPrompt(text, toPane: pane)
+    }
+
+    /// Focuses tmux pane `%tmuxPane` inside `workspaceId`'s mirror (selects
+    /// the window-tab and, for multipane windows, the pane). No-op when the
+    /// workspace isn't a mirror or the pane left its layout.
+    func focusMirrorPane(workspaceId: UUID, tmuxPane: Int) {
+        _ = sessionMirrors.values
+            .first { $0.mirroredWorkspaceId == workspaceId }?
+            .focusPane(tmuxPane)
+    }
+
+    /// The local-engine workspace whose mirrored session currently contains
+    /// tmux pane `%paneId`, if any. Pane-id join fallback for muxad agent
+    /// rows: the installed daemon (protocol v3) no longer emits
+    /// `tmux_session`, and agents inside amux panes report the amux server's
+    /// pane ids. Pane ids are only unique per tmux server, so an agent from
+    /// another server sharing the id can mismatch — acceptable for a status
+    /// badge; revisit when muxa regains session names on the wire.
+    func localMirrorWorkspace(containingPane paneId: Int) -> Workspace? {
+        sessionMirrors.values
+            .first { $0.host.kind == .localAmux && $0.containsPane(paneId) }?
+            .workspace
+    }
+
+    /// The panel socket send/read should target inside `workspaceId` when
+    /// `panelId` is a mirrored multipane window-tab (see
+    /// ``RemoteTmuxSessionMirror/socketTargetPanel(forPanel:)``); `nil` when
+    /// no redirect applies and the caller should use the panel it resolved.
+    func socketTargetPanel(workspaceId: UUID, panelId: UUID) -> TerminalPanel? {
+        sessionMirrors.values
+            .first { $0.mirroredWorkspaceId == workspaceId }?
+            .socketTargetPanel(forPanel: panelId)
+    }
+
     /// Mirrors a single tmux session into a new workspace in `tabManager` (idempotent).
     /// `sessionId` seeds discovery's stable id for de-dup before the stream reports it.
     @discardableResult
@@ -498,6 +635,7 @@ final class RemoteTmuxController {
         host: RemoteTmuxHost,
         sessionName: String,
         sessionId: Int? = nil,
+        createIfMissing: Bool = false,
         into tabManager: TabManager
     ) throws -> Bool {
         let key = Self.connectionKey(host: host, sessionName: sessionName)
@@ -505,7 +643,7 @@ final class RemoteTmuxController {
         // Attach (and start the ssh process) BEFORE creating the workspace, so a
         // failed connection doesn't leave an orphaned empty mirror workspace in
         // the sidebar.
-        let connection = try attach(host: host, sessionName: sessionName)
+        let connection = try attach(host: host, sessionName: sessionName, createIfMissing: createIfMissing)
         let workspace = tabManager.addWorkspace(
             title: sessionName,
             select: false,
@@ -1033,7 +1171,7 @@ final class RemoteTmuxController {
     /// (bounded by `timeout`) so the session is gone before cmux exits. No
     /// `spawnControlMasterExit` — the kill multiplexes over the live master (ControlPersist reaps it).
     func killMarkedSessionsBeforeTerminate(timeout: Duration = .seconds(3)) async {
-        var jobs: [(transport: RemoteTmuxSSHTransport, target: String)] = []
+        var jobs: [(transport: any RemoteTmuxTransport, target: String)] = []
         for windowId in windowRegistry.windowsMarkedForKillOnClose() {
             guard windowRegistry.consumeKillSessionsOnClose(windowId: windowId),
                   let host = windowRegistry.host(forWindowId: windowId) else { continue }
@@ -1090,7 +1228,7 @@ final class RemoteTmuxController {
     }
 
     /// User-initiated mirrored workspace close detaches locally and kills the remote session.
-    func handleWorkspaceClosed(workspaceId: UUID) {
+    func handleWorkspaceClosed(workspaceId: UUID, forceKill: Bool = false) {
         guard let entry = sessionMirrors.first(where: { $0.value.mirroredWorkspaceId == workspaceId })
         else { return }
         let mirror = entry.value
@@ -1099,11 +1237,15 @@ final class RemoteTmuxController {
         // Kill by the stable session id when known, so a prior rename-session
         // can't leave us targeting a stale name. If the control client already
         // ended (for example after deliberate detach), closing leftover local
-        // chrome must not kill the remote session (#7364).
+        // chrome must not kill the remote session (#7364). Local amux sessions
+        // detach-by-default; only `forceKill` (explicit "Close and Kill") ends
+        // them.
         let killTarget = Self.workspaceCloseKillTarget(
             connectionExited: mirror.connection.exited,
             sessionId: mirror.connection.sessionId,
-            sessionName: sessionName
+            sessionName: sessionName,
+            hostKind: host.kind,
+            forceKill: forceKill
         )
         sessionMirrors.removeValue(forKey: entry.key)
         mirror.detachObserver()

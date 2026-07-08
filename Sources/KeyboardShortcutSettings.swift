@@ -83,6 +83,7 @@ enum KeyboardShortcutSettings {
         case commandPalette
         case commandPaletteNext
         case commandPalettePrevious
+        case amuxAttend
         case sendFeedback
         case showNotifications
         case jumpToUnread
@@ -207,6 +208,7 @@ enum KeyboardShortcutSettings {
             case .commandPalette: return String(localized: "menu.file.commandPalette", defaultValue: "Command Palette…")
             case .commandPaletteNext: return String(localized: "shortcut.commandPaletteNext.label", defaultValue: "Command Palette: Next")
             case .commandPalettePrevious: return String(localized: "shortcut.commandPalettePrevious.label", defaultValue: "Command Palette: Previous")
+            case .amuxAttend: return String(localized: "shortcut.amuxAttend.label", defaultValue: "Attend Longest-Blocked Agent")
             case .sendFeedback: return String(localized: "sidebar.help.sendFeedback", defaultValue: "Send Feedback")
             case .showNotifications: return String(localized: "shortcut.showNotifications.label", defaultValue: "Show Notifications")
             case .jumpToUnread: return String(localized: "shortcut.jumpToUnread.label", defaultValue: "Jump to Latest Unread")
@@ -365,6 +367,11 @@ enum KeyboardShortcutSettings {
                 return StoredShortcut(key: "n", command: false, shift: false, option: false, control: true)
             case .commandPalettePrevious:
                 return StoredShortcut(key: "p", command: false, shift: false, option: false, control: true)
+            case .amuxAttend:
+                // "Jump" to the longest-blocked agent. Cmd+Shift+J is free
+                // in the default map; a bare "j" (vim-style pane nav) does
+                // not conflict with a Cmd+Shift chord.
+                return StoredShortcut(key: "j", command: true, shift: true, option: false, control: false)
             case .sendFeedback:
                 return .unbound
             case .showNotifications:

@@ -511,6 +511,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     var aboutTitlebarDebugStore: AboutTitlebarDebugStore { debugWindowsCoordinator.aboutTitlebarStore }
     /// Coordinates remote tmux (`ssh … tmux -CC`) mirroring; composition-root owned.
     let remoteTmuxController = RemoteTmuxController()
+    /// Streams muxad agent state into mirror workspaces' sidebar rows; built
+    /// lazily so its closure can capture the fully-initialized delegate.
+    lazy var amuxAgentStatusService: AmuxAgentStatusService = makeAmuxAgentStatusService()
     private static let reloadConfigurationMenuItemIdentifier = NSUserInterfaceItemIdentifier("com.cmux.reloadConfiguration")
 
     private static let cachedIsRunningUnderXCTest = detectRunningUnderXCTest(ProcessInfo.processInfo.environment)
@@ -1543,6 +1546,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             }
         }
 #endif
+        reconcileLocalAmuxSessionsAtLaunch()
+        amuxAgentStatusService.start()
     }
 
     private nonisolated static func feedWorkstreamTitle(for event: WorkstreamEvent) -> String? {
@@ -13372,6 +13377,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             setActiveMainWindow(targetWindow)
             bringToFront(targetWindow)
             NotificationCenter.default.post(name: .feedbackComposerRequested, object: targetWindow)
+            return true
+        }
+
+        // amux: jump to the longest-blocked agent (focus-intent).
+        if matchConfiguredShortcut(event: event, action: .amuxAttend) {
+            if !amuxAttend() {
+                NSSound.beep()
+            }
             return true
         }
 

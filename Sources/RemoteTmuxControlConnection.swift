@@ -329,11 +329,12 @@ final class RemoteTmuxControlConnection {
         enterReceived = false
 
         let proc = Process()
-        proc.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
-        proc.arguments = host.controlModeArguments(
+        let invocation = host.controlProcessInvocation(
             sessionName: sessionName,
             createIfMissing: createIfMissing
         )
+        proc.executableURL = URL(fileURLWithPath: invocation.executablePath)
+        proc.arguments = invocation.arguments
         let inPipe = Pipe(), outPipe = Pipe(), errPipe = Pipe()
         proc.standardInput = inPipe
         proc.standardOutput = outPipe
@@ -547,8 +548,11 @@ final class RemoteTmuxControlConnection {
     /// id and layout tokens never do — so the result parses as
     /// `@id <layout> <name with spaces…>`.
     func requestWindows() {
+        // `#{pane_id}` in list-windows context resolves to each window's
+        // ACTIVE pane — the only way to learn the initial active pane, since
+        // `%window-pane-changed` only fires on changes after attach.
         sendInternal(
-            "list-windows -F \"#{window_id} #{window_layout} #{window_name}\"",
+            "list-windows -F \"#{window_id} #{pane_id} #{window_layout} #{window_name}\"",
             kind: .listWindows
         )
     }
@@ -1273,18 +1277,22 @@ final class RemoteTmuxControlConnection {
         case .listWindows:
             var order: [Int] = []
             var next: [Int: RemoteTmuxWindow] = [:]
+            var initialActivePane: [Int: Int] = [:]
             for line in lines {
-                // "@<id> <layout> <name with spaces…>" — id and layout never
-                // contain spaces, so split into at most 3 fields.
-                let parts = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: false)
-                guard parts.count >= 2,
+                // "@<id> %<active-pane> <layout> <name with spaces…>" — id,
+                // pane, and layout never contain spaces, so split into at
+                // most 4 fields.
+                let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: false)
+                guard parts.count >= 3,
                       let id = RemoteTmuxControlStreamParser.id(parts[0], sigil: "@"),
-                      let node = RemoteTmuxRawLayoutParser.parse(String(parts[1]))
+                      let activePane = RemoteTmuxControlStreamParser.id(parts[1], sigil: "%"),
+                      let node = RemoteTmuxRawLayoutParser.parse(String(parts[2]))
                 else { continue }
-                let name = parts.count >= 3 ? String(parts[2]) : ""
+                let name = parts.count >= 4 ? String(parts[3]) : ""
                 next[id] = RemoteTmuxWindow(
                     id: id, name: name, width: node.width, height: node.height, layout: node
                 )
+                initialActivePane[id] = activePane
                 order.append(id)
             }
             // Ignore an empty/garbled reply on purpose: a live tmux session always
@@ -1299,7 +1307,13 @@ final class RemoteTmuxControlConnection {
                 // disconnected leaves no %window-close, so prune stale panes here.
                 let liveIDs = Set(order)
                 windowsByID = next
-                activePaneByWindow = activePaneByWindow.filter { liveIDs.contains($0.key) }
+                // Event-driven entries win over the list snapshot (a
+                // %window-pane-changed may have arrived since this reply was
+                // generated); the snapshot only seeds windows with no entry.
+                activePaneByWindow = initialActivePane.merging(
+                    activePaneByWindow.filter { liveIDs.contains($0.key) },
+                    uniquingKeysWith: { _, eventDriven in eventDriven }
+                )
                 prunePaneState(keeping: Set(next.values.flatMap { $0.paneIDsInOrder }))
                 windowOrder = order
                 observers.notifyTopologyChanged()

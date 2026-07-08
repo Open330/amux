@@ -523,6 +523,20 @@ struct cmuxApp: App {
                     appDelegate.openDebugScrollbackTab(nil)
                 }
 
+                Button(String(
+                    localized: "debug.amux.mirrorLocalTmuxSession",
+                    defaultValue: "amux: Mirror Local tmux Session"
+                )) {
+                    appDelegate.openDebugAmuxLocalTmuxMirror(nil)
+                }
+
+                Button(String(
+                    localized: "debug.amux.attendLongestBlockedAgent",
+                    defaultValue: "amux: Attend Longest-Blocked Agent"
+                )) {
+                    appDelegate.amuxAttendAction(nil)
+                }
+
                 AgentSessionDebugMenuButtons(
                     openReact: { appDelegate.openDebugAgentSessionReact(nil) },
                     openSolid: { appDelegate.openDebugAgentSessionSolid(nil) }

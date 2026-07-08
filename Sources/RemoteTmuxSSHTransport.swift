@@ -279,6 +279,9 @@ actor RemoteTmuxSSHTransport {
         host: RemoteTmuxHost,
         sshExecutablePath: String = "/usr/bin/ssh"
     ) {
+        // Only SSH hosts have a ControlMaster; the amux local engine has no
+        // shared channel, so every teardown call site can stay kind-agnostic.
+        guard host.kind == .ssh else { return }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: sshExecutablePath)
         process.arguments = ["-O", "exit", "-o", "ControlPath=\(host.controlSocketPath)", "--", host.destination]
@@ -301,7 +304,7 @@ actor RemoteTmuxSSHTransport {
     /// `timeout`. The orphaned `ssh` is reaped by the OS on app exit; the kill is
     /// best-effort (it can't land on a dead connection anyway).
     nonisolated static func killSessions(
-        _ jobs: [(transport: RemoteTmuxSSHTransport, target: String)],
+        _ jobs: [(transport: any RemoteTmuxTransport, target: String)],
         timeout: Duration
     ) async {
         guard !jobs.isEmpty else { return }

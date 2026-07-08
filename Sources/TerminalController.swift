@@ -255,6 +255,9 @@ class TerminalController {
     ]
 
     private nonisolated static let focusIntentV2Methods: Set<String> = [
+        // amux.attend exists to move focus (jump to the longest-blocked
+        // agent's workspace/pane) — the amux analog of workspace.select.
+        "amux.attend",
         "window.focus",
         "workspace.select",
         "workspace.next",
@@ -1392,9 +1395,19 @@ class TerminalController {
             return v2Result(id: request.id, v2CustomSidebarSelect(params: request.params))
         case "sidebar.custom.open":
             return v2Result(id: request.id, v2CustomSidebarOpen(params: request.params))
+        case "amux.new_session":
+            return v2AmuxNewSession(id: request.id, params: request.params)
+        case "amux.sessions":
+            return v2AmuxSessions(id: request.id, params: request.params)
+        case "amux.attach_session":
+            return v2AmuxAttachSession(id: request.id, params: request.params)
 #if DEBUG
         case "debug.sidebar.simulate_drag":
             return v2Result(id: request.id, v2DebugSidebarSimulateDrag(params: request.params))
+        case "debug.amux.mirror_local":
+            return v2AmuxMirrorLocal(id: request.id, params: request.params)
+        case "debug.amux.parse_choices":
+            return v2AmuxParseChoices(id: request.id, params: request.params)
 #endif
         case let method where method.hasPrefix("vm."):
             return socketWorkerCloudVMResponse(method: method, id: request.id, params: request.params)
@@ -2231,6 +2244,18 @@ class TerminalController {
         // Feed (workstream): feed.jump/feed.list handled by ControlCommandCoordinator.
         case "sidebar.custom.open":
             return v2Result(id: id, self.v2CustomSidebarOpen(params: params))
+
+        // amux: attend jump (explicit focus-intent, main lane).
+        case "amux.attend":
+            return v2Result(id: id, self.v2AmuxAttend(params: params))
+
+        // amux: headless prompt into a mirror workspace (data-only, no focus).
+        case "amux.send_prompt":
+            return v2Result(id: id, self.v2AmuxSendPrompt(params: params))
+
+        // amux: close a mirror workspace and kill its tmux session.
+        case "amux.close_kill":
+            return v2Result(id: id, self.v2AmuxCloseKill(params: params))
 
 
         // Surfaces / input: surface.list/current/focus/split/respawn/create/close/move/
@@ -5465,7 +5490,7 @@ class TerminalController {
                     ))
                 }
                 workspaceID = ws.id
-                terminalPanel = wsPanel
+                terminalPanel = self.remoteTmuxSocketPanel(wsPanel, panelId: surfaceId, in: ws)
                 resolvedWindowID = self.v2ResolveWindowId(tabManager: tabManager)
             }
             guard let rawSnapshot = self.readTerminalTextRawSnapshot(

@@ -46,7 +46,7 @@ final class RemoteTmuxSessionMirror {
     }
 
     private weak var tabManager: TabManager?
-    private weak var workspace: Workspace?
+    private(set) weak var workspace: Workspace?
     /// The workspace currently backing this mirror, if it has not been released.
     var mirroredWorkspace: Workspace? { workspace }
     private let defaultPanelIds: [UUID]
@@ -174,6 +174,16 @@ final class RemoteTmuxSessionMirror {
         panelIdByWindow.first(where: { $0.value == panelId })?.key
     }
 
+    /// The panel socket send/read should target when `panelId` is a mirrored
+    /// window-tab whose window renders the in-tab multipane view — that tab
+    /// panel's own surface is disconnected from tmux, so I/O must go to the
+    /// active pane's panel. `nil` when the tab's own surface is the live one
+    /// (single-pane window) or `panelId` is not a mirrored tab.
+    func socketTargetPanel(forPanel panelId: UUID) -> TerminalPanel? {
+        guard let windowId = windowId(forPanel: panelId) else { return nil }
+        return windowMirrorByWindowId[windowId]?.socketTargetPanel
+    }
+
     /// Deregisters this mirror's connection observer and tears down all per-window
     /// multi-pane renderers (called when the mirror is torn down so its callbacks
     /// don't linger on a shared connection and its pane surfaces don't leak).
@@ -196,6 +206,48 @@ final class RemoteTmuxSessionMirror {
     /// The tmux window id (if any) whose layout currently contains `paneId`.
     private func windowIdContaining(pane paneId: Int) -> Int? {
         connection.windowsByID.first(where: { $0.value.paneIDsInOrder.contains(paneId) })?.key
+    }
+
+    /// Whether this mirrored session's current layout contains tmux pane
+    /// `%paneId` (the muxa agent-row join key when session names are absent).
+    func containsPane(_ paneId: Int) -> Bool {
+        windowIdContaining(pane: paneId) != nil
+    }
+
+    /// The tmux pane a headless prompt should land in: `preferred` when it
+    /// is still in the layout, else the first window with a known active
+    /// pane, else the first pane of the first window.
+    func promptTargetPane(preferring preferred: Int?) -> Int? {
+        if let preferred, containsPane(preferred) { return preferred }
+        for windowId in connection.windowOrder {
+            if let pane = connection.activePaneByWindow[windowId] { return pane }
+        }
+        return connection.windowOrder.first
+            .flatMap { connection.windowsByID[$0]?.paneIDsInOrder.first }
+    }
+
+    /// Sends literal `text` followed by Enter to `%paneId` over the control
+    /// stream (binary-safe `send-keys -H`, same path as typed input).
+    @discardableResult
+    func sendPrompt(_ text: String, toPane paneId: Int) -> Bool {
+        var data = Data(text.utf8)
+        data.append(0x0d)
+        return connection.sendKeys(paneId: paneId, data: data)
+    }
+
+    /// Focuses tmux pane `%paneId` inside this mirror: selects the mirrored
+    /// window-tab panel in the workspace and, for multipane windows, asks
+    /// tmux to make the pane active (the mirror view follows the resulting
+    /// `%window-pane-changed`). Returns `false` when the pane isn't in this
+    /// session's layout.
+    @discardableResult
+    func focusPane(_ paneId: Int) -> Bool {
+        guard let windowId = windowIdContaining(pane: paneId),
+              let panelId = panelIdByWindow[windowId],
+              let workspace else { return false }
+        workspace.focusPanel(panelId)
+        windowMirrorByWindowId[windowId]?.focus(pane: paneId)
+        return true
     }
 
     /// Adds a tab for any window that doesn't yet have one, refreshes existing

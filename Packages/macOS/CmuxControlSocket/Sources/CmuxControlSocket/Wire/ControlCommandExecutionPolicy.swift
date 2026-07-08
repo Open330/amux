@@ -125,6 +125,14 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         "remote.tmux.state",
         "remote.tmux.mirror",
         "remote.tmux.window",
+        // amux.new_session / .sessions / .attach_session drive the local
+        // tmux engine through v2VmCall (semaphore park on an await), so they
+        // stay on the worker lane like the remote.tmux.* family. (amux.attend
+        // and amux.send_prompt take only a quick v2MainSync hop and stay on
+        // the main lane.)
+        "amux.new_session",
+        "amux.sessions",
+        "amux.attach_session",
         "sidebar.custom.validate",
         "sidebar.custom.reload",
         "sidebar.custom.select",
@@ -135,6 +143,14 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         // v2MainSync). Running on .mainActor would deadlock the UI for the
         // entire simulation, defeating the profiling workload.
         "debug.sidebar.simulate_drag",
+        // debug.amux.mirror_local bridges to the main actor through v2VmCall,
+        // which parks the calling thread on a semaphore until the async work
+        // finishes — that wait must happen on a socket worker, never on the
+        // main actor (same shape as the remote.tmux.* methods above).
+        "debug.amux.mirror_local",
+        // debug.amux.parse_choices captures a pane via the local transport
+        // (an await), so it parks on v2VmCall's semaphore — worker lane.
+        "debug.amux.parse_choices",
         // Browser automation methods that wait on page JavaScript, WebKit
         // cookies, or capture callbacks run on the socket worker: on the main
         // actor they block SwiftUI updates for their full duration, and on a
