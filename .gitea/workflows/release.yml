@@ -1,16 +1,20 @@
-# amux release — build a signed, notarized amux.dmg on a tag push.
+# amux release — build a signed, notarized amux-macos.dmg on a tag push.
 #
-# Runs on the org Gitea runner with signing material pulled from Vault.
-# INFRA VALUES TO FILL IN (marked TODO below), since they are specific to the
-# org's Vault + Apple account and cannot be inferred:
-#   - VAULT_ADDR / VAULT_TOKEN (or the runner's Vault agent) and the secret
-#     paths for the Developer ID cert, its password, and notarization creds.
-#   - The Gitea runner label for a macOS 26 signing host.
-#   - Where the dmg + Sparkle appcast are published (see R03 runbook §5–6).
+# Reuses scripts/build-signed-dmg.sh (proven end-to-end producing the
+# v0.1.0-alpha notarized release): it fetches the Developer ID cert + the
+# App Store Connect API key from Vaultwarden at runtime into a temporary
+# keychain (deleted on exit), builds Release universal unsigned, applies
+# Developer ID with resolved entitlements via a --deep pass, bundles the
+# pinned runtime (tmux 3.7b + muxad/muxa), creates the dmg, notarizes, and
+# staples.
 #
-# The build reuses scripts/build-amux-runtime.sh --build-tmux to bundle the
-# pinned tmux (3.7b) + muxad/muxa before signing, so the shipped app is
-# self-contained.
+# RUNNER REQUIREMENTS (org infra):
+#   - macOS runner with Xcode + an unlocked Bitwarden CLI session at
+#     ~/.bw_session (see ~/.agents/VAULT.md). The Vault items are:
+#     "Developer ID Application (Jiun Bae)" and
+#     "App Store Connect API Key - file-stack".
+#   - MUXA_REPO checked out (for cargo-built muxad/muxa), or the script
+#     stages a dev tmux placeholder — pass MUXA_REPO to build the real one.
 name: amux-release
 
 on:
@@ -22,7 +26,6 @@ jobs:
     runs-on: [self-hosted, macos]
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
-      CMUX_SKIP_ZIG_BUILD: "1"
     steps:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
@@ -32,101 +35,28 @@ jobs:
       - name: Setup (submodules + GhosttyKit)
         run: ./scripts/setup.sh
 
-      # TODO(infra): pull signing material from Vault. Replace the paths with
-      # the org's actual Vault KV locations. The runner needs Vault auth
-      # (agent or VAULT_TOKEN). Exports the vars the signing steps consume.
-      - name: Fetch signing material from Vault
+      - name: Build signed + notarized dmg
+        run: MUXA_REPO="${MUXA_REPO:-$HOME/personal/muxa}" ./scripts/build-signed-dmg.sh --notarize
+
+      - name: Generate Sparkle appcast
         run: |
           set -euo pipefail
-          # Example shape — adjust secret paths to your Vault layout:
-          #   vault kv get -field=cert_p12_base64 secret/amux/apple/developer-id > /tmp/cert.b64
-          #   vault kv get -field=cert_password   secret/amux/apple/developer-id
-          #   vault kv get -field=apple_id        secret/amux/apple/notary
-          #   vault kv get -field=team_id         secret/amux/apple/notary
-          #   vault kv get -field=app_password    secret/amux/apple/notary
-          echo "TODO: export APPLE_CERT_P12_BASE64, APPLE_CERT_PASSWORD, APPLE_SIGNING_IDENTITY," \
-               "APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD from Vault" >&2
-          exit 1  # remove once Vault fetch is wired
+          # Needs amux's OWN EdDSA private key (see R03 runbook §5). Store it
+          # in Vault and fetch here into $SPARKLE_PRIVATE_KEY, then:
+          #   GEN="$(find build-signed -name generate_appcast -type f | head -1)"
+          #   mkdir -p appcast-out && cp amux-macos.dmg appcast-out/
+          #   echo "$SPARKLE_PRIVATE_KEY" > /tmp/ed_priv
+          #   "$GEN" --ed-key-file /tmp/ed_priv appcast-out/ \
+          #     --download-url-prefix "https://github.com/jiunbae/amux/releases/download/${{ github.ref_name }}/"
+          #   rm -f /tmp/ed_priv
+          echo "TODO: wire the amux Sparkle key (runbook §5) to sign the appcast" >&2
 
-      - name: Import signing cert into an ephemeral keychain
-        run: |
-          set -euo pipefail
-          KEYCHAIN="$RUNNER_TEMP/amux-signing.keychain-db"
-          security create-keychain -p "" "$KEYCHAIN"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN"
-          security unlock-keychain -p "" "$KEYCHAIN"
-          echo "$APPLE_CERT_P12_BASE64" | base64 --decode > /tmp/amux-cert.p12
-          security import /tmp/amux-cert.p12 -k "$KEYCHAIN" -P "$APPLE_CERT_PASSWORD" \
-            -T /usr/bin/codesign -T /usr/bin/security
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" "$KEYCHAIN"
-          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
-          rm -f /tmp/amux-cert.p12
-
-      - name: Bundle pinned amux runtime (tmux 3.7b + muxa)
-        run: MUXA_REPO="$RUNNER_TEMP/muxa" ./scripts/build-amux-runtime.sh --build-tmux
-
-      - name: Build Release (universal)
-        run: |
-          CMUX_SKIP_ZIG_BUILD=1 xcodebuild -project cmux.xcodeproj -scheme cmux \
-            -configuration Release -derivedDataPath build-universal \
-            -destination 'generic/platform=macOS' \
-            ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build
-
-      # TODO(branding): once R03 runbook §1 lands, the Release product is
-      # amux.app / com.open330.amux; adjust the app path + dmg name here.
-      - name: Codesign (Developer ID, hardened runtime)
-        run: |
-          set -euo pipefail
-          APP="build-universal/Build/Products/Release/amux.app"
-          # Sign nested bundled runtime first (deep sign), then the app.
-          codesign --force --options runtime --timestamp \
-            --sign "$APPLE_SIGNING_IDENTITY" "$APP/Contents/Resources/bin/"* || true
-          codesign --force --deep --options runtime --timestamp \
-            --sign "$APPLE_SIGNING_IDENTITY" "$APP"
-          codesign --verify --deep --strict --verbose=2 "$APP"
-
-      - name: Create dmg
-        run: |
-          set -euo pipefail
-          npm install --global create-dmg@6
-          APP="build-universal/Build/Products/Release/amux.app"
-          create-dmg "$APP" . || true   # create-dmg exits non-zero on notarization-not-yet
-          mv ./*.dmg amux-macos.dmg
-
-      - name: Notarize + staple
-        run: |
-          set -euo pipefail
-          xcrun notarytool submit amux-macos.dmg \
-            --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
-            --password "$APPLE_APP_PASSWORD" --wait
-          xcrun stapler staple amux-macos.dmg
-
-      # Sparkle appcast. Needs amux's OWN EdDSA keypair (NOT cmux's) — generate
-      # once with Sparkle's `generate_keys`, set the public key as the Release
-      # SPARKLE_PUBLIC_KEY build setting, and store the private key in Vault.
-      # TODO(infra): fetch SPARKLE_PRIVATE_KEY from Vault above.
-      - name: Sign update + generate appcast
-        run: |
-          set -euo pipefail
-          # Sparkle tools ship in the SPM artifact; resolve sign_update /
-          # generate_appcast from the built products or a pinned download.
-          SIGN_UPDATE="$(find build-universal -name sign_update -type f | head -1)"
-          GEN_APPCAST="$(find build-universal -name generate_appcast -type f | head -1)"
-          mkdir -p appcast-out
-          cp amux-macos.dmg appcast-out/
-          # generate_appcast reads the private key from the keychain or a file;
-          # here it uses the Vault-provided key file.
-          echo "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_ed_priv
-          "$GEN_APPCAST" --ed-key-file /tmp/sparkle_ed_priv appcast-out/ \
-            --download-url-prefix "https://github.com/jiunbae/amux/releases/download/${{ github.ref_name }}/"
-          rm -f /tmp/sparkle_ed_priv
-          # appcast-out/appcast.xml + amux-macos.dmg are the release assets.
-
-      # TODO(infra): attach amux-macos.dmg + appcast.xml to the Gitea release
-      # for this tag (the SUFeedURL + cask url resolve to
-      # releases/latest/download/...), and bump packaging/homebrew/amux.rb
-      # (version + sha256) — e.g. via `brew bump-cask-pr` against the tap.
       - name: Publish release assets + bump cask
         run: |
-          echo "TODO: upload amux-macos.dmg + appcast-out/appcast.xml to the" \
-               "Gitea release for ${{ github.ref_name }}, then bump the Homebrew cask" >&2
+          set -euo pipefail
+          SHA="$(shasum -a 256 amux-macos.dmg | awk '{print $1}')"
+          echo "dmg sha256: $SHA"
+          # Attach amux-macos.dmg (+ appcast.xml once §5 lands) to the release
+          # for ${{ github.ref_name }}, then bump packaging/homebrew/amux.rb
+          # (version + sha256) on the open330/homebrew-amux tap.
+          echo "TODO: upload amux-macos.dmg to the release and bump the cask (sha256 above)" >&2

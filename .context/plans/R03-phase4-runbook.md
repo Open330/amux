@@ -28,8 +28,11 @@ Status legend: ⬜ not started · 🟡 needs a decision/asset · ✅ done
 - ✅ **§4 First-run wizard** — `AmuxOnboarding`, consent-gated, first-run +
   palette; wires agent hooks via bundled `muxa init --component <hooks>`
   (hooks-only — no tmux.conf edits, no competing daemon; verified by dry-run).
-- 🟡 **§5 Sparkle / §6 brew** — cask (`packaging/homebrew/amux.rb`) + appcast
-  steps in `release.yml` written; blocked on the keypair + hosting below.
+- ✅ **Signed+notarized dmg** — v0.1.0-alpha released (Developer ID, Team
+  728FW73BS8, notarized+stapled, Gatekeeper-accepted). `scripts/build-signed-dmg.sh`
+  is the proven pipeline; `release.yml` now just calls it. Cask sha256 pinned.
+- 🟡 **§5 Sparkle appcast** — steps written; blocked on amux's own EdDSA key
+  (runbook §5). §6 tap repo still needs creating.
 
 ### §5 Sparkle — REQUIRED before enabling auto-update
 
