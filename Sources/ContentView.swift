@@ -6823,6 +6823,24 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxSetup",
+                title: constant(String(localized: "command.amuxSetup.title", defaultValue: "amux Setup: Agent Integration…")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "setup", "onboarding", "hooks", "agent", "integration", "wizard"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
+                commandId: "palette.amuxUninstallIntegration",
+                title: constant(String(localized: "command.amuxUninstallIntegration.title", defaultValue: "amux Setup: Remove Agent Integration")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "uninstall", "remove", "hooks", "integration", "onboarding"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.amuxInstallDaemon",
                 title: constant(String(localized: "command.amuxInstallDaemon.title", defaultValue: "Install amux Background Daemon")),
                 subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
@@ -7904,6 +7922,12 @@ struct ContentView: View {
                 NSSound.beep()
                 return
             }
+        }
+        registry.register(commandId: "palette.amuxSetup") {
+            AmuxOnboarding().present()
+        }
+        registry.register(commandId: "palette.amuxUninstallIntegration") {
+            AmuxOnboarding.runUninstall()
         }
         registry.register(commandId: "palette.amuxInstallDaemon") {
             AppDelegate.shared?.amuxInstallMuxadAgent()

@@ -77,6 +77,7 @@
 		810D92864A73A66F234DEE62 /* AmuxChoiceParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B2B74D3A88D2117ABDF858 /* AmuxChoiceParserTests.swift */; };
 		F1D7EC2E03E780781BFDF619 /* AmuxMuxadLaunchAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 406DA564A5BDD51A652E12C8 /* AmuxMuxadLaunchAgent.swift */; };
 		7CF5DA6BDEBA29C857C55524 /* AmuxMuxadLaunchAgentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F763B6F21E006430645D4A60 /* AmuxMuxadLaunchAgentTests.swift */; };
+		F0D3873B704AB7DC7AF68D0A /* AmuxOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE47828B1FB148362FE46E65 /* AmuxOnboarding.swift */; };
 		F4350A110000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */; };
 		F4350A120000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */; };
 		6F4D7FB8E98E231A6DA8F7A6 /* AppDelegate+AmuxLocalTmux.swift in Sources */ = {isa = PBXBuildFile; fileRef = E761B3D025E9AF34360B7369 /* AppDelegate+AmuxLocalTmux.swift */; };
@@ -1576,6 +1577,7 @@
 		30B2B74D3A88D2117ABDF858 /* AmuxChoiceParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxChoiceParserTests.swift"; sourceTree = "<group>"; };
 		406DA564A5BDD51A652E12C8 /* AmuxMuxadLaunchAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxMuxadLaunchAgent.swift"; sourceTree = "<group>"; };
 		F763B6F21E006430645D4A60 /* AmuxMuxadLaunchAgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxMuxadLaunchAgentTests.swift"; sourceTree = "<group>"; };
+		DE47828B1FB148362FE46E65 /* AmuxOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxOnboarding.swift"; sourceTree = "<group>"; };
 		F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppBundleIconPersistencePolicy.swift; sourceTree = "<group>"; };
 		E761B3D025E9AF34360B7369 /* AppDelegate+AmuxLocalTmux.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+AmuxLocalTmux.swift"; sourceTree = "<group>"; };
 		C4A570010000000000000002 /* AppDelegate+CanvasShortcutRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+CanvasShortcutRouting.swift"; sourceTree = "<group>"; };
@@ -3831,6 +3833,7 @@
 					50FE16F529BD6FBA4FBDECFC /* RemoteTmuxController.swift */,
 					736200000000000000000001 /* RemoteTmuxController+Decisions.swift */,
 					9E3E94F6022485BB12789444 /* RemoteTmuxSessionEndAction.swift */,
+					DE47828B1FB148362FE46E65 /* AmuxOnboarding.swift */,
 					406DA564A5BDD51A652E12C8 /* AmuxMuxadLaunchAgent.swift */,
 					633B3B33234501085E3589FE /* AmuxChoiceParser.swift */,
 					FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */,
@@ -4894,6 +4897,7 @@
 				1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */,
 				CBE9ED114E0851AC45E68AA2 /* AmuxChoiceParser.swift in Sources */,
 				F1D7EC2E03E780781BFDF619 /* AmuxMuxadLaunchAgent.swift in Sources */,
+				F0D3873B704AB7DC7AF68D0A /* AmuxOnboarding.swift in Sources */,
 				F4350A110000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */,
 				6F4D7FB8E98E231A6DA8F7A6 /* AppDelegate+AmuxLocalTmux.swift in Sources */,
 				C4A570010000000000000001 /* AppDelegate+CanvasShortcutRouting.swift in Sources */,

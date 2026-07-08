@@ -434,7 +434,20 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
     /// this so the daemon that outlives the app is the pinned one. `nil` in an
     /// unbundled dev build.
     static func bundledMuxadPath() -> String? {
-        guard let path = Bundle.main.resourceURL?.appendingPathComponent("bin/muxad").path,
+        bundledRuntimeBinary("muxad")
+    }
+
+    /// The app-bundled `muxa` CLI, when present. The onboarding wizard runs
+    /// `muxa init` through it to wire agent hooks. `nil` in an unbundled dev
+    /// build (falls back to a `muxa` on PATH there).
+    static func bundledMuxaCliPath() -> String? {
+        bundledRuntimeBinary("muxa")
+    }
+
+    /// Resolves a bundled runtime binary in `Resources/bin`, or `nil` when
+    /// absent (unbundled dev build).
+    private static func bundledRuntimeBinary(_ name: String) -> String? {
+        guard let path = Bundle.main.resourceURL?.appendingPathComponent("bin/\(name)").path,
               FileManager.default.isExecutableFile(atPath: path) else { return nil }
         return path
     }
