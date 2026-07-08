@@ -523,6 +523,15 @@ final class RemoteTmuxController {
             .workspace
     }
 
+    /// Focuses tmux pane `%tmuxPane` inside `workspaceId`'s mirror (selects
+    /// the window-tab and, for multipane windows, the pane). No-op when the
+    /// workspace isn't a mirror or the pane left its layout.
+    func focusMirrorPane(workspaceId: UUID, tmuxPane: Int) {
+        _ = sessionMirrors.values
+            .first { $0.mirroredWorkspaceId == workspaceId }?
+            .focusPane(tmuxPane)
+    }
+
     /// The local-engine workspace whose mirrored session currently contains
     /// tmux pane `%paneId`, if any. Pane-id join fallback for muxad agent
     /// rows: the installed daemon (protocol v3) no longer emits

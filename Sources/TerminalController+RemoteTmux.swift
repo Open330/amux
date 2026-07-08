@@ -296,6 +296,21 @@ extension TerminalController {
         return dict
     }
 
+    /// `amux.attend` — jump to the agent that has been blocked on the user
+    /// the longest: selects its workspace and focuses its tmux pane. An
+    /// explicit focus-intent command under the socket focus policy — moving
+    /// focus is its entire purpose (the analog of `workspace.select`).
+    /// Returns `{attended: false}` when no tracked agent needs attention.
+    nonisolated func v2AmuxAttend(params _: [String: Any]) -> V2CallResult {
+        v2MainSync {
+            guard let appDelegate = AppDelegate.shared else {
+                return .err(code: "unavailable", message: "app not ready", data: nil)
+            }
+            let attended = appDelegate.amuxAttend()
+            return .ok(["attended": attended])
+        }
+    }
+
 #if DEBUG
     /// `debug.amux.mirror_local` — DEBUG-only verification/dogfood entry for
     /// the amux Phase 0 spike: attach-or-create a session on the local

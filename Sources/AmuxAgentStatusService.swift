@@ -90,6 +90,34 @@ final class AmuxAgentStatusService {
         }
     }
 
+    /// The workspace (and tmux pane, when known) of the agent that has been
+    /// blocked on the user the longest — the attend jump target. `nil` when
+    /// no tracked agent needs attention or none resolves to a workspace.
+    func attendTarget() -> (workspace: Workspace, tmuxPane: Int?)? {
+        let blocked = agentsBySessionId.values
+            .filter { $0.state.needsAttention }
+            .sorted { lhs, rhs in
+                let l = lhs.stateEnteredDate ?? lhs.lastActivityDate ?? .distantPast
+                let r = rhs.stateEnteredDate ?? rhs.lastActivityDate ?? .distantPast
+                return l < r
+            }
+        for agent in blocked {
+            let pane = Self.paneNumber(agent.pane)
+            let workspace: Workspace?
+            if let session = agent.tmuxSession {
+                workspace = workspaceForSession(session)
+            } else if let pane {
+                workspace = workspaceForPane(pane)
+            } else {
+                workspace = nil
+            }
+            if let workspace {
+                return (workspace, pane)
+            }
+        }
+        return nil
+    }
+
     /// Parses muxad's `%N` pane id into its numeric part.
     static func paneNumber(_ pane: String?) -> Int? {
         guard let pane, pane.hasPrefix("%") else { return nil }

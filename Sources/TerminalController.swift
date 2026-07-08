@@ -255,6 +255,9 @@ class TerminalController {
     ]
 
     private nonisolated static let focusIntentV2Methods: Set<String> = [
+        // amux.attend exists to move focus (jump to the longest-blocked
+        // agent's workspace/pane) — the amux analog of workspace.select.
+        "amux.attend",
         "window.focus",
         "workspace.select",
         "workspace.next",
@@ -2233,6 +2236,10 @@ class TerminalController {
         // Feed (workstream): feed.jump/feed.list handled by ControlCommandCoordinator.
         case "sidebar.custom.open":
             return v2Result(id: id, self.v2CustomSidebarOpen(params: params))
+
+        // amux: attend jump (explicit focus-intent, main lane).
+        case "amux.attend":
+            return v2Result(id: id, self.v2AmuxAttend(params: params))
 
 
         // Surfaces / input: surface.list/current/focus/split/respawn/create/close/move/

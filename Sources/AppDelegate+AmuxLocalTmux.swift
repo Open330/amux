@@ -41,6 +41,34 @@ extension AppDelegate {
     /// server socket (see ``RemoteTmuxHost/amuxLocal()``), so repeated
     /// invocations after the mirror workspace is closed re-attach to the same
     /// live session — the detach-survives-the-app property under test.
+    /// Attend: selects the workspace (and focuses the tmux pane) of the
+    /// agent that has been blocked on the user the longest. Shared action
+    /// path for the Debug menu item and the `amux.attend` socket RPC.
+    /// Returns `false` when no tracked agent needs attention or none
+    /// resolves to a workspace.
+    @discardableResult
+    func amuxAttend() -> Bool {
+        guard let target = amuxAgentStatusService.attendTarget() else { return false }
+        let manager: TabManager?
+        if tabManager?.tabs.contains(where: { $0.id == target.workspace.id }) == true {
+            manager = tabManager
+        } else {
+            manager = mainWindowContexts.values.map(\.tabManager)
+                .first { $0.tabs.contains(where: { $0.id == target.workspace.id }) }
+        }
+        guard let manager else { return false }
+        manager.selectWorkspace(target.workspace)
+        if let pane = target.tmuxPane {
+            remoteTmuxController.focusMirrorPane(workspaceId: target.workspace.id, tmuxPane: pane)
+        }
+        return true
+    }
+
+    /// Menu entry for ``amuxAttend()``.
+    @objc func amuxAttendAction(_ sender: Any?) {
+        _ = amuxAttend()
+    }
+
     @objc func openDebugAmuxLocalTmuxMirror(_ sender: Any?) {
         guard let manager = tabManager else { return }
         do {

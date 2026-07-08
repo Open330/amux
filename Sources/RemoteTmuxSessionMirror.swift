@@ -214,6 +214,21 @@ final class RemoteTmuxSessionMirror {
         windowIdContaining(pane: paneId) != nil
     }
 
+    /// Focuses tmux pane `%paneId` inside this mirror: selects the mirrored
+    /// window-tab panel in the workspace and, for multipane windows, asks
+    /// tmux to make the pane active (the mirror view follows the resulting
+    /// `%window-pane-changed`). Returns `false` when the pane isn't in this
+    /// session's layout.
+    @discardableResult
+    func focusPane(_ paneId: Int) -> Bool {
+        guard let windowId = windowIdContaining(pane: paneId),
+              let panelId = panelIdByWindow[windowId],
+              let workspace else { return false }
+        workspace.focusPanel(panelId)
+        windowMirrorByWindowId[windowId]?.focus(pane: paneId)
+        return true
+    }
+
     /// Adds a tab for any window that doesn't yet have one, refreshes existing
     /// tab titles after a tmux rename, activates/reconciles the in-tab multi-pane
     /// renderer for multi-pane windows, then closes the workspace's original

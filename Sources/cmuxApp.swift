@@ -527,6 +527,10 @@ struct cmuxApp: App {
                     appDelegate.openDebugAmuxLocalTmuxMirror(nil)
                 }
 
+                Button("amux: Attend Longest-Blocked Agent") {
+                    appDelegate.amuxAttendAction(nil)
+                }
+
                 AgentSessionDebugMenuButtons(
                     openReact: { appDelegate.openDebugAgentSessionReact(nil) },
                     openSolid: { appDelegate.openDebugAgentSessionSolid(nil) }

@@ -34,6 +34,9 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
     public let startedAt: String?
     /// RFC 3339 timestamp of the agent's last activity.
     public let lastActivityAt: String?
+    /// RFC 3339 timestamp of when the agent entered its current ``state`` —
+    /// the sort key for "longest blocked" (attend).
+    public let stateEnteredAt: String?
 
     enum CodingKeys: String, CodingKey {
         case kind
@@ -49,6 +52,7 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
         case costUsd = "cost_usd"
         case startedAt = "started_at"
         case lastActivityAt = "last_activity_at"
+        case stateEnteredAt = "state_entered_at"
     }
 
     /// ``lastActivityAt`` parsed as a `Date`, accepting both fractional and
@@ -61,6 +65,12 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
     /// ``lastActivityDate``).
     public var startedDate: Date? {
         startedAt.flatMap(Self.parseTimestamp)
+    }
+
+    /// ``stateEnteredAt`` parsed as a `Date` (same parsing rules as
+    /// ``lastActivityDate``).
+    public var stateEnteredDate: Date? {
+        stateEnteredAt.flatMap(Self.parseTimestamp)
     }
 
     /// Parses muxad's RFC 3339 timestamps, which mix fractional
@@ -87,7 +97,8 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
         contextUsedPct: Double? = nil,
         costUsd: Double? = nil,
         startedAt: String? = nil,
-        lastActivityAt: String? = nil
+        lastActivityAt: String? = nil,
+        stateEnteredAt: String? = nil
     ) {
         self.kind = kind
         self.sessionId = sessionId
@@ -102,5 +113,6 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
         self.costUsd = costUsd
         self.startedAt = startedAt
         self.lastActivityAt = lastActivityAt
+        self.stateEnteredAt = stateEnteredAt
     }
 }
