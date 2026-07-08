@@ -77,7 +77,7 @@ jobs:
       - name: Codesign (Developer ID, hardened runtime)
         run: |
           set -euo pipefail
-          APP="build-universal/Build/Products/Release/cmux.app"
+          APP="build-universal/Build/Products/Release/amux.app"
           # Sign nested bundled runtime first (deep sign), then the app.
           codesign --force --options runtime --timestamp \
             --sign "$APPLE_SIGNING_IDENTITY" "$APP/Contents/Resources/bin/"* || true
@@ -89,7 +89,7 @@ jobs:
         run: |
           set -euo pipefail
           npm install --global create-dmg@6
-          APP="build-universal/Build/Products/Release/cmux.app"
+          APP="build-universal/Build/Products/Release/amux.app"
           create-dmg "$APP" . || true   # create-dmg exits non-zero on notarization-not-yet
           mv ./*.dmg amux-macos.dmg
 
