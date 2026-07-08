@@ -1,4 +1,5 @@
 import AppKit
+import CmuxMuxa
 
 extension AppDelegate {
     /// Builds the muxa agent-status service, joining muxad rows to amux
@@ -41,6 +42,58 @@ extension AppDelegate {
     /// server socket (see ``RemoteTmuxHost/amuxLocal()``), so repeated
     /// invocations after the mirror workspace is closed re-attach to the same
     /// live session — the detach-survives-the-app property under test.
+    /// Installs the opt-in muxad LaunchAgent so agent observation outlives
+    /// the app — but defers to an already-running muxad (the user's own
+    /// daemon) instead of starting a competing one. Reports the outcome as a
+    /// modal so the user sees why it did or didn't install.
+    func amuxInstallMuxadAgent() {
+        Task { @MainActor in
+            let running = await MuxaClient().isReachable()
+            let agent = AmuxMuxadLaunchAgent()
+            let result = agent.install(
+                muxadPath: RemoteTmuxHost.bundledMuxadPath(),
+                daemonAlreadyRunning: running
+            )
+            let alert = NSAlert()
+            alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
+            switch result {
+            case .installed:
+                alert.informativeText = String(
+                    localized: "amux.daemon.installed",
+                    defaultValue: "Installed. muxad now runs in the background and keeps observing your agents even when amux is closed."
+                )
+            case .deferredToRunningDaemon:
+                alert.informativeText = String(
+                    localized: "amux.daemon.deferred",
+                    defaultValue: "A muxad is already running, so amux will use it. No background agent was installed."
+                )
+            case .noBundledDaemon:
+                alert.informativeText = String(
+                    localized: "amux.daemon.noBundled",
+                    defaultValue: "This build has no bundled muxad. Run a release build or start muxad yourself."
+                )
+            case .failed(let detail):
+                alert.informativeText = String(
+                    localized: "amux.daemon.failed",
+                    defaultValue: "Could not install the background daemon."
+                ) + "\n\(detail)"
+            }
+            alert.runModal()
+        }
+    }
+
+    /// Removes the muxad LaunchAgent (does not touch a manually-run muxad).
+    func amuxUninstallMuxadAgent() {
+        AmuxMuxadLaunchAgent().uninstall()
+        let alert = NSAlert()
+        alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
+        alert.informativeText = String(
+            localized: "amux.daemon.uninstalled",
+            defaultValue: "Removed amux's background daemon. A muxad you started yourself is left running."
+        )
+        alert.runModal()
+    }
+
     /// Creates a fresh amux tmux-backed workspace in the key window (the
     /// headline "new workspace = tmux session" action) and selects it.
     /// Shared path for the Command Palette / menu / `amux.new_session` RPC.

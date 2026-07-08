@@ -407,11 +407,17 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
         }
     }
 
-    /// Resolves the local tmux binary for the amux engine, preferring Homebrew
-    /// and MacPorts install locations. Falls back to a bare `tmux`; callers
-    /// that execute it directly must use `/usr/bin/env` so PATH lookup applies.
-    /// Phase 1 replaces this with the app-bundled pinned tmux.
+    /// Resolves the local tmux binary for the amux engine. Prefers the
+    /// app-bundled pinned tmux (`Resources/bin/tmux`, staged by
+    /// `scripts/build-amux-runtime.sh`) so amux controls the tmux version and
+    /// stays self-contained; falls back to Homebrew / MacPorts installs, then
+    /// a bare `tmux` (callers executing it directly must go through
+    /// `/usr/bin/env` so PATH lookup applies).
     static func localTmuxExecutablePath() -> String {
+        if let bundled = Bundle.main.resourceURL?.appendingPathComponent("bin/tmux").path,
+           FileManager.default.isExecutableFile(atPath: bundled) {
+            return bundled
+        }
         let candidates = [
             "/opt/homebrew/bin/tmux",
             "/usr/local/bin/tmux",
@@ -421,6 +427,29 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
             return candidate
         }
         return "tmux"
+    }
+
+    /// The app-bundled muxad, when present (`Resources/bin/muxad`, staged by
+    /// `scripts/build-amux-runtime.sh`). The LaunchAgent installer points at
+    /// this so the daemon that outlives the app is the pinned one. `nil` in an
+    /// unbundled dev build.
+    static func bundledMuxadPath() -> String? {
+        bundledRuntimeBinary("muxad")
+    }
+
+    /// The app-bundled `muxa` CLI, when present. The onboarding wizard runs
+    /// `muxa init` through it to wire agent hooks. `nil` in an unbundled dev
+    /// build (falls back to a `muxa` on PATH there).
+    static func bundledMuxaCliPath() -> String? {
+        bundledRuntimeBinary("muxa")
+    }
+
+    /// Resolves a bundled runtime binary in `Resources/bin`, or `nil` when
+    /// absent (unbundled dev build).
+    private static func bundledRuntimeBinary(_ name: String) -> String? {
+        guard let path = Bundle.main.resourceURL?.appendingPathComponent("bin/\(name)").path,
+              FileManager.default.isExecutableFile(atPath: path) else { return nil }
+        return path
     }
 
     /// Builds a ``DetectedSSHSession`` that uploads files to this host over SSH,

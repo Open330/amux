@@ -1548,6 +1548,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 #endif
         reconcileLocalAmuxSessionsAtLaunch()
         amuxAgentStatusService.start()
+        // First-run onboarding (consent-gated; only offered once). Deferred a
+        // beat so the main window is up before the modal appears.
+        DispatchQueue.main.async {
+            AmuxOnboarding().presentIfFirstRun()
+        }
     }
 
     private nonisolated static func feedWorkstreamTitle(for event: WorkstreamEvent) -> String? {

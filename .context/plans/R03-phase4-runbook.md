@@ -8,6 +8,61 @@ runbook to execute deliberately (ideally on a release branch, not the live
 
 Status legend: ⬜ not started · 🟡 needs a decision/asset · ✅ done
 
+## Progress (2026-07-08)
+
+- ✅ **§2 Runtime bundling** — `scripts/build-amux-runtime.sh` stages muxad/muxa
+  (cargo) + tmux (`--build-tmux` pins 3.7b from source); `reload.sh` bundles
+  into `Resources/bin` and signs; `localTmuxExecutablePath()` prefers the
+  bundle. Verified: all control clients + one-shot transport use the bundled
+  tmux.
+- ✅ **§3 muxad LaunchAgent** — `AmuxMuxadLaunchAgent`, opt-in via Command
+  Palette, coexists with a running muxad (defers instead of competing).
+  Decision resolved: opt-in + coexist.
+- 🟡 **§7 Gitea CI** — `.gitea/workflows/ci.yml` (build+tests+lints) and
+  `release.yml` (build→bundle→sign→notarize→dmg) written; release needs the
+  Vault secret paths + macOS runner label + publish target filled in (marked
+  TODO in the YAML).
+- ✅ **§1 Branding** — Release identity is amux (`com.open330.amux`, `amux.app`);
+  Debug/dev stays cmux so dogfood machinery is untouched. Verified via a
+  Release build producing amux.app.
+- ✅ **§4 First-run wizard** — `AmuxOnboarding`, consent-gated, first-run +
+  palette; wires agent hooks via bundled `muxa init --component <hooks>`
+  (hooks-only — no tmux.conf edits, no competing daemon; verified by dry-run).
+- 🟡 **§5 Sparkle / §6 brew** — cask (`packaging/homebrew/amux.rb`) + appcast
+  steps in `release.yml` written; blocked on the keypair + hosting below.
+
+### §5 Sparkle — REQUIRED before enabling auto-update
+
+amux still carries cmux's Sparkle public key in the Release build setting
+`SPARKLE_PUBLIC_KEY`. amux MUST use its OWN EdDSA keypair (the cmux private
+key is not ours, so no amux-signed update could ever verify, and shipping
+cmux's key is wrong). Steps:
+
+1. Generate once: Sparkle's `generate_keys` (from the Sparkle SPM artifact or
+   `brew install --cask sparkle`). It prints a public key and stores the
+   private key in the login keychain.
+2. Set the **public** key as the Release `SPARKLE_PUBLIC_KEY` build setting
+   (replacing `avjcgKibf1FTvhIjLBxhd+0HSpsXU4D0IGlVk8cgqRc=`).
+3. Store the **private** key in Vault; the release workflow's "Sign update +
+   generate appcast" step reads it as `SPARKLE_PRIVATE_KEY` (add it to the
+   Vault-fetch step).
+4. Until this is done, ship the dmg via manual download / brew cask only —
+   Sparkle won't offer updates (SUFeedURL points at amux's feed, which has no
+   validly-signed appcast yet). That is a safe alpha state.
+
+### §6 Homebrew — REQUIRED for `brew install`
+
+- Create the tap repo `open330/homebrew-amux` (or reuse an existing tap).
+- Copy `packaging/homebrew/amux.rb` into `Casks/` on the tap.
+- The release workflow bumps `version` + `sha256` on each tag
+  (`brew bump-cask-pr`, or sed + commit to the tap).
+- Private repo caveat: a `brew` cask url pointing at a **private** GitHub
+  release needs auth; host the dmg somewhere brew can fetch unauthenticated,
+  or make releases public.
+
+tmux pin: **3.7b** (latest release; `AMUX_TMUX_VERSION` overrides).
+
+
 ## 1. Branding split ⬜ (do first, on a release branch)
 
 The fork still builds as cmux (`com.cmuxterm.app`, "cmux DEV", cmux sockets).
