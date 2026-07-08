@@ -1,0 +1,108 @@
+# amux release — build a signed, notarized amux.dmg on a tag push.
+#
+# Runs on the org Gitea runner with signing material pulled from Vault.
+# INFRA VALUES TO FILL IN (marked TODO below), since they are specific to the
+# org's Vault + Apple account and cannot be inferred:
+#   - VAULT_ADDR / VAULT_TOKEN (or the runner's Vault agent) and the secret
+#     paths for the Developer ID cert, its password, and notarization creds.
+#   - The Gitea runner label for a macOS 26 signing host.
+#   - Where the dmg + Sparkle appcast are published (see R03 runbook §5–6).
+#
+# The build reuses scripts/build-amux-runtime.sh --build-tmux to bundle the
+# pinned tmux (3.7b) + muxad/muxa before signing, so the shipped app is
+# self-contained.
+name: amux-release
+
+on:
+  push:
+    tags: ["v*", "amux-*"]
+
+jobs:
+  build-sign-notarize:
+    runs-on: [self-hosted, macos]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      CMUX_SKIP_ZIG_BUILD: "1"
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup (submodules + GhosttyKit)
+        run: ./scripts/setup.sh
+
+      # TODO(infra): pull signing material from Vault. Replace the paths with
+      # the org's actual Vault KV locations. The runner needs Vault auth
+      # (agent or VAULT_TOKEN). Exports the vars the signing steps consume.
+      - name: Fetch signing material from Vault
+        run: |
+          set -euo pipefail
+          # Example shape — adjust secret paths to your Vault layout:
+          #   vault kv get -field=cert_p12_base64 secret/amux/apple/developer-id > /tmp/cert.b64
+          #   vault kv get -field=cert_password   secret/amux/apple/developer-id
+          #   vault kv get -field=apple_id        secret/amux/apple/notary
+          #   vault kv get -field=team_id         secret/amux/apple/notary
+          #   vault kv get -field=app_password    secret/amux/apple/notary
+          echo "TODO: export APPLE_CERT_P12_BASE64, APPLE_CERT_PASSWORD, APPLE_SIGNING_IDENTITY," \
+               "APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD from Vault" >&2
+          exit 1  # remove once Vault fetch is wired
+
+      - name: Import signing cert into an ephemeral keychain
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/amux-signing.keychain-db"
+          security create-keychain -p "" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "" "$KEYCHAIN"
+          echo "$APPLE_CERT_P12_BASE64" | base64 --decode > /tmp/amux-cert.p12
+          security import /tmp/amux-cert.p12 -k "$KEYCHAIN" -P "$APPLE_CERT_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f /tmp/amux-cert.p12
+
+      - name: Bundle pinned amux runtime (tmux 3.7b + muxa)
+        run: MUXA_REPO="$RUNNER_TEMP/muxa" ./scripts/build-amux-runtime.sh --build-tmux
+
+      - name: Build Release (universal)
+        run: |
+          CMUX_SKIP_ZIG_BUILD=1 xcodebuild -project cmux.xcodeproj -scheme cmux \
+            -configuration Release -derivedDataPath build-universal \
+            -destination 'generic/platform=macOS' \
+            ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build
+
+      # TODO(branding): once R03 runbook §1 lands, the Release product is
+      # amux.app / com.open330.amux; adjust the app path + dmg name here.
+      - name: Codesign (Developer ID, hardened runtime)
+        run: |
+          set -euo pipefail
+          APP="build-universal/Build/Products/Release/cmux.app"
+          # Sign nested bundled runtime first (deep sign), then the app.
+          codesign --force --options runtime --timestamp \
+            --sign "$APPLE_SIGNING_IDENTITY" "$APP/Contents/Resources/bin/"* || true
+          codesign --force --deep --options runtime --timestamp \
+            --sign "$APPLE_SIGNING_IDENTITY" "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+
+      - name: Create dmg
+        run: |
+          set -euo pipefail
+          npm install --global create-dmg@6
+          APP="build-universal/Build/Products/Release/cmux.app"
+          create-dmg "$APP" . || true   # create-dmg exits non-zero on notarization-not-yet
+          mv ./*.dmg amux-macos.dmg
+
+      - name: Notarize + staple
+        run: |
+          set -euo pipefail
+          xcrun notarytool submit amux-macos.dmg \
+            --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple amux-macos.dmg
+
+      # TODO(infra): publish amux-macos.dmg to the release + update the Sparkle
+      # appcast (R03 runbook §5). Attach to the Gitea release for this tag.
+      - name: Publish dmg to the Gitea release
+        run: |
+          echo "TODO: upload amux-macos.dmg to the Gitea release for ${{ github.ref_name }}" >&2

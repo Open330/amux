@@ -8,6 +8,25 @@ runbook to execute deliberately (ideally on a release branch, not the live
 
 Status legend: ⬜ not started · 🟡 needs a decision/asset · ✅ done
 
+## Progress (2026-07-08)
+
+- ✅ **§2 Runtime bundling** — `scripts/build-amux-runtime.sh` stages muxad/muxa
+  (cargo) + tmux (`--build-tmux` pins 3.7b from source); `reload.sh` bundles
+  into `Resources/bin` and signs; `localTmuxExecutablePath()` prefers the
+  bundle. Verified: all control clients + one-shot transport use the bundled
+  tmux.
+- ✅ **§3 muxad LaunchAgent** — `AmuxMuxadLaunchAgent`, opt-in via Command
+  Palette, coexists with a running muxad (defers instead of competing).
+  Decision resolved: opt-in + coexist.
+- 🟡 **§7 Gitea CI** — `.gitea/workflows/ci.yml` (build+tests+lints) and
+  `release.yml` (build→bundle→sign→notarize→dmg) written; release needs the
+  Vault secret paths + macOS runner label + publish target filled in (marked
+  TODO in the YAML).
+- ⬜ **§1 Branding**, **§4 wizard**, **§5 Sparkle**, **§6 brew** — pending.
+
+tmux pin: **3.7b** (latest release; `AMUX_TMUX_VERSION` overrides).
+
+
 ## 1. Branding split ⬜ (do first, on a release branch)
 
 The fork still builds as cmux (`com.cmuxterm.app`, "cmux DEV", cmux sockets).

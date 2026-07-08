@@ -1,0 +1,52 @@
+# amux CI — build, package tests, and repo-invariant lints.
+# Runs on the org Gitea runner (GitHub Actions-compatible syntax).
+# Set the `macos` runner label to match your Gitea runner registration.
+name: amux-ci
+
+on:
+  push:
+    branches: [main, "amux-**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: [self-hosted, macos]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      # The Ghostty CLI helper pins zig 0.15.2; GhosttyKit itself builds with
+      # the newer zig on the runner, so skip only the helper.
+      CMUX_SKIP_ZIG_BUILD: "1"
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup (submodules + GhosttyKit)
+        run: ./scripts/setup.sh
+
+      - name: Repo-invariant lints
+        run: |
+          python3 scripts/check-pbxproj.sh || ./scripts/check-pbxproj.sh
+          ./scripts/lint-pbxproj-test-wiring.sh
+          python3 scripts/check-workspace-package-groups.py --check
+          python3 scripts/check-package-resolved-policy.py
+
+      - name: CmuxMuxa package tests
+        run: swift test --package-path Packages/macOS/CmuxMuxa
+
+      - name: CmuxControlSocket package tests
+        run: swift test --package-path Packages/macOS/CmuxControlSocket
+
+      - name: Build (Debug) + amux runtime
+        run: |
+          MUXA_REPO="${MUXA_REPO:-$RUNNER_TEMP/muxa}" ./scripts/build-amux-runtime.sh || true
+          xcodebuild -project cmux.xcodeproj -scheme cmux -configuration Debug \
+            -destination 'platform=macOS' -derivedDataPath build-ci build
+
+      - name: cmuxTests (amux units)
+        run: |
+          xcodebuild test -project cmux.xcodeproj -scheme cmux-unit -configuration Debug \
+            -destination 'platform=macOS' -derivedDataPath build-ci \
+            -only-testing:cmuxTests/AmuxChoiceParserTests \
+            -only-testing:cmuxTests/AmuxMuxadLaunchAgentTests
