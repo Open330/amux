@@ -101,8 +101,32 @@ jobs:
             --password "$APPLE_APP_PASSWORD" --wait
           xcrun stapler staple amux-macos.dmg
 
-      # TODO(infra): publish amux-macos.dmg to the release + update the Sparkle
-      # appcast (R03 runbook §5). Attach to the Gitea release for this tag.
-      - name: Publish dmg to the Gitea release
+      # Sparkle appcast. Needs amux's OWN EdDSA keypair (NOT cmux's) — generate
+      # once with Sparkle's `generate_keys`, set the public key as the Release
+      # SPARKLE_PUBLIC_KEY build setting, and store the private key in Vault.
+      # TODO(infra): fetch SPARKLE_PRIVATE_KEY from Vault above.
+      - name: Sign update + generate appcast
         run: |
-          echo "TODO: upload amux-macos.dmg to the Gitea release for ${{ github.ref_name }}" >&2
+          set -euo pipefail
+          # Sparkle tools ship in the SPM artifact; resolve sign_update /
+          # generate_appcast from the built products or a pinned download.
+          SIGN_UPDATE="$(find build-universal -name sign_update -type f | head -1)"
+          GEN_APPCAST="$(find build-universal -name generate_appcast -type f | head -1)"
+          mkdir -p appcast-out
+          cp amux-macos.dmg appcast-out/
+          # generate_appcast reads the private key from the keychain or a file;
+          # here it uses the Vault-provided key file.
+          echo "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_ed_priv
+          "$GEN_APPCAST" --ed-key-file /tmp/sparkle_ed_priv appcast-out/ \
+            --download-url-prefix "https://github.com/jiunbae/amux/releases/download/${{ github.ref_name }}/"
+          rm -f /tmp/sparkle_ed_priv
+          # appcast-out/appcast.xml + amux-macos.dmg are the release assets.
+
+      # TODO(infra): attach amux-macos.dmg + appcast.xml to the Gitea release
+      # for this tag (the SUFeedURL + cask url resolve to
+      # releases/latest/download/...), and bump packaging/homebrew/amux.rb
+      # (version + sha256) — e.g. via `brew bump-cask-pr` against the tap.
+      - name: Publish release assets + bump cask
+        run: |
+          echo "TODO: upload amux-macos.dmg + appcast-out/appcast.xml to the" \
+               "Gitea release for ${{ github.ref_name }}, then bump the Homebrew cask" >&2
