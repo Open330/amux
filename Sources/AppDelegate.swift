@@ -13380,6 +13380,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             return true
         }
 
+        // amux: jump to the longest-blocked agent (focus-intent).
+        if matchConfiguredShortcut(event: event, action: .amuxAttend) {
+            if !amuxAttend() {
+                NSSound.beep()
+            }
+            return true
+        }
+
         // Check Jump to Unread shortcut
         if matchConfiguredShortcut(event: event, action: .jumpToUnread) {
 #if DEBUG
