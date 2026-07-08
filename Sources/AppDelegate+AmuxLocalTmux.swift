@@ -94,11 +94,22 @@ extension AppDelegate {
         alert.runModal()
     }
 
-    /// Creates a fresh amux tmux-backed workspace in the key window (the
-    /// headline "new workspace = tmux session" action) and selects it.
-    /// Shared path for the Command Palette / menu / `amux.new_session` RPC.
-    func amuxCreateWorkspace() {
-        guard let manager = tabManager else { NSSound.beep(); return }
+    /// Whether ⌘N (the new-terminal-workspace action) creates an amux
+    /// tmux-backed workspace instead of a plain local one. Persisted, default
+    /// off during alpha so the dogfood/default behavior is unchanged until
+    /// opted in. Toggled from the Command Palette.
+    static let newWorkspaceTmuxBackedDefaultsKey = "amux.newWorkspace.tmuxBacked"
+    var amuxNewWorkspaceUsesTmux: Bool {
+        get { UserDefaults.standard.bool(forKey: Self.newWorkspaceTmuxBackedDefaultsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Self.newWorkspaceTmuxBackedDefaultsKey) }
+    }
+
+    /// Creates a fresh amux tmux-backed workspace (the headline "new
+    /// workspace = tmux session" action) in `preferredManager` (or the key
+    /// window's) and selects it. Shared path for the Command Palette / menu /
+    /// `amux.new_session` RPC and the ⌘N redirect.
+    func amuxCreateWorkspace(in preferredManager: TabManager? = nil) {
+        guard let manager = preferredManager ?? tabManager else { NSSound.beep(); return }
         Task { @MainActor in
             do {
                 let name = try await self.remoteTmuxController.createLocalAmuxWorkspace(into: manager)

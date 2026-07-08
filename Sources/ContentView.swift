@@ -6796,6 +6796,15 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxToggleTmuxDefault",
+                title: constant(String(localized: "command.amuxToggleTmuxDefault.title", defaultValue: "Toggle: New Workspace Uses tmux")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "tmux", "default", "new", "workspace", "toggle", "setting"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.amuxNewSession",
                 title: constant(String(localized: "command.amuxNewSession.title", defaultValue: "New tmux Workspace")),
                 subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
@@ -7909,6 +7918,17 @@ struct ContentView: View {
                 return
             }
             AppDelegate.shared?.amuxPresentChoiceSheet(for: workspace)
+        }
+        registry.register(commandId: "palette.amuxToggleTmuxDefault") {
+            guard let app = AppDelegate.shared else { return }
+            app.amuxNewWorkspaceUsesTmux.toggle()
+            let on = app.amuxNewWorkspaceUsesTmux
+            let alert = NSAlert()
+            alert.messageText = String(localized: "amux.tmuxDefault.title", defaultValue: "New Workspace Default")
+            alert.informativeText = on
+                ? String(localized: "amux.tmuxDefault.on", defaultValue: "New workspaces (⌘N) now create a tmux-backed session.")
+                : String(localized: "amux.tmuxDefault.off", defaultValue: "New workspaces (⌘N) now create a plain local workspace.")
+            AmuxOnboarding.present(alert) { _ in }
         }
         registry.register(commandId: "palette.amuxNewSession") {
             AppDelegate.shared?.amuxCreateWorkspace()
