@@ -145,6 +145,24 @@ final class AmuxAgentStatusService {
         return nil
     }
 
+    /// Every tracked agent whose join resolves to `workspaceId` — the data
+    /// behind the agent-details view (blocked agents first, then most
+    /// recently active, matching ``agentPane(inWorkspace:)``'s relevance).
+    func agents(inWorkspace workspaceId: UUID) -> [MuxaAgent] {
+        agentsBySessionId.values
+            .filter { workspace(for: $0)?.id == workspaceId }
+            .sorted { lhs, rhs in
+                switch (lhs.state.needsAttention, rhs.state.needsAttention) {
+                case (true, false): return true
+                case (false, true): return false
+                default:
+                    let l = lhs.lastActivityDate ?? .distantPast
+                    let r = rhs.lastActivityDate ?? .distantPast
+                    return l > r
+                }
+            }
+    }
+
     /// The tmux pane of `workspaceId`'s most relevant agent — blocked agents
     /// first (longest wait first), then the most recently active — the
     /// preferred headless-prompt target. `nil` when no tracked agent

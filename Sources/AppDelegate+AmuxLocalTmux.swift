@@ -332,6 +332,153 @@ extension AppDelegate {
         }
     }
 
+    /// Remote-host setup flow: pick an SSH host with a live mirror, inspect
+    /// its muxa observation stack (CLI, daemon, hooks, notifier), and offer
+    /// the hooks-only `muxa init` when something is missing. Palette
+    /// entrypoint; `amux.remote_setup` drives the same service headlessly.
+    func amuxPresentRemoteHostSetup() {
+        let hosts = remoteTmuxController.activeSSHMirrorHosts()
+        guard !hosts.isEmpty else {
+            let alert = NSAlert()
+            alert.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
+            alert.informativeText = String(
+                localized: "amux.remoteSetup.noHosts",
+                defaultValue: "No SSH host has a mirrored tmux session yet. Mirror a remote session first."
+            )
+            alert.runModal()
+            return
+        }
+        let picker = NSAlert()
+        picker.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
+        for host in hosts {
+            picker.addButton(withTitle: host.destination)
+        }
+        picker.addButton(withTitle: String(localized: "amux.remoteSetup.cancel", defaultValue: "Cancel"))
+        let index = picker.runModal().rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+        guard index >= 0, index < hosts.count else { return }
+        amuxPresentRemoteHostSetupReport(host: hosts[index])
+    }
+
+    /// Inspects `host` and presents the report, offering hook wiring.
+    private func amuxPresentRemoteHostSetupReport(host: RemoteTmuxHost) {
+        Task { @MainActor in
+            let setup = AmuxRemoteHostSetup()
+            do {
+                let report = try await setup.inspect(host: host)
+                let alert = NSAlert()
+                alert.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
+                alert.informativeText = Self.amuxRemoteSetupReportText(host: host, report: report)
+                let fullyWired = report.muxaVersion != nil && report.muxadRunning
+                    && report.claudeHooksWired && report.codexHooksWired
+                if report.muxaVersion != nil, !fullyWired {
+                    alert.addButton(withTitle: String(
+                        localized: "amux.remoteSetup.wire",
+                        defaultValue: "Wire Agent Hooks"
+                    ))
+                    alert.addButton(withTitle: String(localized: "amux.remoteSetup.cancel", defaultValue: "Cancel"))
+                    guard alert.runModal() == .alertFirstButtonReturn else { return }
+                    _ = try await setup.wireHooks(host: host)
+                    let done = NSAlert()
+                    done.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
+                    done.informativeText = Self.amuxRemoteSetupReportText(
+                        host: host,
+                        report: try await setup.inspect(host: host)
+                    )
+                    done.runModal()
+                } else {
+                    alert.runModal()
+                }
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
+                alert.informativeText = String(
+                    localized: "amux.remoteSetup.failed",
+                    defaultValue: "Could not inspect the host over SSH."
+                ) + "\n\(error.localizedDescription)"
+                alert.runModal()
+            }
+        }
+    }
+
+    /// The report body: localized labels, ✓/✗ status symbols, and the
+    /// cargo-install hint when the muxa CLI is missing remotely.
+    static func amuxRemoteSetupReportText(host: RemoteTmuxHost, report: AmuxRemoteHostSetup.Report) -> String {
+        func mark(_ ok: Bool) -> String { ok ? "✓" : "✗" }
+        var lines = [
+            host.destination,
+            "",
+            String(
+                format: String(localized: "amux.remoteSetup.report", defaultValue: """
+                muxa CLI: %@
+                muxad: %@
+                Claude Code hooks: %@
+                Codex hooks: %@
+                """),
+                report.muxaVersion ?? "✗",
+                mark(report.muxadRunning),
+                mark(report.claudeHooksWired),
+                mark(report.codexHooksWired)
+            ),
+        ]
+        if report.muxaVersion == nil {
+            lines.append(String(
+                localized: "amux.remoteSetup.muxaMissing",
+                defaultValue: "Install muxa on the host first: cargo install --git https://github.com/Open330/muxa muxad muxa-cli"
+            ))
+        }
+        if report.notifierEnabled {
+            lines.append(String(
+                localized: "amux.remoteSetup.notifierOn",
+                defaultValue: "muxa's own desktop notifier is enabled on the host — amux already alerts on this Mac, so consider disabling it there ([notifier] enabled = false)."
+            ))
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// Modal detail view of `workspace`'s tracked agents: kind, state,
+    /// model/context, and the last prompt/response text (goal: see what an
+    /// agent asked and answered without attaching). Palette entrypoint;
+    /// `debug.amux.agent_details` reads the same hub accessor headlessly.
+    func amuxPresentAgentDetails(for workspace: Workspace) {
+        let agents = amuxAgentObservation.agents(inWorkspace: workspace.id)
+        let alert = NSAlert()
+        alert.messageText = String(localized: "amux.details.title", defaultValue: "Agent Details")
+        alert.informativeText = agents.isEmpty
+            ? String(localized: "amux.details.none", defaultValue: "No tracked agent in this workspace.")
+            : agents.map(Self.amuxAgentDetailText).joined(separator: "\n\n")
+        alert.runModal()
+    }
+
+    /// One agent's detail block (state/model/pane are technical wire values;
+    /// the prompt/response labels are localized).
+    static func amuxAgentDetailText(_ agent: MuxaAgent) -> String {
+        var lines: [String] = []
+        var headline = "\(AmuxAgentAlarmPolicy.displayName(for: agent.kind)) — \(agent.state.rawValue)"
+        if let model = agent.model { headline += " · \(model)" }
+        if let pct = agent.contextUsedPct { headline += " · \(Int(pct))%" }
+        lines.append(headline)
+        if let prompt = agent.lastPrompt, !prompt.isEmpty {
+            lines.append(String(
+                format: String(localized: "amux.details.prompt", defaultValue: "Prompt: %@"),
+                Self.amuxDetailSnippet(prompt)
+            ))
+        }
+        if let response = agent.lastResponse, !response.isEmpty {
+            lines.append(String(
+                format: String(localized: "amux.details.response", defaultValue: "Response: %@"),
+                Self.amuxDetailSnippet(response)
+            ))
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// Truncates detail text to an alert-friendly single snippet.
+    static func amuxDetailSnippet(_ text: String, limit: Int = 280) -> String {
+        let flattened = text.replacingOccurrences(of: "\n", with: " ")
+        guard flattened.count > limit else { return flattened }
+        return String(flattened.prefix(limit)) + "…"
+    }
+
     /// Attend: selects the workspace (and focuses the tmux pane) of the
     /// agent that has been blocked on the user the longest. Shared action
     /// path for the Debug menu item and the `amux.attend` socket RPC.

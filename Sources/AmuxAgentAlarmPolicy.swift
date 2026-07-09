@@ -66,9 +66,10 @@ struct AmuxAgentAlarmPolicy {
                 ),
                 displayName(for: agent.kind)
             )
-            // A finished turn is described by what was asked, not by a stale
-            // needs-input notification from earlier in the turn.
-            body = agent.lastPrompt ?? ""
+            // A finished turn is described by what the agent answered (or,
+            // absent that, what was asked) — never by a stale needs-input
+            // notification from earlier in the turn.
+            body = agent.lastResponse ?? agent.lastPrompt ?? ""
         default:
             return nil
         }

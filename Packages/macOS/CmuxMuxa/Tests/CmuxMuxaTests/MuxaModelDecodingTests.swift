@@ -7,7 +7,7 @@ struct MuxaModelDecodingTests {
     @Test("agent decodes real daemon payload, ignoring unknown fields")
     func agentDecodesLeniently() throws {
         // Field set observed from a live protocol-v3 muxad, including fields
-        // this client doesn't model (last_response, rate_limit_*).
+        // this client doesn't model (rate_limit_*).
         let json = """
         {"kind":"claude_code","session_id":"sess-1","pane":"%12","tmux_session":"main",
          "cwd":"/tmp/proj","state":"waiting_choice","last_prompt":"fix bug","last_notification":null,
@@ -22,6 +22,7 @@ struct MuxaModelDecodingTests {
         #expect(agent.state.needsAttention)
         #expect(agent.pane == "%12")
         #expect(agent.tmuxSession == "main")
+        #expect(agent.lastResponse == "done")
         #expect(agent.contextUsedPct == 34.5)
         #expect(agent.lastActivityDate != nil)
         #expect(agent.startedDate != nil)

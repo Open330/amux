@@ -12,14 +12,16 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         state: CmuxMuxa.MuxaAgentState,
         kind: CmuxMuxa.MuxaAgentKind = .claudeCode,
         lastNotification: String? = nil,
-        lastPrompt: String? = nil
+        lastPrompt: String? = nil,
+        lastResponse: String? = nil
     ) -> CmuxMuxa.MuxaAgent {
         CmuxMuxa.MuxaAgent(
             kind: kind,
             sessionId: "session-1",
             state: state,
             lastPrompt: lastPrompt,
-            lastNotification: lastNotification
+            lastNotification: lastNotification,
+            lastResponse: lastResponse
         )
     }
 
@@ -59,6 +61,19 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         ))
         XCTAssertNotNil(alarm)
         XCTAssertEqual(alarm?.body, "refactor the parser")
+    }
+
+    func testFinishedBodyPrefersResponseText() {
+        let alarm = AmuxAgentAlarmPolicy.alarm(for: .init(
+            from: .working,
+            to: .idle,
+            agent: agent(
+                state: .idle,
+                lastPrompt: "refactor the parser",
+                lastResponse: "Refactored; 12 tests green."
+            )
+        ))
+        XCTAssertEqual(alarm?.body, "Refactored; 12 tests green.")
     }
 
     func testFinishedBodyPrefersPromptOverStaleNotification() {

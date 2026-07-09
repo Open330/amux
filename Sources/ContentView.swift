@@ -6832,6 +6832,24 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxAgentDetails",
+                title: constant(String(localized: "command.amuxAgentDetails.title", defaultValue: "Show Agent Details (Prompt / Response)")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "agent", "details", "prompt", "response", "status", "model"],
+                when: { $0.bool(CommandPaletteContextKeys.hasWorkspace) }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
+                commandId: "palette.amuxRemoteSetup",
+                title: constant(String(localized: "command.amuxRemoteSetup.title", defaultValue: "Set Up Remote Host (muxa)…")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "remote", "ssh", "setup", "muxa", "muxad", "hooks", "provision"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.amuxSetup",
                 title: constant(String(localized: "command.amuxSetup.title", defaultValue: "amux Setup: Agent Integration…")),
                 subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
@@ -7942,6 +7960,16 @@ struct ContentView: View {
                 NSSound.beep()
                 return
             }
+        }
+        registry.register(commandId: "palette.amuxAgentDetails") {
+            guard let workspace = tabManager.selectedWorkspace else {
+                NSSound.beep()
+                return
+            }
+            AppDelegate.shared?.amuxPresentAgentDetails(for: workspace)
+        }
+        registry.register(commandId: "palette.amuxRemoteSetup") {
+            AppDelegate.shared?.amuxPresentRemoteHostSetup()
         }
         registry.register(commandId: "palette.amuxSetup") {
             AmuxOnboarding().present()
