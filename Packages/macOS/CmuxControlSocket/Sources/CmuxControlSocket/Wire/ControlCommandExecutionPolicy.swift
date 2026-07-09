@@ -148,6 +148,9 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         // finishes — that wait must happen on a socket worker, never on the
         // main actor (same shape as the remote.tmux.* methods above).
         "debug.amux.mirror_local",
+        // debug.amux.mirror_ssh has the same v2VmCall shape (and an SSH
+        // round-trip on top), so it parks on the worker lane too.
+        "debug.amux.mirror_ssh",
         // debug.amux.parse_choices captures a pane via the local transport
         // (an await), so it parks on v2VmCall's semaphore — worker lane.
         "debug.amux.parse_choices",

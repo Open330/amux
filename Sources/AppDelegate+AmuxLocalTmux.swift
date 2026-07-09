@@ -2,17 +2,66 @@ import AppKit
 import CmuxMuxa
 
 extension AppDelegate {
-    /// Builds the muxa agent-status service, joining muxad rows to amux
-    /// local-engine mirror workspaces (composition root wiring; the service
-    /// itself takes closures so it stays testable without an AppDelegate).
-    func makeAmuxAgentStatusService() -> AmuxAgentStatusService {
-        AmuxAgentStatusService(
+    /// Builds the agent-observation hub: the local muxad status service plus
+    /// a factory for per-SSH-host observers (socket forwarder + status
+    /// service joined against that host's mirrors). Composition-root wiring;
+    /// the hub and services take closures so they stay testable without an
+    /// AppDelegate.
+    func makeAmuxAgentObservationHub() -> AmuxAgentObservationHub {
+        let localService = AmuxAgentStatusService(
             workspaceForSession: { [weak self] sessionName in
                 self?.remoteTmuxController.localMirrorWorkspace(sessionName: sessionName)
             },
             workspaceForPane: { [weak self] paneId in
                 self?.remoteTmuxController.localMirrorWorkspace(containingPane: paneId)
+            },
+            onTransition: { [weak self] transition, workspace in
+                self?.amuxHandleAgentTransition(transition, workspace: workspace)
             }
+        )
+        return AmuxAgentObservationHub(
+            localService: localService,
+            sshHosts: { [weak self] in
+                self?.remoteTmuxController.activeSSHMirrorHosts() ?? []
+            },
+            makeRemoteObserver: { [weak self] host in
+                let forwarder = AmuxRemoteMuxaForwarder(host: host)
+                let hostId = host.id
+                let service = AmuxAgentStatusService(
+                    client: MuxaClient(address: MuxaSocketAddress(path: forwarder.localSocketPath)),
+                    workspaceForSession: { [weak self] sessionName in
+                        self?.remoteTmuxController.mirrorWorkspace(hostId: hostId, sessionName: sessionName)
+                    },
+                    workspaceForPane: { [weak self] paneId in
+                        self?.remoteTmuxController.mirrorWorkspace(hostId: hostId, containingPane: paneId)
+                    },
+                    prepareConnection: { try await forwarder.ensureForward() },
+                    onTransition: { [weak self] transition, workspace in
+                        self?.amuxHandleAgentTransition(transition, workspace: workspace)
+                    }
+                )
+                return AmuxAgentObservationHub.RemoteObserver(forwarder: forwarder, service: service)
+            }
+        )
+    }
+
+    /// Routes an agent state transition into the notification pipeline:
+    /// alarming edges (needs input / choice, error, work finished — see
+    /// ``AmuxAgentAlarmPolicy``) become workspace-scoped notifications, so
+    /// remote agents alert on this Mac instead of only on the remote host.
+    /// Transitions that don't resolve to a mirrored workspace are dropped.
+    func amuxHandleAgentTransition(_ transition: MuxaTransition, workspace: Workspace?) {
+        guard let workspace,
+              let alarm = AmuxAgentAlarmPolicy.alarm(for: transition),
+              let notificationStore else { return }
+        notificationStore.addNotification(
+            tabId: workspace.id,
+            surfaceId: nil,
+            title: alarm.title,
+            subtitle: workspace.customTitle ?? "",
+            body: alarm.body,
+            cooldownKey: alarm.cooldownKey,
+            cooldownInterval: alarm.cooldownInterval
         )
     }
 
@@ -200,7 +249,7 @@ extension AppDelegate {
     func amuxSendPrompt(_ text: String, to workspace: Workspace) -> Bool {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
-        let agentPane = amuxAgentStatusService.agentPane(inWorkspace: workspace.id)
+        let agentPane = amuxAgentObservation.agentPane(inWorkspace: workspace.id)
         return remoteTmuxController.sendPromptToMirror(
             workspaceId: workspace.id,
             tmuxPane: agentPane,
@@ -243,7 +292,7 @@ extension AppDelegate {
     /// pane. The `workspace` should be the agent's mirror workspace.
     @MainActor
     func amuxPresentChoiceSheet(for workspace: Workspace) {
-        let agentPane = amuxAgentStatusService.agentPane(inWorkspace: workspace.id)
+        let agentPane = amuxAgentObservation.agentPane(inWorkspace: workspace.id)
         Task { @MainActor in
             let text = await remoteTmuxController.captureMirrorPaneText(
                 workspaceId: workspace.id,
@@ -299,7 +348,7 @@ extension AppDelegate {
 
     @discardableResult
     func amuxAttend() -> Bool {
-        guard let target = amuxAgentStatusService.attendTarget() else { return false }
+        guard let target = amuxAgentObservation.attendTarget() else { return false }
         guard let (manager, _) = amuxWorkspace(withId: target.workspace.id) else { return false }
         manager.selectWorkspace(target.workspace)
         if let pane = target.tmuxPane {

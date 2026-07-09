@@ -511,9 +511,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     var aboutTitlebarDebugStore: AboutTitlebarDebugStore { debugWindowsCoordinator.aboutTitlebarStore }
     /// Coordinates remote tmux (`ssh … tmux -CC`) mirroring; composition-root owned.
     let remoteTmuxController = RemoteTmuxController()
-    /// Streams muxad agent state into mirror workspaces' sidebar rows; built
-    /// lazily so its closure can capture the fully-initialized delegate.
-    lazy var amuxAgentStatusService: AmuxAgentStatusService = makeAmuxAgentStatusService()
+    /// Streams muxad agent state (local daemon + one forwarded daemon per
+    /// mirrored SSH host) into mirror workspaces' sidebar rows; built lazily
+    /// so its closures can capture the fully-initialized delegate.
+    lazy var amuxAgentObservation: AmuxAgentObservationHub = makeAmuxAgentObservationHub()
     private static let reloadConfigurationMenuItemIdentifier = NSUserInterfaceItemIdentifier("com.cmux.reloadConfiguration")
 
     private static let cachedIsRunningUnderXCTest = detectRunningUnderXCTest(ProcessInfo.processInfo.environment)
@@ -1547,7 +1548,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
 #endif
         reconcileLocalAmuxSessionsAtLaunch()
-        amuxAgentStatusService.start()
+        remoteTmuxController.mirrorTopologyDidChange = { [weak self] in
+            self?.amuxAgentObservation.reconcile()
+        }
+        amuxAgentObservation.start()
         // First-run onboarding (consent-gated; only offered once). Deferred a
         // beat so the main window is up before the modal appears.
         DispatchQueue.main.async {

@@ -495,6 +495,39 @@ extension TerminalController {
         }
     }
 
+    /// `debug.amux.mirror_ssh` — DEBUG-only verification entry for the remote
+    /// agent-observation slice: mirror ONE named session on an SSH host as a
+    /// workspace (production `remote.tmux.mirror` mirrors every session on
+    /// the host, which an E2E against a shared machine must not do). Params:
+    /// `host` (required), `session` (required), optional `create` (Bool).
+    ///
+    /// Same focus posture as `debug.amux.mirror_local`: creates UI state on
+    /// the main actor, selects nothing, raises no window.
+    nonisolated func v2AmuxMirrorSSH(id: Any?, params: [String: Any]) -> String {
+        guard let host = Self.remoteTmuxHost(from: params) else {
+            return v2Error(id: id, code: "invalid_params", message: "host is required")
+        }
+        guard let session = (params["session"] as? String), !session.isEmpty else {
+            return v2Error(id: id, code: "invalid_params", message: "session is required")
+        }
+        let createIfMissing = (params["create"] as? Bool) ?? false
+        return v2VmCall(id: id, timeoutSeconds: 60) {
+            try await MainActor.run {
+                guard let appDelegate = AppDelegate.shared,
+                      let manager = appDelegate.tabManager else {
+                    throw RemoteTmuxError.unreachable("app not ready")
+                }
+                let mirrored = try appDelegate.remoteTmuxController.mirrorSession(
+                    host: host,
+                    sessionName: session,
+                    createIfMissing: createIfMissing,
+                    into: manager
+                )
+                return ["host": host.destination, "session": session, "mirrored": mirrored]
+            }
+        }
+    }
+
     /// `debug.amux.parse_choices` — DEBUG-only verification for the
     /// waiting_choice sheet's capture→parse chain (the sheet itself is a
     /// modal NSAlert that can't be driven headlessly). Captures the
@@ -510,7 +543,7 @@ extension TerminalController {
         }
         return v2VmCall(id: id, timeoutSeconds: 15) {
             let agentPane = await MainActor.run {
-                AppDelegate.shared?.amuxAgentStatusService.agentPane(inWorkspace: workspaceId)
+                AppDelegate.shared?.amuxAgentObservation.agentPane(inWorkspace: workspaceId)
             }
             guard let controller = await MainActor.run(body: { AppDelegate.shared?.remoteTmuxController }) else {
                 throw RemoteTmuxError.unreachable("app not ready")

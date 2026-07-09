@@ -129,12 +129,12 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
 
     /// macOS caps an AF_UNIX `sun_path` at 104 bytes (including the NUL
     /// terminator), so the usable path length is 103 bytes.
-    private static let maxUnixSocketPathLength = 103
+    static let maxUnixSocketPathLength = 103
 
     /// Bytes OpenSSH appends to `ControlPath` for its transient pre-rename bind
     /// socket: a `.` plus 16 random characters (see `mux.c`). The bound path must
     /// fit the AF_UNIX limit, not just the final renamed `ControlPath`.
-    private static let opensshTransientSuffixLength = 17
+    static let opensshTransientSuffixLength = 17
 
     /// Whether the path OpenSSH would actually bind for `controlPath` — i.e.
     /// `controlPath` plus its 17-byte transient suffix — fits the AF_UNIX limit.
@@ -149,7 +149,7 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
     /// encoding fits `byteBudget`. Trims on Character (not byte) boundaries so a
     /// multi-byte scalar is never split, and counts bytes (not characters)
     /// because the AF_UNIX limit is measured in bytes.
-    private static func trimmedToUTF8ByteBudget(_ value: String, _ byteBudget: Int) -> String {
+    static func trimmedToUTF8ByteBudget(_ value: String, _ byteBudget: Int) -> String {
         guard value.utf8.count > byteBudget else { return value }
         var result = ""
         var used = 0

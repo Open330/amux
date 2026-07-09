@@ -1406,6 +1406,8 @@ class TerminalController {
             return v2Result(id: request.id, v2DebugSidebarSimulateDrag(params: request.params))
         case "debug.amux.mirror_local":
             return v2AmuxMirrorLocal(id: request.id, params: request.params)
+        case "debug.amux.mirror_ssh":
+            return v2AmuxMirrorSSH(id: request.id, params: request.params)
         case "debug.amux.parse_choices":
             return v2AmuxParseChoices(id: request.id, params: request.params)
 #endif
