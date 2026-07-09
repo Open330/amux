@@ -5,12 +5,16 @@ import os
 /// Holds one SSH host's muxad socket forward open.
 ///
 /// Resolves the remote daemon socket path once (a one-shot probe over the
-/// host's shared ControlMaster), then keeps an `ssh -N -L` unix-socket
-/// forward process alive so a local `MuxaClient` at ``localSocketPath``
-/// reaches the remote muxad. Observe-only and crash-tolerant: the owner's
-/// snapshot/subscribe loop calls ``ensureForward()`` before every connect
-/// attempt, so a dead forward (master closed, network drop, remote reboot)
-/// is respawned on the loop's existing retry cadence.
+/// host's shared ControlMaster), then establishes an `ssh -N -L` unix-socket
+/// forward so a local `MuxaClient` at ``localSocketPath`` reaches the remote
+/// muxad. Because the forward multiplexes over the existing master, the
+/// *master* ends up owning the listener: the `-N` mux client registers the
+/// forwarding and exits immediately (observed OpenSSH mux behavior), so
+/// liveness is judged by connecting to the local socket, never by the spawn
+/// process. Observe-only and crash-tolerant: the owner's snapshot/subscribe
+/// loop calls ``ensureForward()`` before every connect attempt, so a dead
+/// forward (master closed, network drop, remote reboot) is re-established on
+/// the loop's existing retry cadence.
 actor AmuxRemoteMuxaForwarder {
     /// The SSH host whose muxad socket this forward carries.
     let host: RemoteTmuxHost
@@ -18,12 +22,11 @@ actor AmuxRemoteMuxaForwarder {
     /// The local unix-socket path clients connect to (the `-L` bind).
     nonisolated var localSocketPath: String { host.muxaForwardSocketPath }
 
-    /// Lock carve-out: the forward process handle must be terminable
-    /// *synchronously* from the app-termination path (an actor hop scheduled
-    /// in `applicationWillTerminate` may never run, orphaning an `ssh -N`
-    /// that pins the ControlMaster past its ControlPersist window).
-    /// `uncheckedState` because `Process` isn't `Sendable`; the handle never
-    /// escapes the lock's short critical sections.
+    /// Lock carve-out: an in-flight spawn must be terminable *synchronously*
+    /// from the app-termination path (an actor hop scheduled in
+    /// `applicationWillTerminate` may never run). `uncheckedState` because
+    /// `Process` isn't `Sendable`; the handle never escapes the lock's short
+    /// critical sections.
     private nonisolated let processBox = OSAllocatedUnfairLock<Process?>(uncheckedState: nil)
     private var remoteSocketPath: String?
 
@@ -32,15 +35,18 @@ actor AmuxRemoteMuxaForwarder {
         self.host = host
     }
 
-    /// Ensures a live forward process, spawning one when needed (idempotent).
+    /// Ensures a live forward, establishing one when needed (idempotent).
     ///
-    /// Probes the remote socket path on first use, unlinks any stale local
-    /// socket file, spawns the multiplexed `ssh -N -L`, and waits briefly for
-    /// the local end to accept connections. Throws when the probe cannot
-    /// resolve a remote path or the process cannot launch; a forward that is
-    /// slow to come up is not an error (the caller's connect simply retries).
+    /// A connectable local socket means the master already serves the
+    /// forward — re-requesting it would just stack another listener on the
+    /// master. Otherwise: probes the remote socket path on first use,
+    /// unlinks any stale local socket file, spawns the multiplexed
+    /// `ssh -N -L`, and waits briefly for the local end to accept
+    /// connections. Throws when the probe cannot resolve a remote path or
+    /// the process cannot launch; a forward that is slow to come up is not
+    /// an error (the caller's connect simply retries).
     func ensureForward() async throws {
-        if processBox.withLockUnchecked({ $0?.isRunning == true }) { return }
+        if Self.canConnect(unixSocketPath: localSocketPath) { return }
         processBox.withLockUnchecked { $0 = nil }
 
         try host.ensureControlSocketDirectory()
@@ -79,20 +85,24 @@ actor AmuxRemoteMuxaForwarder {
         try forward.run()
         processBox.withLockUnchecked { $0 = forward }
 
-        // Bounded, cancellable readiness wait: ssh binds the local socket a
-        // few ms after launch and offers no readiness signal on the success
-        // path (only ExitOnForwardFailure on failure), so briefly confirm
-        // connectability — same documented pattern as the status service's
-        // reconnect poll. Never an error: the caller's connect retries.
+        // Bounded, cancellable readiness wait: the mux client registers the
+        // forward with the master and exits, offering no readiness signal on
+        // the success path (only ExitOnForwardFailure on failure), so briefly
+        // confirm connectability — same documented pattern as the status
+        // service's reconnect poll. Never an error: the caller's connect
+        // retries. Process exit is NOT a failure here (see the type doc).
         for _ in 0..<10 {
-            if !forward.isRunning { break }
             if Self.canConnect(unixSocketPath: localSocketPath) { break }
             try? await Task.sleep(for: .milliseconds(100))
             if Task.isCancelled { break }
         }
     }
 
-    /// Terminates the forward process and removes the local socket file.
+    /// Tears the forward down: terminates an in-flight spawn and unlinks the
+    /// local socket file, which unreaches the master's listener (new
+    /// connections need the path; the orphaned listener fd dies with the
+    /// master when its ControlPersist window closes after the host's last
+    /// mirror detaches).
     ///
     /// `nonisolated` (synchronous, via the process-handle lock) so the
     /// app-termination path and the hub's teardown can both call it without
