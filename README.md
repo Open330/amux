@@ -121,4 +121,4 @@ into the local engine. Upstream is merged periodically.
 - CI runs on a Gitea mirror (GitHub Actions workflows are intentionally removed).
 - Contributor rules, typing-latency pitfalls, and package architecture live in [`CLAUDE.md`](CLAUDE.md) and `skills/`.
 - The muxad client package has its own suite: `cd Packages/macOS/CmuxMuxa && swift test`.
-- Translated cmux READMEs (`README.*.md`) are upstream artifacts and will be replaced as amux docs mature.
+- The original cmux README (incl. its translations) is preserved at [`docs/upstream-cmux-README.md`](docs/upstream-cmux-README.md); amux ships its own English README and will add translations as the docs mature.
