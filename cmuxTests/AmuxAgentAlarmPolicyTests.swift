@@ -103,6 +103,19 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         )))
     }
 
+    func testSameStateWaitingRefreshStillAlarms() {
+        // muxad's reconciler tick re-emits a waiting agent as a same-state
+        // transition. When the original entry edge could not be joined to a
+        // workspace (a pane younger than the daemon's inventory), that tick
+        // is the only remaining chance to alarm — the policy must not
+        // suppress it (per-agent once-per-episode dedupe is the gate's job).
+        XCTAssertNotNil(AmuxAgentAlarmPolicy.alarm(for: .init(
+            from: .waitingInput,
+            to: .waitingInput,
+            agent: agent(state: .waitingInput, lastNotification: "still waiting")
+        )))
+    }
+
     func testUnknownAgentKindUsesRawWireName() {
         XCTAssertEqual(AmuxAgentAlarmPolicy.displayName(for: .unknown("aider")), "aider")
     }
