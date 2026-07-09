@@ -6,7 +6,7 @@
 # first signed release exists, sha256 is :no_check.
 cask "amux" do
   version "0.1.0-alpha"
-  sha256 "4e5de2764a69ce010e7a5b12b02f8b4ccb7394bd663eb195eb99eef0726d300d"
+  sha256 "58a18448b0cd0c1a0ba5209474d556e6e99b01d8d45b74303327b1a2b127fc33"
 
   url "https://github.com/Open330/amux/releases/download/v#{version}/amux-macos.dmg"
   name "amux"
