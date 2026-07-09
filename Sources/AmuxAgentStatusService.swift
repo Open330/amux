@@ -23,6 +23,13 @@ final class AmuxAgentStatusService {
     /// the fallback join while muxad rows carry no session name (v3 dropped
     /// `tmux_session` from the wire).
     private let workspaceForPane: @MainActor (Int) -> Workspace?
+    /// Runs before every connect attempt — the remote-host seam where the
+    /// hub re-establishes the SSH socket forward. `nil` for the local daemon.
+    private let prepareConnection: (@Sendable () async throws -> Void)?
+    /// Receives every live state transition together with the workspace it
+    /// resolved to (`nil` when the agent isn't in a mirrored session) — the
+    /// alarm/notification seam. Snapshot rows never fire this.
+    private let onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)?
     /// Live agent rows by muxad session id (agent-CLI session, not tmux).
     private var agentsBySessionId: [String: MuxaAgent] = [:]
     /// Weakly holds a workspace we wrote a row into.
@@ -38,11 +45,15 @@ final class AmuxAgentStatusService {
     init(
         client: MuxaClient = MuxaClient(),
         workspaceForSession: @escaping @MainActor (String) -> Workspace?,
-        workspaceForPane: @escaping @MainActor (Int) -> Workspace?
+        workspaceForPane: @escaping @MainActor (Int) -> Workspace?,
+        prepareConnection: (@Sendable () async throws -> Void)? = nil,
+        onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)? = nil
     ) {
         self.client = client
         self.workspaceForSession = workspaceForSession
         self.workspaceForPane = workspaceForPane
+        self.prepareConnection = prepareConnection
+        self.onTransition = onTransition
     }
 
     /// Starts the snapshot+subscribe loop (idempotent).
@@ -61,6 +72,7 @@ final class AmuxAgentStatusService {
     private func run() async {
         while !Task.isCancelled {
             do {
+                try await prepareConnection?()
                 let agents = try await client.snapshot()
                 agentsBySessionId = Dictionary(
                     agents.map { ($0.sessionId, $0) },
@@ -70,6 +82,7 @@ final class AmuxAgentStatusService {
                 for try await transition in try await client.transitions() {
                     upsert(transition.agent)
                     applyToWorkspaces()
+                    onTransition?(transition, workspace(for: transition.agent))
                 }
             } catch {
                 // muxad not running (or protocol failure): degrade silently.
@@ -90,10 +103,29 @@ final class AmuxAgentStatusService {
         }
     }
 
+    /// The mirror workspace `agent` resolves to: session-name join first
+    /// (correct across servers), pane-id join as fallback.
+    private func workspace(for agent: MuxaAgent) -> Workspace? {
+        if let session = agent.tmuxSession {
+            return workspaceForSession(session)
+        }
+        if let pane = Self.paneNumber(agent.pane) {
+            return workspaceForPane(pane)
+        }
+        return nil
+    }
+
     /// The workspace (and tmux pane, when known) of the agent that has been
     /// blocked on the user the longest — the attend jump target. `nil` when
     /// no tracked agent needs attention or none resolves to a workspace.
     func attendTarget() -> (workspace: Workspace, tmuxPane: Int?)? {
+        attendCandidate().map { ($0.workspace, $0.tmuxPane) }
+    }
+
+    /// Like ``attendTarget()`` but carries *when* the winning agent got
+    /// blocked, so the observation hub can pick the longest-blocked agent
+    /// across several daemons (local + one per remote host).
+    func attendCandidate() -> (workspace: Workspace, tmuxPane: Int?, blockedSince: Date)? {
         let blocked = agentsBySessionId.values
             .filter { $0.state.needsAttention }
             .sorted { lhs, rhs in
@@ -102,17 +134,12 @@ final class AmuxAgentStatusService {
                 return l < r
             }
         for agent in blocked {
-            let pane = Self.paneNumber(agent.pane)
-            let workspace: Workspace?
-            if let session = agent.tmuxSession {
-                workspace = workspaceForSession(session)
-            } else if let pane {
-                workspace = workspaceForPane(pane)
-            } else {
-                workspace = nil
-            }
-            if let workspace {
-                return (workspace, pane)
+            if let workspace = workspace(for: agent) {
+                return (
+                    workspace,
+                    Self.paneNumber(agent.pane),
+                    agent.stateEnteredDate ?? agent.lastActivityDate ?? .distantPast
+                )
             }
         }
         return nil
@@ -125,13 +152,7 @@ final class AmuxAgentStatusService {
     func agentPane(inWorkspace workspaceId: UUID) -> Int? {
         let candidates = agentsBySessionId.values.compactMap { agent -> (agent: MuxaAgent, pane: Int)? in
             guard let pane = Self.paneNumber(agent.pane) else { return nil }
-            let workspace: Workspace?
-            if let session = agent.tmuxSession {
-                workspace = workspaceForSession(session)
-            } else {
-                workspace = workspaceForPane(pane)
-            }
-            guard workspace?.id == workspaceId else { return nil }
+            guard workspace(for: agent)?.id == workspaceId else { return nil }
             return (agent, pane)
         }
         let best = candidates.sorted { lhs, rhs in
@@ -164,15 +185,7 @@ final class AmuxAgentStatusService {
     private func applyToWorkspaces() {
         var byWorkspace: [UUID: (workspace: Workspace, agents: [MuxaAgent])] = [:]
         for agent in agentsBySessionId.values {
-            let workspace: Workspace?
-            if let session = agent.tmuxSession {
-                workspace = workspaceForSession(session)
-            } else if let pane = Self.paneNumber(agent.pane) {
-                workspace = workspaceForPane(pane)
-            } else {
-                workspace = nil
-            }
-            guard let workspace else { continue }
+            guard let workspace = workspace(for: agent) else { continue }
             byWorkspace[workspace.id, default: (workspace, [])].agents.append(agent)
         }
 

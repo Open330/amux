@@ -258,7 +258,18 @@ final class RemoteTmuxController {
 
     /// Active session→workspace mirrors keyed `connectionHash\u{1}session`
     /// (see ``connectionKey(host:sessionName:)``).
-    private var sessionMirrors: [String: RemoteTmuxSessionMirror] = [:]
+    ///
+    /// The `didSet` fires on every mutation (add, remove, rekey) and pings
+    /// ``mirrorTopologyDidChange`` so the agent-observation layer can
+    /// reconcile which hosts it watches; observers must tolerate spurious
+    /// pings (the value may be unchanged in content).
+    private var sessionMirrors: [String: RemoteTmuxSessionMirror] = [:] {
+        didSet { mirrorTopologyDidChange?() }
+    }
+
+    /// Invoked after any mirror add/remove/rekey — the hook the
+    /// agent-observation hub uses to start/stop per-host muxad observers.
+    var mirrorTopologyDidChange: (() -> Void)?
 
     /// Dedicated-window bindings (host↔window) and the in-flight-attach guard for
     /// the "one cmux window per remote endpoint" mirror mode (Option 1), owned by
@@ -565,9 +576,39 @@ final class RemoteTmuxController {
     /// any — the join key between muxad agent rows (which carry the tmux
     /// session name) and sidebar workspaces.
     func localMirrorWorkspace(sessionName: String) -> Workspace? {
+        mirrorWorkspace(hostId: RemoteTmuxHost.amuxLocal().id, sessionName: sessionName)
+    }
+
+    /// The workspace mirroring `sessionName` on the host identified by
+    /// `hostId` (``RemoteTmuxHost/id``) — the session-name join between a
+    /// host's muxad agent rows and its mirror workspaces, host-scoped so two
+    /// hosts with same-named sessions never cross-match.
+    func mirrorWorkspace(hostId: String, sessionName: String) -> Workspace? {
         sessionMirrors.values
-            .first { $0.host.kind == .localAmux && $0.sessionName == sessionName }?
+            .first { $0.host.id == hostId && $0.sessionName == sessionName }?
             .workspace
+    }
+
+    /// The workspace whose mirrored session on host `hostId` currently
+    /// contains tmux pane `%paneId` — the pane-id join fallback, host-scoped
+    /// (pane ids are only unique per tmux server).
+    func mirrorWorkspace(hostId: String, containingPane paneId: Int) -> Workspace? {
+        sessionMirrors.values
+            .first { $0.host.id == hostId && $0.containsPane(paneId) }?
+            .workspace
+    }
+
+    /// The distinct SSH hosts that currently have at least one live mirror —
+    /// the set of hosts whose remote muxad the observation hub should watch.
+    func activeSSHMirrorHosts() -> [RemoteTmuxHost] {
+        var seen = Set<String>()
+        var hosts: [RemoteTmuxHost] = []
+        for mirror in sessionMirrors.values where mirror.host.kind == .ssh {
+            if seen.insert(mirror.host.id).inserted {
+                hosts.append(mirror.host)
+            }
+        }
+        return hosts
     }
 
     /// Captures the visible text of `workspaceId`'s mirrored agent pane via
@@ -613,9 +654,7 @@ final class RemoteTmuxController {
     /// another server sharing the id can mismatch — acceptable for a status
     /// badge; revisit when muxa regains session names on the wire.
     func localMirrorWorkspace(containingPane paneId: Int) -> Workspace? {
-        sessionMirrors.values
-            .first { $0.host.kind == .localAmux && $0.containsPane(paneId) }?
-            .workspace
+        mirrorWorkspace(hostId: RemoteTmuxHost.amuxLocal().id, containingPane: paneId)
     }
 
     /// The panel socket send/read should target inside `workspaceId` when
