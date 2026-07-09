@@ -187,6 +187,11 @@ public final class TerminalSurface: Identifiable, ObservableObject {
     /// surface is created so background mirror output is not lost.
     var pendingRemoteOutput = Data()
     let maxPendingRemoteOutputBytes = 4 * 1_048_576
+    /// Coalesces view-presentation wakeups for MANUAL-I/O output. `processRemoteOutput`
+    /// can receive several tmux `%output` chunks in one event turn; Ghostty still
+    /// parses every chunk immediately, but the AppKit/Metal view only needs one
+    /// presentation nudge for the burst.
+    var remoteOutputPresentationRefreshScheduled = false
 
     /// The explicit startup environment overrides replayed on respawn.
     public var respawnInitialEnvironmentOverrides: [String: String] {

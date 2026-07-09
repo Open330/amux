@@ -1,12 +1,38 @@
 import Foundation
 
 extension CMUXCLI {
+    static let amuxUsage = """
+    Usage:
+      amux sync tmux [on|off|status] [--json]
+      amux ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus]
+
+    Examples:
+      amux sync tmux
+      amux sync tmux off
+      amux ssh jiun-mini
+      amux ssh jiun-mini --wire
+    """
+
+    static let amuxSyncUsage = """
+    Usage:
+      amux sync tmux [on|off|status] [--json]
+
+    Mirror localhost tmux sessions into amux workspaces, or report the current sync state.
+    """
+
+    static let amuxSSHUsage = """
+    Usage:
+      amux ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus]
+
+    Set up a remote host and mirror its tmux sessions. Use --wire to install/wire muxa hooks.
+    """
+
     func unknownCommandError(_ command: String) -> CLIError {
         var message = "Unknown command '\(command)'."
         if let suggestion = suggestedCommandName(for: command) {
             message += " Did you mean '\(suggestion)'?"
         }
-        message += " Run 'cmux --help' for the full command list."
+        message += " Run 'amux --help' for the full command list."
         return CLIError(message: message, exitCode: 2)
     }
 
@@ -56,6 +82,7 @@ extension CMUXCLI {
         "__tmux-compat",
         "agent-hibernation",
         "ai-accounts",
+        "amux",
         "auth",
         "bind-key",
         "break-pane",
@@ -192,6 +219,7 @@ extension CMUXCLI {
         "surface-health",
         "surface-resume",
         "swap-pane",
+        "sync",
         "tab-action",
         "themes",
         "top",

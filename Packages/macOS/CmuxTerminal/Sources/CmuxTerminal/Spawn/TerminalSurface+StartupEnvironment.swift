@@ -289,6 +289,7 @@ extension TerminalSurface {
             )
         }
         applyManagedLocaleSanitization(to: &merged, ambientEnvironment: ambientEnvironment)
+        applyManagedUTF8LocaleFallback(to: &merged, ambientEnvironment: ambientEnvironment)
         return merged
     }
 
@@ -297,6 +298,7 @@ extension TerminalSurface {
     /// resolve. `LC_ALL` overrides every other category; `LC_CTYPE` governs
     /// character classification directly.
     private static let sanitizedLocaleEnvironmentKeys = ["LC_ALL", "LC_CTYPE"]
+    public static let managedUTF8LocaleFallback = "en_US.UTF-8"
 
     /// Returns whether `value` is a POSIX-style locale name that libc can
     /// resolve — `language[_TERRITORY[_SCRIPT]][.codeset][@modifier]`, or the
@@ -339,6 +341,34 @@ extension TerminalSurface {
             else { continue }
             environment[key] = ""
         }
+    }
+
+    /// Ensures GUI-launched terminals still get a UTF-8 character locale when
+    /// LaunchServices provides no shell-style `LANG`. Without a UTF-8 `LC_CTYPE`,
+    /// readline and similar programs can echo CJK input as byte fragments even
+    /// though the terminal emulator sends correct UTF-8 bytes.
+    public static func applyManagedUTF8LocaleFallback(
+        to environment: inout [String: String],
+        ambientEnvironment: [String: String] = ProcessInfo.processInfo.environment
+    ) {
+        if let lcAll = environment["LC_ALL"] ?? ambientEnvironment["LC_ALL"], !lcAll.isEmpty {
+            return
+        }
+        if let lcCType = environment["LC_CTYPE"] ?? ambientEnvironment["LC_CTYPE"], !lcCType.isEmpty {
+            return
+        }
+        if let lang = environment["LANG"] ?? ambientEnvironment["LANG"],
+           !lang.isEmpty,
+           isPOSIXCompatibleLocaleName(lang),
+           localeNameUsesUTF8(lang) {
+            return
+        }
+        environment["LC_CTYPE"] = managedUTF8LocaleFallback
+    }
+
+    private static func localeNameUsesUTF8(_ value: String) -> Bool {
+        let normalized = value.lowercased()
+        return normalized.contains("utf-8") || normalized.contains("utf8")
     }
 
     /// Applies the managed fish-shell startup keys and protects them.

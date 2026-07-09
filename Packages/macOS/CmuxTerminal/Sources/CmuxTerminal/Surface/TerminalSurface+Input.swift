@@ -513,7 +513,44 @@ extension TerminalSurface {
         flushPendingRemoteOutput(to: surface)
         writeProcessOutputData(data, to: surface)
         ghostty_surface_refresh(surface)
+        scheduleRemoteOutputPresentationRefresh()
     }
+
+    /// Manual-I/O surfaces do not have Ghostty's normal PTY wakeup path. When
+    /// mirrored tmux output arrives while the app is not key, the parser state can
+    /// advance but the Metal view may not present the new frame until another UI
+    /// event. Coalesce a lightweight size/presentation nudge behind a short
+    /// throttle window so background remote output becomes visible without adding
+    /// a display loop — and so a flooding pane (each `%output` batch is its own
+    /// main-actor turn) can't run one `forceRefreshSurface` CATransaction per
+    /// burst; everything that arrives inside the window rides one nudge.
+    @MainActor
+    private func scheduleRemoteOutputPresentationRefresh() {
+        guard manualIO,
+              !remoteOutputPresentationRefreshScheduled else { return }
+        remoteOutputPresentationRefreshScheduled = true
+        Task { @MainActor [weak self] in
+            do {
+                try await ContinuousClock().sleep(for: .milliseconds(Self.remoteOutputPresentationRefreshThrottleMs))
+            } catch {
+                self?.remoteOutputPresentationRefreshScheduled = false
+                return
+            }
+            guard let self else { return }
+            self.remoteOutputPresentationRefreshScheduled = false
+            guard let view = self.attachedView,
+                  view.window != nil,
+                  let surface = self.liveSurfaceForGhosttyAccess(reason: "remoteOutput.presentationRefresh") else {
+                return
+            }
+            view.forceRefreshSurface()
+            ghostty_surface_refresh(surface)
+        }
+    }
+
+    /// Presentation-nudge throttle. Low enough that background output feels
+    /// live, high enough that a flood coalesces dozens of bursts per nudge.
+    private static let remoteOutputPresentationRefreshThrottleMs = 50
 
     @MainActor
     func flushPendingRemoteOutput(to surface: ghostty_surface_t) {

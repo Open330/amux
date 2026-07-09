@@ -49,11 +49,36 @@ final class RemoteTmuxControlPipeWriter {
         return true
     }
 
+    /// Suspends until `byteCount` bytes fit in the pending budget (or returns
+    /// immediately when they already do). Returns `false` once the writer is
+    /// closed. Lets a bulk sender (chunked paste) pace itself to the pipe's
+    /// drain rate instead of tripping the bounded `enqueue` rejection — which
+    /// the connection treats as a transport failure and answers with a
+    /// reconnect.
+    func waitForCapacity(_ byteCount: Int) async -> Bool {
+        guard !closed else { return false }
+        if byteCount <= maxPendingBytes - pendingBytes { return true }
+        return await withCheckedContinuation { continuation in
+            capacityWaiters.append((byteCount, continuation))
+        }
+    }
+
+    private var capacityWaiters: [(byteCount: Int, continuation: CheckedContinuation<Bool, Never>)] = []
+
+    private func resumeSatisfiedCapacityWaiters() {
+        while let next = capacityWaiters.first,
+              closed || next.byteCount <= maxPendingBytes - pendingBytes {
+            capacityWaiters.removeFirst()
+            next.continuation.resume(returning: !closed)
+        }
+    }
+
     private func finishWrite(byteCount: Int, didFail: Bool) {
         pendingBytes = max(0, pendingBytes - byteCount)
         if didFail, !closed {
             onFailure()
         }
+        resumeSatisfiedCapacityWaiters()
     }
 
     func close() {
@@ -62,5 +87,6 @@ final class RemoteTmuxControlPipeWriter {
         queue.async { [handle] in
             try? handle.close()
         }
+        resumeSatisfiedCapacityWaiters()
     }
 }

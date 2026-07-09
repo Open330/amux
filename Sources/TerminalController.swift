@@ -1387,6 +1387,8 @@ class TerminalController {
             return v2RemoteTmuxMirror(id: request.id, params: request.params)
         case "remote.tmux.window":
             return v2RemoteTmuxWindow(id: request.id, params: request.params)
+        case "amux.local_tmux_sync":
+            return v2AmuxLocalTmuxSync(id: request.id, params: request.params)
         case "amux.remote_setup":
             return v2AmuxRemoteSetup(id: request.id, params: request.params)
         case "sidebar.custom.validate":
@@ -2508,7 +2510,7 @@ class TerminalController {
             "workspace.remote.pty_bridge",
             "workspace.remote.pty_resize",
             "workspace.remote.pty_attach_end",
-            "workspace.remote.terminal_session_end", "remote.tmux.sessions", "remote.tmux.attach", "remote.tmux.detach", "remote.tmux.state", "remote.tmux.mirror", "remote.tmux.window",
+            "workspace.remote.terminal_session_end", "remote.tmux.sessions", "remote.tmux.attach", "remote.tmux.detach", "remote.tmux.state", "remote.tmux.mirror", "remote.tmux.window", "amux.local_tmux_sync",
             "session.restore_previous",
             "settings.open",
             "feedback.open",

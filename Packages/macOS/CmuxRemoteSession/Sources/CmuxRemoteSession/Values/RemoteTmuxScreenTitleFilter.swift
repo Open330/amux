@@ -25,10 +25,13 @@ public struct RemoteTmuxScreenTitleFilter {
 
     /// Returns `data` with any `ESC k … ESC \` title sequences removed.
     public mutating func filter(_ data: Data) -> Data {
-        // Hot path: routeOutput calls this for every %output chunk. When we're not
-        // mid-sequence and the chunk has no ESC, there is nothing to strip — return it
-        // unchanged and skip the per-byte copy + allocation.
-        if state == .text, !data.contains(0x1b) { return data }
+        // Hot path: routeOutput calls this for every %output chunk, and TUI/colored
+        // output contains ESC in essentially every chunk — so "no ESC at all" is a
+        // useless fast path there. Return unchanged unless the chunk contains an
+        // actual `ESC k` introducer or ends on a lone ESC (the `k` could arrive in
+        // the next chunk); everything else passes through the state machine
+        // unchanged anyway, so skipping the per-byte copy is behavior-identical.
+        if state == .text, !Self.mayContainTitleIntroducer(data) { return data }
         // Build into a `[UInt8]` buffer (cheaper than per-byte `Data.append`) and wrap
         // it once at the end.
         var out = [UInt8]()
@@ -72,5 +75,24 @@ public struct RemoteTmuxScreenTitleFilter {
             }
         }
         return Data(out)
+    }
+
+    /// `true` when `data` contains `ESC k` (a title start) or ends with a lone
+    /// ESC whose follow-up byte hasn't arrived yet. `false` guarantees the state
+    /// machine would emit `data` unchanged from the `.text` state.
+    private static func mayContainTitleIntroducer(_ data: Data) -> Bool {
+        data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Bool in
+            guard let base = raw.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return false }
+            let count = raw.count
+            var offset = 0
+            while offset < count {
+                guard let found = memchr(base + offset, 0x1b, count - offset) else { return false }
+                let index = UnsafeRawPointer(found) - UnsafeRawPointer(base)
+                if index == count - 1 { return true } // chunk ends mid-sequence
+                if base[index + 1] == UInt8(ascii: "k") { return true }
+                offset = index + 1
+            }
+            return false
+        }
     }
 }

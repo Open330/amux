@@ -559,6 +559,33 @@ final class RemoteTmuxController {
         return sessions.map { ($0, mirrored.contains($0.name)) }
     }
 
+    /// Every session on the user's default local tmux server paired with whether
+    /// it is currently mirrored as a workspace. This is the data behind the
+    /// "sync localhost tmux sessions" flow; unlike ``localAmuxSessions()`` it
+    /// never creates or uses the app-owned `-L amux` server.
+    func localDefaultTmuxSessions() async throws -> [(session: RemoteTmuxSession, mirrored: Bool)] {
+        let host = RemoteTmuxHost.localDefault()
+        let sessions = try await transport(for: host).listSessions()
+        let mirrored = Set(
+            sessionMirrors.values
+                .filter { $0.host.kind == .localDefault }
+                .map(\.sessionName)
+        )
+        return sessions.map { ($0, mirrored.contains($0.name)) }
+    }
+
+    /// Mirrors all not-yet-open sessions from the user's default local tmux
+    /// server into `tabManager`. Returns the number of sessions discovered and
+    /// the number newly mirrored.
+    @discardableResult
+    func mirrorLocalDefaultTmuxSessions(into tabManager: TabManager) async throws -> (discovered: Int, mirrored: Int) {
+        let host = RemoteTmuxHost.localDefault()
+        let sessions = try await transport(for: host).discoverMirrorSessions(createIfEmpty: false)
+        let before = unmirroredSessions(sessions, host: host).count
+        mirrorSessions(sessions, host: host, into: tabManager)
+        return (sessions.count, before)
+    }
+
     /// Whether `workspaceId` is a live amux local-engine mirror workspace.
     func isLocalAmuxMirrorWorkspace(_ workspaceId: UUID) -> Bool {
         sessionMirrors.values.contains {
@@ -876,11 +903,12 @@ final class RemoteTmuxController {
     /// a tmux paste (`paste-buffer -p`, bracketed iff the real pane has
     /// bracketed-paste mode on) and returns `true`. Lets a pasted/dropped image
     /// path be recognized by the remote app (e.g. claude → `[Image #N]`) instead of
-    /// arriving as plain `send-keys`. Only single-line `text` is routed (covers
-    /// file/image paths); callers fall back to their normal insertion for empty or
-    /// multi-line text, which can't be carried safely on a one-line control command.
+    /// arriving as plain `send-keys`. Multi-line text is included — the connection
+    /// chunks it into octal-escaped `set-buffer` lines — which is precisely the
+    /// case where tmux's bracketing matters most: without it a pasted multi-line
+    /// shell snippet executes line by line in the remote shell.
     func pasteIntoMirror(surfaceId: UUID, text: String) -> Bool {
-        guard !text.isEmpty, !text.contains(where: { $0 == "\n" || $0 == "\r" }) else { return false }
+        guard !text.isEmpty else { return false }
         guard let target = pasteTarget(forSurfaceId: surfaceId) else { return false }
         return target.connection.pastePane(paneId: target.paneId, text: text)
     }
@@ -904,7 +932,9 @@ final class RemoteTmuxController {
     /// unreadable macOS-local one.
     func remoteUploadTarget(forSurfaceId surfaceId: UUID) -> TerminalRemoteUploadTarget? {
         for sessionMirror in sessionMirrors.values
-        where !sessionMirror.connection.exited && sessionMirror.ownsSurface(surfaceId) {
+        where sessionMirror.host.kind == .ssh
+            && !sessionMirror.connection.exited
+            && sessionMirror.ownsSurface(surfaceId) {
             return .detectedSSH(sessionMirror.host.detectedSSHSession())
         }
         return nil

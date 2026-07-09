@@ -401,16 +401,16 @@ final class WorkspaceRenameShortcutDefaultsTests: XCTestCase {
         let nextShortcut = KeyboardShortcutSettings.Action.nextSidebarTab.defaultShortcut
         XCTAssertEqual(nextShortcut.key, "]")
         XCTAssertTrue(nextShortcut.command)
-        XCTAssertFalse(nextShortcut.shift)
+        XCTAssertTrue(nextShortcut.shift)
         XCTAssertFalse(nextShortcut.option)
-        XCTAssertTrue(nextShortcut.control)
+        XCTAssertFalse(nextShortcut.control)
 
         let prevShortcut = KeyboardShortcutSettings.Action.prevSidebarTab.defaultShortcut
         XCTAssertEqual(prevShortcut.key, "[")
         XCTAssertTrue(prevShortcut.command)
-        XCTAssertFalse(prevShortcut.shift)
+        XCTAssertTrue(prevShortcut.shift)
         XCTAssertFalse(prevShortcut.option)
-        XCTAssertTrue(prevShortcut.control)
+        XCTAssertFalse(prevShortcut.control)
 
         let focusBackShortcut = KeyboardShortcutSettings.Action.focusHistoryBack.defaultShortcut
         XCTAssertEqual(focusBackShortcut.key, "[")
@@ -435,13 +435,31 @@ final class WorkspaceRenameShortcutDefaultsTests: XCTestCase {
         XCTAssertNotNil(nextShortcut.keyEquivalent)
         XCTAssertEqual(nextShortcut.menuItemKeyEquivalent, "]")
         XCTAssertTrue(nextShortcut.eventModifiers.contains(.command))
-        XCTAssertTrue(nextShortcut.eventModifiers.contains(.control))
+        XCTAssertTrue(nextShortcut.eventModifiers.contains(.shift))
+        XCTAssertFalse(nextShortcut.eventModifiers.contains(.control))
 
         let prevShortcut = KeyboardShortcutSettings.Action.prevSidebarTab.defaultShortcut
         XCTAssertNotNil(prevShortcut.keyEquivalent)
         XCTAssertEqual(prevShortcut.menuItemKeyEquivalent, "[")
         XCTAssertTrue(prevShortcut.eventModifiers.contains(.command))
-        XCTAssertTrue(prevShortcut.eventModifiers.contains(.control))
+        XCTAssertTrue(prevShortcut.eventModifiers.contains(.shift))
+        XCTAssertFalse(prevShortcut.eventModifiers.contains(.control))
+    }
+
+    func testNextPreviousSurfaceDefaultsAreControlTab() {
+        let nextShortcut = KeyboardShortcutSettings.Action.nextSurface.defaultShortcut
+        XCTAssertEqual(nextShortcut.key, "\t")
+        XCTAssertFalse(nextShortcut.command)
+        XCTAssertFalse(nextShortcut.shift)
+        XCTAssertFalse(nextShortcut.option)
+        XCTAssertTrue(nextShortcut.control)
+
+        let prevShortcut = KeyboardShortcutSettings.Action.prevSurface.defaultShortcut
+        XCTAssertEqual(prevShortcut.key, "\t")
+        XCTAssertFalse(prevShortcut.command)
+        XCTAssertTrue(prevShortcut.shift)
+        XCTAssertFalse(prevShortcut.option)
+        XCTAssertTrue(prevShortcut.control)
     }
 
     func testToggleTerminalCopyModeShortcutDefaultsAndMetadata() {

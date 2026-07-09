@@ -6805,6 +6805,15 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.amuxToggleLocalTmuxSync",
+                title: constant(String(localized: "command.amuxToggleLocalTmuxSync.title", defaultValue: "Toggle: Sync Local tmux Sessions")),
+                subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
+                keywords: ["amux", "tmux", "sync", "local", "localhost", "session", "toggle"],
+                when: { _ in true }
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.amuxNewSession",
                 title: constant(String(localized: "command.amuxNewSession.title", defaultValue: "New tmux Workspace")),
                 subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
@@ -7947,6 +7956,9 @@ struct ContentView: View {
                 ? String(localized: "amux.tmuxDefault.on", defaultValue: "New workspaces (⌘N) now create a tmux-backed session.")
                 : String(localized: "amux.tmuxDefault.off", defaultValue: "New workspaces (⌘N) now create a plain local workspace.")
             AmuxOnboarding.present(alert) { _ in }
+        }
+        registry.register(commandId: "palette.amuxToggleLocalTmuxSync") {
+            AppDelegate.shared?.amuxToggleLocalTmuxSessionSync()
         }
         registry.register(commandId: "palette.amuxNewSession") {
             AppDelegate.shared?.amuxCreateWorkspace()
@@ -13329,6 +13341,7 @@ struct SidebarWorkspaceSnapshotBuilder {
         let showsRemoteReconnectAffordance: Bool
         let copyableSidebarSSHError: String?
         let latestConversationMessage: String?
+        let agentStatusEntry: SidebarStatusEntry?
         let metadataEntries: [SidebarStatusEntry]
         let metadataBlocks: [SidebarMetadataBlock]
         let latestLog: SidebarLogEntry?
@@ -13869,6 +13882,14 @@ struct TabItemView: View, Equatable {
                         .foregroundColor(.green)
                         .safeHelp(cameraInUseTooltip)
                         .accessibilityLabel(cameraInUseTooltip)
+                }
+
+                if let agentStatusEntry = workspaceSnapshot.agentStatusEntry {
+                    SidebarAgentStatusGlyph(
+                        entry: agentStatusEntry,
+                        fallbackColor: activeSecondaryColor(0.82),
+                        fontScale: fontScale
+                    )
                 }
 
                 if isEditing {
@@ -14984,6 +15005,7 @@ struct TabItemView: View, Equatable {
                 || tab.remoteConnectionState == .disconnected,
             copyableSidebarSSHError: copyableSidebarSSHError,
             latestConversationMessage: tab.latestConversationMessage,
+            agentStatusEntry: tab.statusEntries[AmuxAgentStatusService.statusEntryKey],
             metadataEntries: detailVisibility.showsMetadata ? tab.sidebarStatusEntriesInDisplayOrder() : [],
             metadataBlocks: detailVisibility.showsMetadata ? tab.sidebarMetadataBlocksInDisplayOrder() : [],
             latestLog: detailVisibility.showsLog ? tab.logEntries.last : nil,
@@ -15541,6 +15563,58 @@ private extension String {
         guard truncated else { return self }
         let trimmed = result.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? "..." : trimmed + "..."
+    }
+}
+
+private struct SidebarAgentStatusGlyph: View {
+    let entry: SidebarStatusEntry
+    let fallbackColor: Color
+    let fontScale: CGFloat
+
+    private var helpText: String {
+        let trimmed = entry.value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? entry.key : trimmed
+    }
+
+    private var color: Color {
+        entry.color.flatMap { Color(hex: $0) } ?? fallbackColor
+    }
+
+    var body: some View {
+        Group {
+            if let iconRaw = entry.icon?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !iconRaw.isEmpty {
+                icon(iconRaw)
+            } else {
+                CmuxSystemSymbolImage(magnified: "brain", pointSize: 9 * fontScale, weight: .semibold)
+            }
+        }
+        .foregroundColor(color)
+        .frame(width: max(12, 12 * fontScale), height: max(12, 12 * fontScale), alignment: .center)
+        .safeHelp(helpText)
+        .accessibilityLabel(helpText)
+    }
+
+    @ViewBuilder
+    private func icon(_ raw: String) -> some View {
+        if raw.hasPrefix("emoji:") {
+            let value = String(raw.dropFirst("emoji:".count))
+            Text(value.isEmpty ? " " : value)
+                .cmuxFont(size: 9 * fontScale, weight: .semibold)
+        } else if raw.hasPrefix("text:") {
+            let value = String(raw.dropFirst("text:".count))
+            Text(value.isEmpty ? " " : value)
+                .cmuxFont(size: 8 * fontScale, weight: .semibold)
+        } else {
+            let symbolName = raw.hasPrefix("sf:")
+                ? String(raw.dropFirst("sf:".count))
+                : raw
+            CmuxSystemSymbolImage(
+                magnified: symbolName.isEmpty ? "brain" : symbolName,
+                pointSize: 9 * fontScale,
+                weight: .semibold
+            )
+        }
     }
 }
 

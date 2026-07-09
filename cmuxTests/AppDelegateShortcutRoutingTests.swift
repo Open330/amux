@@ -4582,7 +4582,10 @@ final class AppDelegateShortcutRoutingTests: XCTestCase {
             return
         }
 
-        withTemporaryShortcut(action: .nextSurface) {
+        withTemporaryShortcut(
+            action: .nextSurface,
+            shortcut: StoredShortcut(key: "]", command: true, shift: true, option: false, control: false)
+        ) {
             // Non-US layouts can report "*" (or other symbols) for kVK_ANSI_RightBracket with Shift.
             // Shortcut matching should still allow Cmd+Shift+] via keyCode fallback.
             let event = makeKeyEvent(

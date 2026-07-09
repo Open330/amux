@@ -2097,10 +2097,13 @@ final class CmuxDiffViewerURLSchemeHandler: NSObject, WKURLSchemeHandler {
            FileManager.default.isExecutableFile(atPath: env) {
             return URL(fileURLWithPath: env)
         }
-        let candidate = Bundle.main.bundleURL
-            .appendingPathComponent("Contents/Resources/bin/cmux", isDirectory: false)
-        if FileManager.default.isExecutableFile(atPath: candidate.path) {
-            return candidate
+        let binURL = Bundle.main.bundleURL
+            .appendingPathComponent("Contents/Resources/bin", isDirectory: true)
+        for name in ["amux", "cmux"] {
+            let candidate = binURL.appendingPathComponent(name, isDirectory: false)
+            if FileManager.default.isExecutableFile(atPath: candidate.path) {
+                return candidate
+            }
         }
         return nil
     }

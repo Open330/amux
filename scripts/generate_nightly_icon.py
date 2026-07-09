@@ -5,8 +5,8 @@ Takes the AppIcon-Debug icons (which have an orange "DEV" banner) and:
 1. Recolors the orange banner to purple
 2. Replaces the "DEV" text with "NIGHTLY"
 
-This preserves the exact same icon design, glow effects, and chevron
-positioning as the debug icon.
+This preserves the exact same amux mark and debug-icon layout while changing
+only the bottom build-channel label.
 """
 import os
 from PIL import Image, ImageDraw, ImageFont

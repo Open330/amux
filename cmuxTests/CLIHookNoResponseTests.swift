@@ -260,15 +260,15 @@ struct CLIHookNoResponseTests {
         )
 
         while let item = enumerator?.nextObject() as? URL {
-            guard item.lastPathComponent == "cmux",
-                  item.path.contains(".app/Contents/Resources/bin/cmux") else {
+            guard ["amux", "cmux"].contains(item.lastPathComponent),
+                  item.path.contains(".app/Contents/Resources/bin/") else {
                 continue
             }
             return item.path
         }
 
         throw NSError(domain: "cmux.tests", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Bundled cmux CLI not found in \(appBundleURL.path)",
+            NSLocalizedDescriptionKey: "Bundled amux CLI not found in \(appBundleURL.path)",
         ])
     }
 

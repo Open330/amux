@@ -25,13 +25,13 @@ struct CmuxCLIPathInstaller {
         var errorDescription: String? {
             switch self {
             case .bundledCLIMissing(let expectedPath):
-                return "Bundled cmux CLI was not found at \(expectedPath)."
+                return "Bundled amux CLI was not found at \(expectedPath)."
             case .destinationParentNotDirectory(let path):
                 return "Expected \(path) to be a directory."
             case .destinationIsDirectory(let path):
                 return "\(path) is a directory. Remove or rename it and try again."
             case .installVerificationFailed(let path):
-                return "Installed symlink at \(path) did not point to the bundled cmux CLI."
+                return "Installed symlink at \(path) did not point to the bundled amux CLI."
             case .uninstallVerificationFailed(let path):
                 return "Failed to remove \(path)."
             case .privilegedCommandFailed(let message):
@@ -52,7 +52,7 @@ struct CmuxCLIPathInstaller {
 
     init(
         fileManager: FileManager = .default,
-        destinationURL: URL = URL(fileURLWithPath: "/usr/local/bin/cmux"),
+        destinationURL: URL = URL(fileURLWithPath: "/usr/local/bin/amux"),
         bundledCLIURLProvider: @escaping () -> URL? = {
             CmuxCLIPathInstaller.defaultBundledCLIURL()
         },
@@ -227,13 +227,25 @@ struct CmuxCLIPathInstaller {
         }
     }
 
-    private static func defaultBundledCLIURL(bundle: Bundle = .main) -> URL? {
-        bundle.resourceURL?.appendingPathComponent("bin/cmux", isDirectory: false)
+    static func defaultBundledCLIURL(
+        bundle: Bundle = .main,
+        fileManager: FileManager = .default
+    ) -> URL? {
+        guard let binURL = bundle.resourceURL?.appendingPathComponent("bin", isDirectory: true) else {
+            return nil
+        }
+        for name in ["amux", "cmux"] {
+            let candidate = binURL.appendingPathComponent(name, isDirectory: false)
+            if fileManager.isExecutableFile(atPath: candidate.path) {
+                return candidate
+            }
+        }
+        return binURL.appendingPathComponent("amux", isDirectory: false)
     }
 
-    private static func defaultBundledCLIExpectedPath(bundle: Bundle = .main) -> String {
+    static func defaultBundledCLIExpectedPath(bundle: Bundle = .main) -> String {
         bundle.bundleURL
-            .appendingPathComponent("Contents/Resources/bin/cmux", isDirectory: false)
+            .appendingPathComponent("Contents/Resources/bin/amux", isDirectory: false)
             .path
     }
 

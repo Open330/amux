@@ -54,8 +54,8 @@ extension ShortcutAction {
         case .switchRightSidebarToFeed: return ShortcutStroke(key: "4", control: true)
         case .switchRightSidebarToDock: return ShortcutStroke(key: "5", control: true)
         case .triggerFlash: return ShortcutStroke(key: "h", command: true, shift: true)
-        case .nextSidebarTab: return ShortcutStroke(key: "]", command: true, control: true)
-        case .prevSidebarTab: return ShortcutStroke(key: "[", command: true, control: true)
+        case .nextSidebarTab: return ShortcutStroke(key: "]", command: true, shift: true)
+        case .prevSidebarTab: return ShortcutStroke(key: "[", command: true, shift: true)
         case .focusHistoryBack: return ShortcutStroke(key: "[", command: true)
         case .focusHistoryForward: return ShortcutStroke(key: "]", command: true)
         case .renameTab: return ShortcutStroke(key: "r", command: true)
@@ -91,8 +91,8 @@ extension ShortcutAction {
             // Unbound by default; reachable through the command palette and
             // the canvas.* socket verbs.
             return nil
-        case .nextSurface: return ShortcutStroke(key: "]", command: true, shift: true)
-        case .prevSurface: return ShortcutStroke(key: "[", command: true, shift: true)
+        case .nextSurface: return ShortcutStroke(key: "\t", control: true)
+        case .prevSurface: return ShortcutStroke(key: "\t", shift: true, control: true)
         case .selectSurfaceByNumber: return ShortcutStroke(key: "1", control: true)
         case .selectWorkspaceByNumber: return ShortcutStroke(key: "1", command: true)
         case .newSurface: return ShortcutStroke(key: "t", command: true)

@@ -1529,23 +1529,32 @@ def resolve_cli_path(raw: str | None, tag: str | None) -> str:
     candidates: list[str] = []
     if raw:
         candidates.append(os.path.expanduser(raw))
-    env_cli = os.environ.get("CMUXTERM_CLI") or os.environ.get("CMUX_BUNDLED_CLI_PATH")
+    env_cli = os.environ.get("AMUX_CLI") or os.environ.get("CMUXTERM_CLI") or os.environ.get("CMUX_BUNDLED_CLI_PATH")
     if env_cli:
         candidates.append(os.path.expanduser(env_cli))
     if tag:
+        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux DEV {tag}.app/Contents/Resources/bin/amux"))
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux DEV {tag}.app/Contents/Resources/bin/cmux"))
+        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux"))
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux"))
+    last_cli = pathlib.Path("/tmp/amux-last-cli-path")
+    if last_cli.exists():
+        try:
+            candidates.append(last_cli.read_text(encoding="utf-8").strip())
+        except OSError:
+            pass
     last_cli = pathlib.Path("/tmp/cmux-last-cli-path")
     if last_cli.exists():
         try:
             candidates.append(last_cli.read_text(encoding="utf-8").strip())
         except OSError:
             pass
+    candidates.extend(glob.glob(os.path.expanduser("~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug/amux"), recursive=True))
     candidates.extend(glob.glob(os.path.expanduser("~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug/cmux"), recursive=True))
     for candidate in candidates:
         if candidate and os.path.isfile(candidate) and os.access(candidate, os.X_OK):
             return candidate
-    raise SystemExit("error: could not find cmux CLI. Pass --cli or set CMUXTERM_CLI.")
+    raise SystemExit("error: could not find amux CLI. Pass --cli or set AMUX_CLI.")
 
 
 def resolve_socket_path(raw: str | None, tag: str | None) -> str:
@@ -1569,7 +1578,7 @@ def resolve_socket_path(raw: str | None, tag: str | None) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--cli", help="Path to cmux CLI binary. Defaults to CMUXTERM_CLI, tagged DerivedData, then recent DerivedData.")
+    parser.add_argument("--cli", help="Path to amux CLI binary. Defaults to AMUX_CLI/CMUXTERM_CLI, tagged DerivedData, then recent DerivedData.")
     parser.add_argument("--socket", help="Unix socket path. Defaults to CMUX_SOCKET_PATH or /tmp/cmux-debug-<tag>.sock.")
     parser.add_argument("--tag", help="Tagged dev app slug, for path defaults and diagnostics.")
     parser.add_argument("--duration", default=f"{DEFAULT_DURATION_SECONDS}s", help="Stress duration, e.g. 30s, 10m, 12h. Default: 12h.")

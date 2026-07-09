@@ -93,9 +93,14 @@ extension TerminalSurface {
            !inheritedClaudeConfigDir.isEmpty {
             env["CLAUDE_CONFIG_DIR"] = ClaudeConfigDirectoryPath.preferredPath(inheritedClaudeConfigDir)
         }
-        if let bundledCLIURL = Bundle.main.resourceURL?.appendingPathComponent("bin/cmux"),
-           runtimeFilesystem.isExecutableFile(bundledCLIURL.path) {
-            setManagedEnvironmentValue("CMUX_BUNDLED_CLI_PATH", bundledCLIURL.path)
+        if let binURL = Bundle.main.resourceURL?.appendingPathComponent("bin", isDirectory: true) {
+            for name in ["amux", "cmux"] {
+                let bundledCLIURL = binURL.appendingPathComponent(name, isDirectory: false)
+                if runtimeFilesystem.isExecutableFile(bundledCLIURL.path) {
+                    setManagedEnvironmentValue("CMUX_BUNDLED_CLI_PATH", bundledCLIURL.path)
+                    break
+                }
+            }
         }
         if let bundleId = Bundle.main.bundleIdentifier, !bundleId.isEmpty {
             setManagedEnvironmentValue("CMUX_BUNDLE_ID", bundleId)

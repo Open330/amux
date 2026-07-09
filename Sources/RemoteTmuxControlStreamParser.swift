@@ -39,23 +39,46 @@ struct RemoteTmuxControlStreamParser {
     private static let outputPrefix: [UInt8] = Array("%output ".utf8)
 
     /// Feeds a chunk of stream bytes and returns any newly completed messages.
+    ///
+    /// Scans for newlines with `memchr` and appends whole slices instead of
+    /// iterating `Data` byte-by-byte: this parser sits on the pane-output flood
+    /// path, where a per-byte loop (bounds-checked `Data` subscripting plus one
+    /// `append` per byte) dominated the ingest cost.
     mutating func feed(_ data: Data) -> [RemoteTmuxControlMessage] {
         var messages: [RemoteTmuxControlMessage] = []
-        for byte in data {
-            if byte == 0x0a {
-                var lineBytes = buffer
-                buffer.removeAll(keepingCapacity: true)
+        data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
+            guard var cursor = raw.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return }
+            var remaining = raw.count
+            while remaining > 0 {
+                guard let found = memchr(cursor, 0x0a, remaining) else {
+                    // No newline in the rest of the chunk: buffer the partial line.
+                    if buffer.count + remaining > maxBufferedLineBytes {
+                        messages.append(streamError("line exceeded \(maxBufferedLineBytes) bytes"))
+                    } else {
+                        buffer.append(contentsOf: UnsafeBufferPointer(start: cursor, count: remaining))
+                    }
+                    return
+                }
+                let lineLength = UnsafeRawPointer(found) - UnsafeRawPointer(cursor)
+                var lineBytes: [UInt8]
+                if buffer.isEmpty {
+                    lineBytes = Array(UnsafeBufferPointer(start: cursor, count: lineLength))
+                } else {
+                    if buffer.count + lineLength > maxBufferedLineBytes {
+                        messages.append(streamError("line exceeded \(maxBufferedLineBytes) bytes"))
+                        return
+                    }
+                    buffer.append(contentsOf: UnsafeBufferPointer(start: cursor, count: lineLength))
+                    lineBytes = buffer
+                    buffer.removeAll(keepingCapacity: true)
+                }
                 if lineBytes.last == 0x0d { lineBytes.removeLast() } // strip pty CR
                 for message in parse(lineBytes: lineBytes) {
                     messages.append(message)
-                    if case .streamError = message { return messages }
+                    if case .streamError = message { return }
                 }
-            } else {
-                buffer.append(byte)
-                if buffer.count > maxBufferedLineBytes {
-                    messages.append(streamError("line exceeded \(maxBufferedLineBytes) bytes"))
-                    return messages
-                }
+                cursor += lineLength + 1
+                remaining -= lineLength + 1
             }
         }
         return messages
@@ -70,6 +93,26 @@ struct RemoteTmuxControlStreamParser {
             prefixMessages.append(.enter)
             bytes.removeFirst(Self.enterSequence.count)
         }
+        // `%output` is the only notification whose payload carries raw, possibly
+        // multi-byte UTF-8 pane bytes. Parse it straight from the raw bytes so a
+        // character that tmux split across two `%output` notifications (it sends
+        // pane bytes raw and chunks PTY reads mid-character) survives intact —
+        // ghostty's stream parser reassembles split UTF-8 across process_output
+        // calls, but routing each half through `String(decoding:as: UTF8.self)`
+        // first would replace it with U+FFFD before ghostty ever sees it.
+        // Checked BEFORE the ST strip: an `%output` line never carries DCS
+        // framing (tmux octal-escapes every control byte in the payload, so no
+        // raw ESC can appear), and skipping `removingST` avoids one full scan
+        // per output line on the flood path. `%extended-output` (the
+        // flow-controlled variant) shares the raw-bytes path for the same reason.
+        if !inBlock {
+            if let output = Self.parseOutput(rawLine: bytes) {
+                return prefixMessages + [output]
+            }
+            if let output = Self.parseExtendedOutput(rawLine: bytes) {
+                return prefixMessages + [output]
+            }
+        }
         // Drop ST (ESC \) DCS-teardown framing — but ONLY on notification lines.
         // Command-block content (e.g. `capture-pane -e` output) is raw terminal
         // bytes that can legitimately contain ESC `\` (an OSC String Terminator),
@@ -79,17 +122,6 @@ struct RemoteTmuxControlStreamParser {
             bytes = Self.removingST(bytes)
         }
         if bytes.isEmpty { return prefixMessages }
-
-        // `%output` is the only notification whose payload carries raw, possibly
-        // multi-byte UTF-8 pane bytes. Parse it straight from the raw bytes so a
-        // character that tmux split across two `%output` notifications (it sends
-        // pane bytes raw and chunks PTY reads mid-character) survives intact —
-        // ghostty's stream parser reassembles split UTF-8 across process_output
-        // calls, but routing each half through `String(decoding:as: UTF8.self)`
-        // first would replace it with U+FFFD before ghostty ever sees it.
-        if !inBlock, let output = Self.parseOutput(rawLine: bytes) {
-            return prefixMessages + [output]
-        }
 
         let line = String(decoding: bytes, as: UTF8.self)
 
@@ -174,6 +206,39 @@ struct RemoteTmuxControlStreamParser {
         return .output(paneId: paneId, data: unescapeOutput(Array(bytes[(i + 1)...])))
     }
 
+    /// ASCII bytes of the `%extended-output ` notification prefix.
+    private static let extendedOutputPrefix: [UInt8] = Array("%extended-output ".utf8)
+
+    /// Parses an `%extended-output %<pane> <age> [...] : <octal-escaped data…>`
+    /// line (the flow-controlled variant of `%output`, emitted when a control
+    /// client enables `pause-after`). Parsed from raw bytes for the same
+    /// UTF-8-preservation reason as ``parseOutput(rawLine:)``. cmux does not
+    /// currently opt into flow control, but a remote/tmux-version surprise must
+    /// degrade to "pane still paints", not silent content loss.
+    private static func parseExtendedOutput(rawLine bytes: [UInt8]) -> RemoteTmuxControlMessage? {
+        guard bytes.starts(with: extendedOutputPrefix) else { return nil }
+        var i = extendedOutputPrefix.count
+        guard i < bytes.count, bytes[i] == UInt8(ascii: "%") else { return nil }
+        i += 1
+        let digitsStart = i
+        while i < bytes.count, bytes[i] >= UInt8(ascii: "0"), bytes[i] <= UInt8(ascii: "9") {
+            i += 1
+        }
+        guard i > digitsStart, i < bytes.count, bytes[i] == UInt8(ascii: " "),
+              let paneId = Int(String(decoding: bytes[digitsStart..<i], as: UTF8.self))
+        else { return nil }
+        // Skip the age (and any future middle fields) up to the ` : ` separator.
+        let separator: [UInt8] = [UInt8(ascii: " "), UInt8(ascii: ":"), UInt8(ascii: " ")]
+        var j = i
+        while j + separator.count <= bytes.count {
+            if bytes[j] == separator[0], bytes[j + 1] == separator[1], bytes[j + 2] == separator[2] {
+                return .output(paneId: paneId, data: unescapeOutput(Array(bytes[(j + separator.count)...])))
+            }
+            j += 1
+        }
+        return nil
+    }
+
     private func parseNotification(_ line: String) -> RemoteTmuxControlMessage {
         if line == "%exit" || line.hasPrefix("%exit ") {
             let reason = line == "%exit" ? nil : String(line.dropFirst("%exit ".count))
@@ -222,7 +287,13 @@ struct RemoteTmuxControlStreamParser {
         if line.hasPrefix("%layout-change ") {
             guard let id = Self.fieldId(line, 1, sigil: "@"),
                   let layout = Self.field(line, 2) else { return .unparsed(line) }
-            return .layoutChange(windowId: id, layout: layout)
+            // tmux ≥2.x appends `<visible-layout> <flags>`; tolerate their
+            // absence (older emitters) by degrading to the full layout.
+            let visibleLayout = Self.field(line, 3).flatMap { $0.isEmpty ? nil : $0 }
+            let zoomed = Self.field(line, 4)?.contains("Z") ?? false
+            return .layoutChange(
+                windowId: id, layout: layout, visibleLayout: visibleLayout, zoomed: zoomed
+            )
         }
         if line.hasPrefix("%window-pane-changed ") {
             guard let id = Self.fieldId(line, 1, sigil: "@"),
@@ -296,7 +367,11 @@ struct RemoteTmuxControlStreamParser {
     /// UTF-8 character — passes through unchanged, so split or whole UTF-8 text
     /// survives intact for ghostty to decode.
     static func unescapeOutput(_ bytes: [UInt8]) -> Data {
-        var out = Data()
+        // Fast path: most output lines carry no escapes at all (printable text,
+        // multi-byte UTF-8, SGR params — ESC itself is escaped as \033, so lines
+        // WITH escapes take the slow path). Skip the rebuild entirely then.
+        guard bytes.contains(0x5c) else { return Data(bytes) }
+        var out = [UInt8]()
         out.reserveCapacity(bytes.count)
         var i = 0
         let isOctal: (UInt8) -> Bool = { $0 >= 0x30 && $0 <= 0x37 }
@@ -321,6 +396,6 @@ struct RemoteTmuxControlStreamParser {
                 i += 1
             }
         }
-        return out
+        return Data(out)
     }
 }

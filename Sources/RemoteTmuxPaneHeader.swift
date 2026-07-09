@@ -4,6 +4,12 @@ import SwiftUI
 /// A compact per-pane control bar shown above each mirrored tmux pane.
 @MainActor
 struct RemoteTmuxPaneHeader: View {
+    /// Fixed bar height. Shared with the mirror's client-grid math: every pixel
+    /// this chrome consumes must be SUBTRACTED from the size reported to tmux,
+    /// or tmux allocates pane rows the surfaces can't render (content clipped
+    /// at the bottom of every pane).
+    nonisolated static let height: CGFloat = 24
+
     let isActive: Bool
     let appearance: PanelAppearance
     let onFocus: () -> Void
@@ -34,7 +40,7 @@ struct RemoteTmuxPaneHeader: View {
             )
         }
         .padding(.horizontal, 8)
-        .frame(height: 24)
+        .frame(height: Self.height)
         .frame(maxWidth: .infinity)
         .background(Color(nsColor: appearance.backgroundColor))
         .overlay(alignment: .bottom) {

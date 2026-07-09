@@ -141,6 +141,89 @@ import Testing
         #expect(!payload.contains(0xef))
     }
 
+    @Test func tmuxPrefixClientKeyCommandQuotesSpecialKeys() {
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixKeyCommand(key: "%")
+                == "send-keys -K 'C-b' '%'"
+        )
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixKeyCommand(key: "\"")
+                == "send-keys -K 'C-b' '\"'"
+        )
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixKeyCommand(key: "Space")
+                == "send-keys -K 'C-b' 'Space'"
+        )
+    }
+
+    @Test func tmuxPrefixCommandsAvoidRedundantSelectPaneForActivePane() {
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "%",
+                activePaneId: 7
+            ) == ["send-keys -K 'C-b' '%'"]
+        )
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "%",
+                activePaneId: 8
+            ) == [
+                "select-pane -t %7",
+                "send-keys -K 'C-b' '%'",
+            ]
+        )
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "%",
+                activePaneId: nil
+            ) == [
+                "select-pane -t %7",
+                "send-keys -K 'C-b' '%'",
+            ]
+        )
+    }
+
+    @Test func tmuxPrefixClientKeyTokenMapsCommonTmuxBindings() throws {
+        let percent = Data([0x25])
+        let quote = Data([0x22])
+        let space = Data([0x20])
+        let controlB = Data([0x02])
+        let up = Data([0x1b, 0x5b, 0x41])
+
+        let percentToken = try #require(RemoteTmuxControlConnection.tmuxClientKeyToken(
+            in: percent, at: percent.startIndex
+        ))
+        let quoteToken = try #require(RemoteTmuxControlConnection.tmuxClientKeyToken(
+            in: quote, at: quote.startIndex
+        ))
+        let spaceToken = try #require(RemoteTmuxControlConnection.tmuxClientKeyToken(
+            in: space, at: space.startIndex
+        ))
+        let controlBToken = try #require(RemoteTmuxControlConnection.tmuxClientKeyToken(
+            in: controlB, at: controlB.startIndex
+        ))
+        let upToken = try #require(RemoteTmuxControlConnection.tmuxClientKeyToken(
+            in: up, at: up.startIndex
+        ))
+
+        #expect(percentToken.key == "%")
+        #expect(quoteToken.key == "\"")
+        #expect(spaceToken.key == "Space")
+        #expect(controlBToken.key == "C-b")
+        #expect(upToken.key == "Up")
+        #expect(up.distance(from: up.startIndex, to: upToken.nextIndex) == 3)
+    }
+
+    @Test func tmuxPrefixClientKeyTokenRejectsNonAsciiUtf8LeadByte() {
+        let koreanLead = Data([0xed, 0x95, 0x9c])
+        #expect(RemoteTmuxControlConnection.tmuxClientKeyToken(
+            in: koreanLead, at: koreanLead.startIndex
+        ) == nil)
+    }
+
     @Test func sessionChangedKeepsMultiWordName() {
         let messages = parse("%session-changed $1 my session name\r\n")
         #expect(messages == [.sessionChanged(sessionId: 1, name: "my session name")])
@@ -173,9 +256,54 @@ import Testing
         #expect(messages == [.sessionRenamed(sessionId: 1, name: "$1 dev", idBearingName: "dev")])
     }
 
-    @Test func layoutChangeCarriesRawLayoutString() {
-        let messages = parse("%layout-change @4 f92f,80x24,0,0,1 @4 1\r\n")
-        #expect(messages == [.layoutChange(windowId: 4, layout: "f92f,80x24,0,0,1")])
+    @Test func extendedOutputRoutesLikeOutput() {
+        // Flow-controlled variant: "%extended-output %<pane> <age> : <data>".
+        // Must decode to the same .output as the plain notification — dropping
+        // it would silently blank a flow-controlled pane.
+        let messages = parse("%extended-output %3 1105 : hi\\033[1m\r\n")
+        #expect(messages == [.output(paneId: 3, data: Data("hi\u{1b}[1m".utf8))])
+    }
+
+    @Test func oversizedUnterminatedLineEmitsStreamError() {
+        var parser = RemoteTmuxControlStreamParser(maxBufferedLineBytes: 16)
+        let messages = parser.feed(Data(repeating: UInt8(ascii: "a"), count: 64))
+        #expect(messages.count == 1)
+        guard case .streamError = messages.first else {
+            Issue.record("expected streamError, got \(messages)")
+            return
+        }
+    }
+
+    @Test func outputWithoutEscapesSurvivesFastPath() {
+        let messages = parse("%output %1 plain text, no escapes\r\n")
+        #expect(messages == [.output(paneId: 1, data: Data("plain text, no escapes".utf8))])
+    }
+
+    @Test func layoutChangeCarriesRawLayoutAndVisibleLayoutStrings() {
+        // Real tmux 3.7b shape: "%layout-change @id <layout> <visible-layout> <flags>".
+        let messages = parse("%layout-change @4 f92f,80x24,0,0,1 f92f,80x24,0,0,1 *\r\n")
+        #expect(messages == [.layoutChange(
+            windowId: 4, layout: "f92f,80x24,0,0,1", visibleLayout: "f92f,80x24,0,0,1", zoomed: false
+        )])
+    }
+
+    @Test func layoutChangeDetectsZoomFlag() {
+        let messages = parse(
+            "%layout-change @2 abcd,120x40,0,0{60x40,0,0,4,59x40,61,0,5} f92f,120x40,0,0,4 *Z\r\n"
+        )
+        #expect(messages == [.layoutChange(
+            windowId: 2,
+            layout: "abcd,120x40,0,0{60x40,0,0,4,59x40,61,0,5}",
+            visibleLayout: "f92f,120x40,0,0,4",
+            zoomed: true
+        )])
+    }
+
+    @Test func layoutChangeWithoutTrailingFieldsDegradesToFullLayout() {
+        let messages = parse("%layout-change @4 f92f,80x24,0,0,1\r\n")
+        #expect(messages == [.layoutChange(
+            windowId: 4, layout: "f92f,80x24,0,0,1", visibleLayout: nil, zoomed: false
+        )])
     }
 
     // MARK: - Pane state seeding (cursor / region / origin ordering)

@@ -89,10 +89,10 @@ final class RemoteTmuxControlConnection {
     /// failed reconnect attempt is classified, so the decision sees the complete
     /// error rather than racing the async stderr delivery.
     private var stderrTask: Task<Void, Never>?
-    private var parser = RemoteTmuxControlStreamParser()
     private var ingestTask: Task<Void, Never>?
     private var pendingCommands: [CommandKind] = []
     private var connectionWaiters: [UUID: (Bool) -> Void] = [:]
+    private var panesWaitingForTmuxPrefixKey: Set<Int> = []
     /// `false` until the attach command's own `%begin`/`%end` block — always the
     /// FIRST block on each control stream, preceding every notification — has been
     /// consumed. That first block is matched explicitly (see the `.commandResult`
@@ -317,14 +317,15 @@ final class RemoteTmuxControlConnection {
     ///   attempts pass `false` (`attach-session`), so a session killed during the
     ///   outage fails the re-attach (→ `.ended`) instead of being silently recreated.
     private func spawnProcess(createIfMissing: Bool) throws {
-        // Fresh control stream: the prior attempt's parser buffer and pending-command
-        // FIFO are stale and must not bleed into the new %begin/%end correlation.
-        parser = RemoteTmuxControlStreamParser()
+        // Fresh control stream: the prior attempt's pending-command FIFO is stale
+        // and must not bleed into the new %begin/%end correlation. (The parser is
+        // per-spawn too — each ingest task owns a fresh one.)
         pendingCommands.removeAll()
         // Normally already flushed by beginReconnecting; kept here so a future
         // caller of spawnProcess can't strand a close decision.
         failPendingActivityQueries()
         attachBlockDrained = false
+        panesWaitingForTmuxPrefixKey.removeAll()
         stderrBuffer = ""
         enterReceived = false
 
@@ -404,10 +405,20 @@ final class RemoteTmuxControlConnection {
                 self?.appendStderr(text)
             }
         }
-        ingestTask = Task { [weak self] in
+        // Parse OFF the main actor: the parser (fresh per spawn, owned by this
+        // task) chews the raw control stream on a background executor and only
+        // finished, Sendable messages hop to the main actor. A flooding pane
+        // therefore competes with a background thread — not with typing, SwiftUI
+        // layout, or Metal presentation. Delivery stays ordered because this
+        // single loop awaits each main-actor batch before parsing on.
+        ingestTask = Task.detached(priority: .userInitiated) { [weak self] in
+            var parser = RemoteTmuxControlStreamParser()
             for await chunk in stdoutPipeReader.stream {
-                self?.ingest(chunk)
+                let messages = parser.feed(chunk)
                 stdoutPipeReader.release(chunk)
+                guard !messages.isEmpty else { continue }
+                guard let self else { return }
+                await self.deliver(messages)
             }
             await self?.handleStreamEnd()
         }
@@ -551,8 +562,13 @@ final class RemoteTmuxControlConnection {
         // `#{pane_id}` in list-windows context resolves to each window's
         // ACTIVE pane — the only way to learn the initial active pane, since
         // `%window-pane-changed` only fires on changes after attach.
+        // `#{?window_zoomed_flag,Z,-}` is a deterministic single token (never
+        // empty, unlike `#{window_flags}`), and `#{window_visible_layout}`
+        // carries the zoomed rendering so a window that was ALREADY zoomed at
+        // attach mirrors correctly.
         sendInternal(
-            "list-windows -F \"#{window_id} #{pane_id} #{window_layout} #{window_name}\"",
+            "list-windows -F \"#{window_id} #{pane_id} #{?window_zoomed_flag,Z,-} "
+                + "#{window_layout} #{window_visible_layout} #{window_name}\"",
             kind: .listWindows
         )
     }
@@ -838,13 +854,240 @@ final class RemoteTmuxControlConnection {
         connectionWaiters.removeValue(forKey: token)?(connected)
     }
 
-    /// Sends literal key bytes to a pane via tmux `send-keys -H` (hex-encoded),
-    /// which is binary-safe and needs no shell quoting.
+    /// Sends typed bytes to a mirrored pane. Literal text stays binary-safe via
+    /// `send-keys -H`; tmux prefix chords are replayed through the control
+    /// client's key table so bindings like `prefix+%`, `prefix+"`, `prefix+Space`,
+    /// and user customizations such as `prefix+s` keep their tmux semantics.
+    ///
+    /// While the transport is down (`.connecting`/`.reconnecting`) a bounded
+    /// amount of input is held per pane and flushed on reconnect — a real ssh
+    /// session buffers keystrokes typed during a blip rather than discarding
+    /// them, and silently eating input is the worst basic-terminal-behavior
+    /// violation a frozen mirror can commit. Input beyond the cap is dropped
+    /// NEWEST-first so the replayed stream is a clean prefix (a truncated tail
+    /// could split an escape sequence).
     @discardableResult
     func sendKeys(paneId: Int, data: Data) -> Bool {
         guard !data.isEmpty else { return true }
-        let hex = Self.hexByteArguments(data)
-        return sendInternal("send-keys -t %\(paneId) -H \(hex)", kind: .other)
+        switch connectionState {
+        case .connecting, .reconnecting:
+            var buffer = pendingInputByPane[paneId] ?? Data()
+            let room = Self.maxPendingInputBytesPerPane - buffer.count
+            guard room > 0 else { return false }
+            buffer.append(data.prefix(room))
+            pendingInputByPane[paneId] = buffer
+            return true
+        case .ended:
+            return false
+        case .connected:
+            return sendKeysRoutingTmuxPrefix(paneId: paneId, data: data)
+        }
+    }
+
+    /// Typed input held while the transport was down, keyed by pane. Bounded;
+    /// cleared on flush and on permanent end.
+    private var pendingInputByPane: [Int: Data] = [:]
+    private static let maxPendingInputBytesPerPane = 4096
+
+    /// Replays input typed during a transport outage (called on reconnect once
+    /// the stream is back in control mode; `send-keys` needs no local topology,
+    /// so this is safe before the attach block drains — the FIFO correlates its
+    /// replies positionally either way).
+    private func flushPendingInput() {
+        guard !pendingInputByPane.isEmpty else { return }
+        let pending = pendingInputByPane
+        pendingInputByPane.removeAll()
+        for (paneId, data) in pending.sorted(by: { $0.key < $1.key }) {
+            _ = sendKeysRoutingTmuxPrefix(paneId: paneId, data: data)
+        }
+    }
+
+    private func sendKeysRoutingTmuxPrefix(paneId: Int, data: Data) -> Bool {
+        // Prefix interception follows the server's ACTUAL prefix (queried via
+        // `show-options -gv prefix` on attach). `nil` means the prefix is unbound
+        // or a key this byte-level router can't represent — deliver everything
+        // literally rather than stealing bytes the user meant for the app.
+        guard let prefixByte = tmuxPrefixByte else {
+            return sendLiteralKeys(paneId: paneId, data: data[data.startIndex...])
+        }
+        var index = data.startIndex
+        var ok = true
+
+        if panesWaitingForTmuxPrefixKey.contains(paneId) {
+            ok = sendTmuxPrefixChordOrLiteral(paneId: paneId, data: data, index: &index) && ok
+        }
+
+        while index < data.endIndex {
+            guard data[index] == prefixByte else {
+                let start = index
+                repeat {
+                    index = data.index(after: index)
+                } while index < data.endIndex && data[index] != prefixByte
+                ok = sendLiteralKeys(paneId: paneId, data: data[start..<index]) && ok
+                continue
+            }
+
+            let next = data.index(after: index)
+            if next == data.endIndex {
+                panesWaitingForTmuxPrefixKey.insert(paneId)
+                return ok
+            }
+            index = next
+            ok = sendTmuxPrefixChordOrLiteral(paneId: paneId, data: data, index: &index) && ok
+        }
+
+        return ok
+    }
+
+    private func sendTmuxPrefixChordOrLiteral(paneId: Int, data: Data, index: inout Data.Index) -> Bool {
+        panesWaitingForTmuxPrefixKey.remove(paneId)
+        guard let key = Self.tmuxClientKeyToken(in: data, at: index) else {
+            var literal = Data([tmuxPrefixByte ?? Self.defaultTmuxPrefixByte])
+            literal.append(data[index..<data.endIndex])
+            index = data.endIndex
+            return sendLiteralKeys(paneId: paneId, data: literal)
+        }
+
+        index = key.nextIndex
+        return sendTmuxClientPrefixKey(paneId: paneId, key: key.key)
+    }
+
+    /// Max literal bytes per `send-keys -H` command line. Hex encoding triples
+    /// the byte count, so this bounds each control line to ~6 KB — an unusually
+    /// large typed burst (IME commit, automation) splits across a few commands
+    /// instead of building one oversized line against the writer budget.
+    private static let maxLiteralKeyBytesPerCommand = 2048
+
+    private func sendLiteralKeys(paneId: Int, data: Data.SubSequence) -> Bool {
+        guard !data.isEmpty else { return true }
+        var ok = true
+        var start = data.startIndex
+        while start < data.endIndex {
+            let end = data.index(start, offsetBy: Self.maxLiteralKeyBytesPerCommand, limitedBy: data.endIndex)
+                ?? data.endIndex
+            let hex = Self.hexByteArguments(data[start..<end])
+            ok = sendInternal("send-keys -t %\(paneId) -H \(hex)", kind: .other) && ok
+            start = end
+        }
+        return ok
+    }
+
+    @discardableResult
+    private func sendTmuxClientPrefixKey(paneId: Int, key: String) -> Bool {
+        let activePaneId = windowId(containingPane: paneId).flatMap { activePaneByWindow[$0] }
+        for command in Self.tmuxClientPrefixCommands(
+            paneId: paneId,
+            key: key,
+            activePaneId: activePaneId,
+            prefixKeyName: tmuxPrefixKeyName ?? "C-b"
+        ) {
+            guard sendInternal(command, kind: .other) else { return false }
+        }
+        return true
+    }
+
+    nonisolated static let defaultTmuxPrefixByte: UInt8 = 0x02
+
+    /// The server's prefix key as tracked from `show-options -gv prefix`
+    /// (name for `send-keys -K`, raw control byte for typed-input interception).
+    /// Defaults to C-b until the attach-time query answers; `tmuxPrefixByte`
+    /// becomes `nil` for a prefix this byte router can't represent (`None`,
+    /// non-Ctrl keys), which disables interception entirely.
+    private(set) var tmuxPrefixKeyName: String? = "C-b"
+    private var tmuxPrefixByte: UInt8? = RemoteTmuxControlConnection.defaultTmuxPrefixByte
+
+    /// Queries the server's actual prefix key (queued right after the attach
+    /// block drains, alongside the topology fetch).
+    private func requestPrefixKey() {
+        sendInternal("show-options -gv prefix", kind: .prefixKey)
+    }
+
+    /// Parses a `show-options -gv prefix` value. `C-a`…`C-z` map to their control
+    /// byte; anything else (`None`, `F12`, `M-a`, bare printables) returns `nil`
+    /// — the router only intercepts single control bytes, and guessing wrong
+    /// would steal literal keys from the remote app.
+    nonisolated static func parsePrefixKeyOption(_ raw: String) -> (name: String, byte: UInt8)? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count == 3, trimmed.hasPrefix("C-"),
+              let letter = trimmed.last?.lowercased().first,
+              let ascii = letter.asciiValue,
+              ascii >= UInt8(ascii: "a"), ascii <= UInt8(ascii: "z")
+        else { return nil }
+        return (trimmed, ascii - UInt8(ascii: "a") + 1)
+    }
+
+    nonisolated static func tmuxClientPrefixCommands(
+        paneId: Int,
+        key: String,
+        activePaneId: Int?,
+        prefixKeyName: String = "C-b"
+    ) -> [String] {
+        var commands: [String] = []
+        if activePaneId != paneId {
+            commands.append("select-pane -t %\(paneId)")
+        }
+        commands.append(tmuxClientPrefixKeyCommand(key: key, prefixKeyName: prefixKeyName))
+        return commands
+    }
+
+    nonisolated static func tmuxClientPrefixKeyCommand(key: String, prefixKeyName: String = "C-b") -> String {
+        "send-keys -K \(RemoteTmuxHost.shellSingleQuoted(prefixKeyName)) \(RemoteTmuxHost.shellSingleQuoted(key))"
+    }
+
+    nonisolated static func tmuxClientKeyToken(in data: Data, at index: Data.Index)
+        -> (key: String, nextIndex: Data.Index)?
+    {
+        guard index < data.endIndex else { return nil }
+        let byte = data[index]
+        let next = data.index(after: index)
+
+        if byte == 0x1b {
+            if let arrow = ansiCursorKeyToken(in: data, at: index) {
+                return arrow
+            }
+            return ("Escape", next)
+        }
+
+        if byte >= 0x01 && byte <= 0x1a {
+            let scalar = UnicodeScalar(UInt8(ascii: "a") + byte - 1)
+            return ("C-\(Character(scalar))", next)
+        }
+
+        switch byte {
+        case 0x09:
+            return ("Tab", next)
+        case 0x0a, 0x0d:
+            return ("Enter", next)
+        case 0x20:
+            return ("Space", next)
+        case 0x7f, 0x08:
+            return ("BSpace", next)
+        case 0x21...0x7e:
+            return (String(Character(UnicodeScalar(byte))), next)
+        default:
+            return nil
+        }
+    }
+
+    private nonisolated static func ansiCursorKeyToken(in data: Data, at index: Data.Index)
+        -> (key: String, nextIndex: Data.Index)?
+    {
+        let second = data.index(after: index)
+        guard second < data.endIndex else { return nil }
+        let introducer = data[second]
+        guard introducer == UInt8(ascii: "[") || introducer == UInt8(ascii: "O") else { return nil }
+        let third = data.index(after: second)
+        guard third < data.endIndex else { return nil }
+        let next = data.index(after: third)
+        switch data[third] {
+        case UInt8(ascii: "A"): return ("Up", next)
+        case UInt8(ascii: "B"): return ("Down", next)
+        case UInt8(ascii: "C"): return ("Right", next)
+        case UInt8(ascii: "D"): return ("Left", next)
+        case UInt8(ascii: "F"): return ("End", next)
+        case UInt8(ascii: "H"): return ("Home", next)
+        default: return nil
+        }
     }
 
     nonisolated static func hexByteArguments(_ data: Data) -> String {
@@ -860,29 +1103,103 @@ final class RemoteTmuxControlConnection {
         return String(decoding: bytes, as: UTF8.self)
     }
 
+    private func windowId(containingPane paneId: Int) -> Int? {
+        windowsByID.first(where: { $0.value.paneIDsInOrder.contains(paneId) })?.key
+    }
+
     /// Pastes `text` into `paneId` as a tmux paste (`paste-buffer -p`), which wraps
     /// the content in bracketed-paste markers IFF the real pane's app has
     /// bracketed-paste mode enabled — tmux tracks that on the real pty, which the
-    /// mirror surface can't see. This makes a pasted/dropped image path arrive as a
-    /// genuine paste, so the remote app recognizes it (e.g. claude → `[Image #N]`)
-    /// instead of seeing the plain keystrokes that ``sendKeys(paneId:data:)`` would
-    /// deliver. Uses a dedicated, immediately-deleted (`-d`) per-pane buffer so
-    /// there's no buffer-name collision. `text` must be a single line (callers route
-    /// only single-line content — e.g. file/image paths — here).
+    /// mirror surface can't see. Handles ANY text, including multi-line and large
+    /// pastes: the content is octal-escaped into tmux double-quoted string chunks
+    /// (`set-buffer` + `set-buffer -a`), so a newline travels as `\012` on the
+    /// line-oriented control stream, and the whole paste arrives as ONE bracketed
+    /// unit — a multi-line shell snippet inserts instead of executing line by
+    /// line. Chunks are paced to the stdin writer's drain rate (`waitForCapacity`),
+    /// so a large paste can't trip the bounded-writer rejection that the
+    /// connection treats as a transport failure (which used to drop the paste AND
+    /// force a reconnect). Uses a dedicated, immediately-deleted (`-d`) per-pane
+    /// buffer so there's no buffer-name collision; concurrent pastes serialize on
+    /// ``pasteFlushTask``.
+    @discardableResult
     func pastePane(paneId: Int, text: String) -> Bool {
+        guard connectionState == .connected else { return false }
         guard let commands = Self.pastePaneCommands(paneId: paneId, text: text) else { return false }
-        return send(commands.setBuffer) && send(commands.pasteBuffer)
+        let previous = pasteFlushTask
+        pasteFlushTask = Task { @MainActor [weak self] in
+            await previous?.value
+            for command in commands {
+                guard !Task.isCancelled,
+                      let self, self.connectionState == .connected,
+                      let writer = self.stdinWriter else { return }
+                guard await writer.waitForCapacity(command.utf8.count + 1) else { return }
+                guard !Task.isCancelled, self.connectionState == .connected else { return }
+                guard self.sendInternal(command, kind: .other) else { return }
+            }
+        }
+        return true
     }
 
-    nonisolated static func pastePaneCommands(paneId: Int, text: String)
-        -> (setBuffer: String, pasteBuffer: String)?
-    {
+    /// Serializes chunked pastes so two overlapping pastes to the same pane can't
+    /// interleave their `set-buffer` chunks.
+    private var pasteFlushTask: Task<Void, Never>?
+
+    /// Max escaped bytes per `set-buffer` chunk. Keeps each control-stream line
+    /// comfortably bounded; worst-case escape expansion is 4× (every byte `\ooo`).
+    nonisolated static let pasteChunkMaxEscapedBytes = 4096
+
+    /// The full command sequence that delivers `text` to `paneId` as a bracketed
+    /// tmux paste: one or more `set-buffer` chunk lines followed by the final
+    /// `paste-buffer -p -d`. `nil` for empty text.
+    nonisolated static func pastePaneCommands(
+        paneId: Int,
+        text: String,
+        maxEscapedChunkBytes: Int = pasteChunkMaxEscapedBytes
+    ) -> [String]? {
         guard !text.isEmpty else { return nil }
         let buffer = "cmux-paste-\(paneId)"
-        return (
-            setBuffer: "set-buffer -b \(buffer) -- \(RemoteTmuxHost.shellSingleQuoted(text))",
-            pasteBuffer: "paste-buffer -p -d -b \(buffer) -t %\(paneId)"
-        )
+        var commands: [String] = []
+        var chunk = [UInt8]()
+        chunk.reserveCapacity(min(maxEscapedChunkBytes + 4, text.utf8.count * 4))
+        func flush() {
+            guard !chunk.isEmpty else { return }
+            let flag = commands.isEmpty ? "-b" : "-ab"
+            commands.append("set-buffer \(flag) \(buffer) -- \"\(String(decoding: chunk, as: UTF8.self))\"")
+            chunk.removeAll(keepingCapacity: true)
+        }
+        for byte in text.utf8 {
+            appendTmuxDoubleQuotedEscaped(byte, to: &chunk)
+            if chunk.count >= maxEscapedChunkBytes { flush() }
+        }
+        flush()
+        commands.append("paste-buffer -p -d -b \(buffer) -t %\(paneId)")
+        return commands
+    }
+
+    /// Appends `byte` to `out` in tmux double-quoted-string form. Alphanumerics
+    /// and a small punctuation set pass through; EVERYTHING else — including
+    /// `"`, `\`, `$` (env expansion), `#` (format/comment), `;` (command
+    /// separator), newlines, other control bytes, and non-ASCII — becomes a
+    /// 3-digit octal escape (`\012`), which tmux's own command parser decodes
+    /// back to the raw byte (verified against tmux 3.7b). Escaping into tmux's
+    /// grammar (not `/bin/sh`'s) is the point: these lines feed tmux's parser
+    /// directly, never a shell.
+    nonisolated private static func appendTmuxDoubleQuotedEscaped(_ byte: UInt8, to out: inout [UInt8]) {
+        switch byte {
+        case UInt8(ascii: "a")...UInt8(ascii: "z"),
+             UInt8(ascii: "A")...UInt8(ascii: "Z"),
+             UInt8(ascii: "0")...UInt8(ascii: "9"),
+             UInt8(ascii: " "), UInt8(ascii: "."), UInt8(ascii: ","),
+             UInt8(ascii: "/"), UInt8(ascii: "_"), UInt8(ascii: "-"),
+             UInt8(ascii: ":"), UInt8(ascii: "="), UInt8(ascii: "+"),
+             UInt8(ascii: "@"):
+            out.append(byte)
+        default:
+            out.append(UInt8(ascii: "\\"))
+            out.append(UInt8(ascii: "0") + (byte >> 6))
+            out.append(UInt8(ascii: "0") + ((byte >> 3) & 0x7))
+            out.append(UInt8(ascii: "0") + (byte & 0x7))
+        }
     }
 
     /// Detaches: terminating ssh kills the control client but leaves the remote
@@ -908,6 +1225,9 @@ final class RemoteTmuxControlConnection {
         clientSizeDebounceTask = nil
         attachRedrawKickTask?.cancel()
         attachRedrawKickTask = nil
+        pasteFlushTask?.cancel()
+        pasteFlushTask = nil
+        pendingInputByPane.removeAll()
         pendingAttachRedrawKick = false
         pendingPostAttachAction = nil
     }
@@ -974,8 +1294,10 @@ final class RemoteTmuxControlConnection {
         beginReconnecting()
     }
 
-    private func ingest(_ data: Data) {
-        for message in parser.feed(data) {
+    /// Applies a batch of parsed control messages on the main actor (the
+    /// off-main ingest task awaits each batch, preserving stream order).
+    private func deliver(_ messages: [RemoteTmuxControlMessage]) {
+        for message in messages {
             handle(message)
         }
     }
@@ -1035,10 +1357,13 @@ final class RemoteTmuxControlConnection {
     private func scheduleReconnectAttempt() {
         let attempt = reconnectAttemptCount
         reconnectAttemptCount += 1
+        // ±20% jitter: with several mirrors offline at once (laptop wake, VPN
+        // drop) an unjittered backoff settles every connection at the 10s cap in
+        // lockstep — a periodic thundering herd of ssh spawns.
         let delay = min(
             Self.reconnectMaxDelaySeconds,
             Self.reconnectBaseDelaySeconds * pow(2, Double(attempt))
-        )
+        ) * Double.random(in: 0.8...1.2)
         record("reconnect-scheduled attempt=\(attempt) delay=\(delay)")
         reconnectTask?.cancel()
         // A bounded, cancellable backoff before the next attempt (not a poll/settle):
@@ -1087,7 +1412,9 @@ final class RemoteTmuxControlConnection {
         scheduleAttachRedrawKickIfNeeded()
         for window in windowsByID.values {
             for paneId in window.paneIDsInOrder {
-                observers.emitPaneOutput(paneId, Data("\u{1b}[H\u{1b}[2J\u{1b}[3J".utf8))
+                // `ESC[m` first so the full clear erases with the default background
+                // (not a stale SGR pen left from before the transport drop).
+                observers.emitPaneOutput(paneId, Data("\u{1b}[m\u{1b}[H\u{1b}[2J\u{1b}[3J".utf8))
                 seedPane(paneId: paneId)
             }
         }
@@ -1115,6 +1442,11 @@ final class RemoteTmuxControlConnection {
                 // command queued now could be consumed by that result and shift the
                 // FIFO. The attach-block drain queues list-windows once alignment is safe.
                 pendingPostAttachAction = wasReconnecting ? .reseed : .applyClientSize
+                // Input typed during the outage, though, replays immediately: its
+                // replies correlate positionally like any queued command, and the
+                // sooner it reaches the pty the closer we match a real ssh
+                // session's behavior across a blip.
+                flushPendingInput()
             }
         case let .exit(reason):
             record("exit\(reason.map { " " + $0 } ?? "")")
@@ -1169,13 +1501,14 @@ final class RemoteTmuxControlConnection {
             if let existing = windowsByID[id], existing.name != name {
                 windowsByID[id] = RemoteTmuxWindow(
                     id: id, name: name,
-                    width: existing.width, height: existing.height, layout: existing.layout
+                    width: existing.width, height: existing.height, layout: existing.layout,
+                    visibleLayout: existing.visibleLayout
                 )
                 observers.notifyTopologyChanged()
             }
-        case let .layoutChange(id, layout):
-            applyLayout(windowId: id, layout: layout)
-            record("layout-change @\(id)")
+        case let .layoutChange(id, layout, visibleLayout, zoomed):
+            applyLayout(windowId: id, layout: layout, visibleLayout: visibleLayout, zoomed: zoomed)
+            record("layout-change @\(id)\(zoomed ? " zoomed" : "")")
             observers.notifyTopologyChanged()
         case let .windowPaneChanged(windowId, paneId):
             activePaneByWindow[windowId] = paneId
@@ -1200,6 +1533,7 @@ final class RemoteTmuxControlConnection {
             if !attachBlockDrained {
                 attachBlockDrained = true
                 requestWindows()
+                requestPrefixKey()
             } else {
                 handleCommandResult(lines: lines, isError: isError)
             }
@@ -1279,18 +1613,21 @@ final class RemoteTmuxControlConnection {
             var next: [Int: RemoteTmuxWindow] = [:]
             var initialActivePane: [Int: Int] = [:]
             for line in lines {
-                // "@<id> %<active-pane> <layout> <name with spaces…>" — id,
-                // pane, and layout never contain spaces, so split into at
-                // most 4 fields.
-                let parts = line.split(separator: " ", maxSplits: 3, omittingEmptySubsequences: false)
-                guard parts.count >= 3,
+                // "@<id> %<active-pane> <Z|-> <layout> <visible-layout>
+                // <name with spaces…>" — every field before the name never
+                // contains spaces, so split into at most 6 fields.
+                let parts = line.split(separator: " ", maxSplits: 5, omittingEmptySubsequences: false)
+                guard parts.count >= 5,
                       let id = RemoteTmuxControlStreamParser.id(parts[0], sigil: "@"),
                       let activePane = RemoteTmuxControlStreamParser.id(parts[1], sigil: "%"),
-                      let node = RemoteTmuxRawLayoutParser.parse(String(parts[2]))
+                      let node = RemoteTmuxRawLayoutParser.parse(String(parts[3]))
                 else { continue }
-                let name = parts.count >= 4 ? String(parts[3]) : ""
+                let zoomed = parts[2] == "Z"
+                let visibleNode = zoomed ? RemoteTmuxRawLayoutParser.parse(String(parts[4])) : nil
+                let name = parts.count >= 6 ? String(parts[5]) : ""
                 next[id] = RemoteTmuxWindow(
-                    id: id, name: name, width: node.width, height: node.height, layout: node
+                    id: id, name: name, width: node.width, height: node.height, layout: node,
+                    visibleLayout: visibleNode
                 )
                 initialActivePane[id] = activePane
                 order.append(id)
@@ -1355,7 +1692,10 @@ final class RemoteTmuxControlConnection {
             // tmux's real prompt cursor — otherwise echoed input lands a line below
             // the prompt. The `.paneState` seed then repositions the cursor within
             // the visible screen.
-            let painted = "\u{1b}[H\u{1b}[2J" + lines.joined(separator: "\r\n")
+            // `ESC[m` first: the erase fills with the CURRENT SGR background, and a
+            // surface reused across reconnect (or one an alt-screen app left with a
+            // colored pen) would otherwise flash — or keep — that stale background.
+            let painted = "\u{1b}[m\u{1b}[H\u{1b}[2J" + lines.joined(separator: "\r\n")
             if let data = painted.data(using: .utf8) {
                 observers.emitPaneOutput(paneId, data)
             }
@@ -1386,6 +1726,17 @@ final class RemoteTmuxControlConnection {
             // consumers (batch close, workspace close, quit warning) benefit too.
             for (paneId, state) in states { paneForegroundStates[paneId] = state }
             completion(states)
+        case .prefixKey:
+            // The server's actual prefix. An unparseable value (a remapped
+            // non-Ctrl prefix, `None`) disables typed-input interception rather
+            // than falling back to C-b — stealing literal bytes is worse than
+            // asking the user to drive tmux bindings from a real client.
+            let parsed = Self.parsePrefixKeyOption(lines.first ?? "")
+            tmuxPrefixKeyName = parsed?.name
+            tmuxPrefixByte = parsed?.byte
+            #if DEBUG
+            cmuxDebugLog("remote.tmux.prefix key=\(parsed?.name ?? "disabled")")
+            #endif
         case let .paneAltScreen(paneId):
             // Match the mirror surface to the remote pane's screen (alt = no reflow on
             // resize). Emitted before the capture paint that follows in the FIFO, so the
@@ -1403,12 +1754,16 @@ final class RemoteTmuxControlConnection {
         }
     }
 
-    private func applyLayout(windowId: Int, layout: String) {
+    private func applyLayout(windowId: Int, layout: String, visibleLayout: String?, zoomed: Bool) {
         guard let node = RemoteTmuxRawLayoutParser.parse(layout) else { return }
+        // Only a ZOOMED window renders its visible layout; unzoomed the two are
+        // identical and carrying nil keeps `RemoteTmuxWindow.zoomed` meaningful.
+        let visibleNode = zoomed ? visibleLayout.flatMap { RemoteTmuxRawLayoutParser.parse($0) } : nil
         // Preserve any name tmux already reported (a %layout-change carries no name).
         let existingName = windowsByID[windowId]?.name ?? ""
         windowsByID[windowId] = RemoteTmuxWindow(
-            id: windowId, name: existingName, width: node.width, height: node.height, layout: node
+            id: windowId, name: existingName, width: node.width, height: node.height, layout: node,
+            visibleLayout: visibleNode
         )
         if !windowOrder.contains(windowId) { windowOrder.append(windowId) }
         prunePaneState(keeping: Set(windowsByID.values.flatMap { $0.paneIDsInOrder }))

@@ -49,10 +49,10 @@ write_dev_cli_shim() {
   mkdir -p "$(dirname "$target")"
   cat > "$target" <<EOF
 #!/usr/bin/env bash
-# cmux dev shim (managed by scripts/reload.sh)
+# amux dev shim (managed by scripts/reload.sh)
 set -euo pipefail
 
-CLI_PATH_FILE="/tmp/cmux-last-cli-path"
+CLI_PATH_FILES=("/tmp/amux-last-cli-path" "/tmp/cmux-last-cli-path")
 SOCKET_ARG=""
 EXPECT_SOCKET_VALUE=0
 for arg in "\$@"; do
@@ -76,7 +76,11 @@ if [[ -n "\$SOCKET_ARG" ]]; then
     TAG="\${SOCKET_NAME#cmux-debug-}"
     TAG="\${TAG%.sock}"
     if [[ "\$TAG" =~ ^[A-Za-z0-9_-]+$ ]]; then
-      TAG_CLI="\$HOME/Library/Developer/Xcode/DerivedData/cmux-\$TAG/Build/Products/Debug/cmux DEV \$TAG.app/Contents/Resources/bin/cmux"
+      TAG_APP="\$HOME/Library/Developer/Xcode/DerivedData/cmux-\$TAG/Build/Products/Debug/cmux DEV \$TAG.app"
+      TAG_CLI="\$TAG_APP/Contents/Resources/bin/amux"
+      if [[ ! -x "\$TAG_CLI" ]]; then
+        TAG_CLI="\$TAG_APP/Contents/Resources/bin/cmux"
+      fi
       if [[ -x "\$TAG_CLI" ]] && [[ "\$TAG_CLI" != "\$0" ]]; then
         exec "\$TAG_CLI" "\$@"
       fi
@@ -87,27 +91,30 @@ if [[ -n "\${CMUX_BUNDLED_CLI_PATH:-}" ]] && [[ -f "\$CMUX_BUNDLED_CLI_PATH" ]] 
   exec "\$CMUX_BUNDLED_CLI_PATH" "\$@"
 fi
 
-CLI_PATH_OWNER="\$(stat -f '%u' "\$CLI_PATH_FILE" 2>/dev/null || stat -c '%u' "\$CLI_PATH_FILE" 2>/dev/null || echo -1)"
-if [[ -r "\$CLI_PATH_FILE" ]] && [[ ! -L "\$CLI_PATH_FILE" ]] && [[ "\$CLI_PATH_OWNER" == "\$(id -u)" ]]; then
-  CLI_PATH="\$(cat "\$CLI_PATH_FILE")"
-  if [[ -x "\$CLI_PATH" ]]; then
-    exec "\$CLI_PATH" "\$@"
+for CLI_PATH_FILE in "\${CLI_PATH_FILES[@]}"; do
+  CLI_PATH_OWNER="\$(stat -f '%u' "\$CLI_PATH_FILE" 2>/dev/null || stat -c '%u' "\$CLI_PATH_FILE" 2>/dev/null || echo -1)"
+  if [[ -r "\$CLI_PATH_FILE" ]] && [[ ! -L "\$CLI_PATH_FILE" ]] && [[ "\$CLI_PATH_OWNER" == "\$(id -u)" ]]; then
+    CLI_PATH="\$(cat "\$CLI_PATH_FILE")"
+    if [[ -x "\$CLI_PATH" ]]; then
+      exec "\$CLI_PATH" "\$@"
+    fi
   fi
-fi
+done
 
 if [[ -x "$fallback_bin" ]]; then
   exec "$fallback_bin" "\$@"
 fi
 
-echo "error: no reload-selected dev cmux CLI found. Run ./scripts/reload.sh --tag <name> first." >&2
+echo "error: no reload-selected dev amux CLI found. Run ./scripts/reload.sh --tag <name> first." >&2
 exit 1
 EOF
   chmod +x "$target"
 }
 
-select_cmux_shim_target() {
+select_cli_shim_target() {
+  local command_name="$1"
   local app_cli_dir="/Applications/cmux.app/Contents/Resources/bin"
-  local marker="cmux dev shim (managed by scripts/reload.sh)"
+  local marker_regex="(amux|cmux) dev shim \\(managed by scripts/reload.sh\\)"
   local target=""
   local path_entry=""
   local candidate=""
@@ -122,12 +129,12 @@ select_cmux_shim_target() {
       break
     fi
     [[ -d "$path_entry" && -w "$path_entry" ]] || continue
-    candidate="$path_entry/cmux"
+    candidate="$path_entry/$command_name"
     if [[ ! -e "$candidate" ]]; then
       target="$candidate"
       break
     fi
-    if [[ -f "$candidate" ]] && grep -q "$marker" "$candidate" 2>/dev/null; then
+    if [[ -f "$candidate" ]] && grep -Eq "$marker_regex" "$candidate" 2>/dev/null; then
       target="$candidate"
       break
     fi
@@ -141,18 +148,26 @@ select_cmux_shim_target() {
   # Fallback for PATH layouts where app CLI isn't listed or no earlier entries were writable.
   for path_entry in /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin" "$HOME/bin"; do
     [[ -d "$path_entry" && -w "$path_entry" ]] || continue
-    candidate="$path_entry/cmux"
+    candidate="$path_entry/$command_name"
     if [[ ! -e "$candidate" ]]; then
       echo "$candidate"
       return 0
     fi
-    if [[ -f "$candidate" ]] && grep -q "$marker" "$candidate" 2>/dev/null; then
+    if [[ -f "$candidate" ]] && grep -Eq "$marker_regex" "$candidate" 2>/dev/null; then
       echo "$candidate"
       return 0
     fi
   done
 
   return 1
+}
+
+select_amux_shim_target() {
+  select_cli_shim_target amux
+}
+
+select_cmux_shim_target() {
+  select_cli_shim_target cmux
 }
 
 publish_reload_cli_path() {
@@ -164,16 +179,24 @@ publish_reload_cli_path() {
     return 0
   fi
 
+  (umask 077; printf '%s\n' "$cli_path" > /tmp/amux-last-cli-path) || true
   (umask 077; printf '%s\n' "$cli_path" > /tmp/cmux-last-cli-path) || true
+  ln -sfn "$cli_path" /tmp/amux-cli || true
   ln -sfn "$cli_path" /tmp/cmux-cli || true
 
   # Stable shim that always follows the last reload-selected dev CLI.
-  DEV_CLI_SHIM="$HOME/.local/bin/cmux-dev"
-  write_dev_cli_shim "$DEV_CLI_SHIM" "/Applications/cmux.app/Contents/Resources/bin/cmux"
+  DEV_CLI_SHIM="$HOME/.local/bin/amux-dev"
+  write_dev_cli_shim "$DEV_CLI_SHIM" "/Applications/cmux.app/Contents/Resources/bin/amux"
+  COMPAT_DEV_CLI_SHIM="$HOME/.local/bin/cmux-dev"
+  write_dev_cli_shim "$COMPAT_DEV_CLI_SHIM" "/Applications/cmux.app/Contents/Resources/bin/amux"
 
+  AMUX_SHIM_TARGET="$(select_amux_shim_target || true)"
+  if [[ -n "${AMUX_SHIM_TARGET:-}" ]]; then
+    write_dev_cli_shim "$AMUX_SHIM_TARGET" "/Applications/cmux.app/Contents/Resources/bin/amux"
+  fi
   CMUX_SHIM_TARGET="$(select_cmux_shim_target || true)"
   if [[ -n "${CMUX_SHIM_TARGET:-}" ]]; then
-    write_dev_cli_shim "$CMUX_SHIM_TARGET" "/Applications/cmux.app/Contents/Resources/bin/cmux"
+    write_dev_cli_shim "$CMUX_SHIM_TARGET" "/Applications/cmux.app/Contents/Resources/bin/amux"
   fi
 }
 
@@ -256,8 +279,9 @@ Options:
   --name <app name>      Override app display/bundle name.
   --bundle-id <id>       Override bundle identifier.
   --derived-data <path>  Override derived data path.
-  --no-global-cli-links  Do not update /tmp/cmux-cli, /tmp/cmux-last-cli-path,
-                         or PATH cmux-dev shims. Useful for isolated dogfood.
+  --no-global-cli-links  Do not update /tmp/amux-cli, /tmp/amux-last-cli-path,
+                         compatibility cmux links, or PATH dev shims. Useful
+                         for isolated dogfood.
   --swift-frontend-workaround
                          Work around Swift arm64 frontend spins for this reload
                          only by disabling batch mode, debug symbol emission,
@@ -631,12 +655,17 @@ reload_finalize() {
     if [[ "$NO_GLOBAL_CLI_LINKS" == "1" ]]; then
       echo "  preserved existing global cmux CLI links (--no-global-cli-links)"
     else
-      echo "  /tmp/cmux-cli ..."
-      echo "  $HOME/.local/bin/cmux-dev ..."
-      if [[ -n "${CMUX_SHIM_TARGET:-}" ]]; then
-        echo "  $CMUX_SHIM_TARGET ..."
+      echo "  /tmp/amux-cli ..."
+      echo "  /tmp/cmux-cli ... (compatibility)"
+      echo "  $HOME/.local/bin/amux-dev ..."
+      echo "  $HOME/.local/bin/cmux-dev ... (compatibility)"
+      if [[ -n "${AMUX_SHIM_TARGET:-}" ]]; then
+        echo "  $AMUX_SHIM_TARGET ..."
       fi
-      echo "If your shell still resolves the old cmux, run: rehash"
+      if [[ -n "${CMUX_SHIM_TARGET:-}" ]]; then
+        echo "  $CMUX_SHIM_TARGET ... (compatibility)"
+      fi
+      echo "If your shell still resolves an old CLI path, run: rehash"
     fi
   fi
   if [[ "${SWIFT_FRONTEND_WORKAROUND_EFFECTIVE:-0}" -eq 1 ]]; then
@@ -958,7 +987,7 @@ if [[ -n "$TAG" && "$APP_NAME" != "$SEARCH_APP_NAME" ]]; then
       set_plist_env "$INFO_PLIST" CMUX_SOCKET_MODE "allowAll"
       set_plist_env "$INFO_PLIST" CMUX_REMOTE_DAEMON_ALLOW_LOCAL_BUILD "1"
       set_plist_env "$INFO_PLIST" CMUXTERM_REPO_ROOT "$PWD"
-      set_plist_env "$INFO_PLIST" CMUX_BUNDLED_CLI_PATH "$TAG_APP_FINAL_PATH/Contents/Resources/bin/cmux"
+      set_plist_env "$INFO_PLIST" CMUX_BUNDLED_CLI_PATH "$TAG_APP_FINAL_PATH/Contents/Resources/bin/amux"
       set_plist_env "$INFO_PLIST" CMUX_SHELL_INTEGRATION_DIR "$TAG_APP_FINAL_PATH/Contents/Resources/shell-integration"
       set_plist_env "$INFO_PLIST" CMUX_PORT "$CMUX_DEV_PORT"
       set_plist_env "$INFO_PLIST" CMUX_PORT_END "$CMUX_DEV_PORT_END"
@@ -1042,7 +1071,16 @@ if [[ -n "${TAG_APP_FINAL_PATH:-}" && -n "${TAG_APP_STAGING_PATH:-}" ]]; then
   mv "$TAG_APP_STAGING_PATH" "$TAG_APP_FINAL_PATH"
   APP_PATH="$TAG_APP_FINAL_PATH"
 fi
-CLI_PATH="$APP_PATH/Contents/Resources/bin/cmux"
+CLI_BIN_DIR="$APP_PATH/Contents/Resources/bin"
+if [[ -x "$CLI_BIN_DIR/amux" ]]; then
+  CLI_PATH="$CLI_BIN_DIR/amux"
+  ln -sf amux "$CLI_BIN_DIR/cmux" || true
+elif [[ -x "$CLI_BIN_DIR/cmux" ]]; then
+  CLI_PATH="$CLI_BIN_DIR/cmux"
+  ln -sf cmux "$CLI_BIN_DIR/amux" || true
+else
+  CLI_PATH="$CLI_BIN_DIR/amux"
+fi
 publish_reload_cli_path "$CLI_PATH"
 
 # Tag mode: always terminate the existing same-tag instance after a successful build,

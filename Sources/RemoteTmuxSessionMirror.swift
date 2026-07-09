@@ -203,9 +203,32 @@ final class RemoteTmuxSessionMirror {
         windowMirrorByWindowId.removeAll()
     }
 
+    /// pane id → window id index, rebuilt on every topology change (and lazily
+    /// on a miss). ``routeOutput(paneId:data:)`` resolves the window PER OUTPUT
+    /// CHUNK, so the previous windows×panes linear scan sat directly on the
+    /// flood path.
+    private var windowIdByPane: [Int: Int] = [:]
+
+    private func rebuildPaneWindowIndex() {
+        var index: [Int: Int] = [:]
+        for (windowId, window) in connection.windowsByID {
+            for paneId in window.paneIDsInOrder { index[paneId] = windowId }
+        }
+        windowIdByPane = index
+    }
+
     /// The tmux window id (if any) whose layout currently contains `paneId`.
+    /// A stale hit is harmless (the mirror drops output for panes it no longer
+    /// hosts). A miss falls back to the linear scan and caches the answer —
+    /// output for a pane truly absent from the topology stays a scan, exactly
+    /// the pre-index behavior, so an unknown-pane flood can't repeatedly
+    /// rebuild.
     private func windowIdContaining(pane paneId: Int) -> Int? {
-        connection.windowsByID.first(where: { $0.value.paneIDsInOrder.contains(paneId) })?.key
+        if let cached = windowIdByPane[paneId] { return cached }
+        guard let found = connection.windowsByID
+            .first(where: { $0.value.paneIDsInOrder.contains(paneId) })?.key else { return nil }
+        windowIdByPane[paneId] = found
+        return found
     }
 
     /// Whether this mirrored session's current layout contains tmux pane
@@ -256,6 +279,9 @@ final class RemoteTmuxSessionMirror {
     /// local tab(s) once at least one remote tab exists.
     func rebuild() {
         guard let workspace else { return }
+        // Topology changed: refresh the pane→window routing index (prunes panes
+        // tmux removed, indexes ones it added).
+        rebuildPaneWindowIndex()
         var createdNewPanel = false
         for windowId in connection.windowOrder {
             guard let window = connection.windowsByID[windowId],
@@ -272,7 +298,16 @@ final class RemoteTmuxSessionMirror {
                     title: title,
                     focus: false,
                     onInput: { [weak connection] data in
-                        Task { @MainActor in connection?.sendKeys(paneId: firstPaneId, data: data) }
+                        // `onInput` fires on ghostty's serial I/O thread. Hop via the
+                        // main QUEUE (FIFO from a serial source), not `Task {}` — an
+                        // unstructured Task per write has no ordering guarantee, so a
+                        // burst (key auto-repeat, mouse drag, chunked paste) could
+                        // reach tmux with its bytes transposed.
+                        DispatchQueue.main.async {
+                            MainActor.assumeIsolated {
+                                _ = connection?.sendKeys(paneId: firstPaneId, data: data)
+                            }
+                        }
                     },
                     // Size the remote tmux client to the rendered grid so a single-
                     // pane window (the common case — where a claude / claude agents
@@ -380,7 +415,7 @@ final class RemoteTmuxSessionMirror {
         in workspace: Workspace
     ) {
         if let mirror = windowMirrorByWindowId[windowId] {
-            mirror.reconcile(layout: window.layout)
+            mirror.reconcile(fullLayout: window.layout, renderedLayout: window.renderedLayout)
             return
         }
         guard window.paneIDsInOrder.count > 1 else { return }
@@ -389,9 +424,16 @@ final class RemoteTmuxSessionMirror {
             panelId: panelId,
             connection: connection,
             layout: window.layout,
+            renderedLayout: window.renderedLayout,
             makePanel: { [weak workspace, weak connection] tmuxPaneId in
                 workspace?.makeRemoteTmuxPanePanel(onInput: { data in
-                    Task { @MainActor in connection?.sendKeys(paneId: tmuxPaneId, data: data) }
+                    // Main QUEUE, not `Task {}`: preserves the serial I/O thread's
+                    // write order (see the single-pane `onInput` above).
+                    DispatchQueue.main.async {
+                        MainActor.assumeIsolated {
+                            _ = connection?.sendKeys(paneId: tmuxPaneId, data: data)
+                        }
+                    }
                 })
             }
         )
@@ -437,6 +479,7 @@ final class RemoteTmuxSessionMirror {
     /// window tab when the active pane changes, so switching panes updates the
     /// folder immediately (rather than waiting for that pane's next `cd`).
     private func handleActivePaneChanged(windowId: Int, paneId: Int) {
+        windowMirrorByWindowId[windowId]?.noteTmuxActivePane(paneId)
         guard let workspace,
               windowMirrorByWindowId[windowId] != nil,
               let panelId = panelIdByWindow[windowId],

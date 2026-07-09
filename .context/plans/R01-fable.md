@@ -151,6 +151,12 @@ muxa 데스크톱 알림과 cmux 알림의 **이중 발화 방지**가 필수: c
 ### Phase 3 — 차별화 UX
 프롬프트 composer(send-keys), waiting_choice 네이티브 시트, stats/timeline 패널, 원격 호스트(기존 RemoteTmux 경로와 muxa 원격 스토리 통합).
 
+2026-07-09 구현 반영:
+- Command Palette에서 localhost 기본 tmux 서버 sync를 토글하고, 켜면 기존 로컬 tmux 세션을 워크스페이스로 미러링한다.
+- "Set Up Remote Host (muxa)…"는 SSH config alias/수동 호스트 입력을 받아 muxa 상태와 tmux 세션을 함께 감지하고, 호스트별 tmux sync on/off를 저장한다.
+- headless `amux.remote_setup`은 `inspect`/`wire`에 더해 `sync`/`unsync`를 지원하며, `sync`는 기본적으로 앱 포커스를 훔치지 않는다.
+- tmux session은 workspace, tmux window는 amux tab, tmux pane layout은 tab 내부 split으로 유지한다.
+
 ---
 
 ## 6. 리스크

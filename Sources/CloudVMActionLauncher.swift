@@ -35,13 +35,13 @@ final class CloudVMActionLauncher {
         preferredWindow: NSWindow?,
         onCompletion: ((Completion) -> Void)? = nil
     ) -> Bool {
-        let cliURL = Bundle.main.resourceURL?.appendingPathComponent("bin/cmux")
+        let cliURL = CmuxCLIPathInstaller.defaultBundledCLIURL()
         guard let cliURL,
               FileManager.default.isExecutableFile(atPath: cliURL.path) else {
             presentStartFailure(
                 summary: String(
                     localized: "command.cloudVM.failed.missingCLI",
-                    defaultValue: "The bundled cmux CLI is missing from this app build."
+                    defaultValue: "The bundled amux CLI is missing from this app build."
                 ),
                 output: "",
                 action: String(
