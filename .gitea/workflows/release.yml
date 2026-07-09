@@ -47,7 +47,7 @@ jobs:
           #   mkdir -p appcast-out && cp amux-macos.dmg appcast-out/
           #   echo "$SPARKLE_PRIVATE_KEY" > /tmp/ed_priv
           #   "$GEN" --ed-key-file /tmp/ed_priv appcast-out/ \
-          #     --download-url-prefix "https://github.com/jiunbae/amux/releases/download/${{ github.ref_name }}/"
+          #     --download-url-prefix "https://github.com/Open330/amux/releases/download/${{ github.ref_name }}/"
           #   rm -f /tmp/ed_priv
           echo "TODO: wire the amux Sparkle key (runbook §5) to sign the appcast" >&2
 

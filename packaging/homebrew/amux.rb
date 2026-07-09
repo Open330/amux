@@ -8,10 +8,10 @@ cask "amux" do
   version "0.1.0-alpha"
   sha256 "4e5de2764a69ce010e7a5b12b02f8b4ccb7394bd663eb195eb99eef0726d300d"
 
-  url "https://github.com/jiunbae/amux/releases/download/v#{version}/amux-macos.dmg"
+  url "https://github.com/Open330/amux/releases/download/v#{version}/amux-macos.dmg"
   name "amux"
   desc "tmux-native, agent-first terminal for macOS"
-  homepage "https://github.com/jiunbae/amux"
+  homepage "https://github.com/Open330/amux"
 
   # amux ships Sparkle; let it self-update once installed.
   auto_updates true

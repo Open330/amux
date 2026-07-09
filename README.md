@@ -3,7 +3,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple" alt="macOS 14+" />
-  <img src="https://img.shields.io/badge/status-alpha%20·%20phase%202-orange" alt="status" />
+  <img src="https://img.shields.io/badge/status-alpha%20·%20v0.1.0-orange" alt="status" />
   <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="GPL-3.0-or-later" />
   <img src="https://img.shields.io/badge/renderer-Ghostty-6f42c1" alt="Ghostty" />
   <img src="https://img.shields.io/badge/agents-muxa-30A46C" alt="muxa" />
@@ -60,7 +60,7 @@ Requirements: **macOS 14+**, **Xcode 26+**, `zig` (for GhosttyKit), `tmux 3.x`.
 Optional: [muxa](https://github.com/Open330/muxa) (`muxad` running) for agent badges.
 
 ```bash
-git clone --recurse-submodules git@github.com:jiunbae/amux.git
+git clone --recurse-submodules git@github.com:Open330/amux.git
 cd amux
 ./scripts/setup.sh                     # init submodules, build GhosttyKit, install hooks
 
@@ -94,10 +94,12 @@ Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.
 |---|---|---|
 | **0 — Feasibility** | Local `tmux -CC` engine on the SSH mirror stack, pty spawn, config isolation, flood/OSC/scrollback gates | ✅ all gates passed |
 | **1 — tmux-backed workspaces** | Local one-shot transport, `{"local":true}` socket RPC family, multipane socket I/O routing, launch-time session reconcile | ✅ live-verified |
-| **2 — Agent layer** | `CmuxMuxa` daemon client (hello/snapshot/subscribe), sidebar agent badges | 🔶 badges shipped — next: **attend** (jump to the longest-blocked agent), prompt composer, `waiting_choice` native sheet |
-| **muxa co-evolution** | muxad must observe non-default tmux sockets (`-L amux`) and put session names back on the wire — today's pane-id join can mis-badge across servers | 🔜 next up (blocks badge accuracy) |
-| **3 — Deep UX** | New workspace creates a tmux session by default, Detached-sessions sidebar section, kill-vs-detach affordances, stats/timeline panel, remote-host unification | ⬜ |
-| **4 — Product** | amux branding split (bundle id, socket, update feed), bundled pinned tmux + muxad + CLI in one `.dmg`, launchd agent for muxad, first-run wizard (hook wiring), Sparkle updates, Homebrew cask | ⬜ |
+| **2 — Agent layer** | `CmuxMuxa` daemon client (hello/snapshot/subscribe), sidebar agent badges, **attend** (jump to longest-blocked agent, ⌘⇧J), prompt composer, `waiting_choice` native sheet | ✅ shipped |
+| **muxa co-evolution** | muxad carries `tmux_socket` + `tmux_session` on the wire so amux joins by session name across servers ([Open330/muxa#60](https://github.com/Open330/muxa/pull/60)) | ✅ merged (upgrade muxad) |
+| **3 — Deep UX** | New/attach/detach/kill lifecycle, detach-by-default, opt-in ⌘N tmux-backed workspace | 🔶 lifecycle shipped — Detached-sessions **visual** sidebar section + stats panel remain |
+| **4 — Product** | amux branding, bundled tmux 3.7b + muxad/muxa, opt-in muxad LaunchAgent, first-run wizard, signed + notarized dmg, Homebrew cask | ✅ **v0.1.0-alpha shipped** (Sparkle auto-update pending amux's own key) |
+
+Download the signed, notarized build from [Releases](https://github.com/Open330/amux/releases/latest).
 
 ## Relationship to cmux
 
