@@ -72,21 +72,26 @@ if [[ -d vendor/amux-runtime/bin ]]; then
   for rt in vendor/amux-runtime/bin/*; do cp "$rt" "$BIN_DIR/"; chmod +x "$BIN_DIR/$(basename "$rt")"; done
 fi
 
-echo "==> resolving entitlements + signing (Developer ID, hardened runtime)"
-# Resolve the entitlement build-setting variables to concrete values.
-ENT="$WORK/amux.entitlements"
-sed -e "s/\$(AppIdentifierPrefix)/${TEAM_ID}./g" \
-    -e "s/\$(PRODUCT_BUNDLE_IDENTIFIER)/com.open330.amux/g" \
-    Resources/cmux.entitlements > "$ENT"
-# Sign the bundled runtime in Resources/bin explicitly (a --deep pass does
-# NOT descend into non-bundle executables there), then one --deep pass signs
-# the app plus every nested bundle (Frameworks, PlugIns/*.plugin, Extensions/
-# *.appex) inside-out. --entitlements applies to the main executable only;
-# nested bundles are signed without the keychain-access-groups entitlement.
+echo "==> signing (Developer ID, hardened runtime, no restricted entitlements)"
+# Deliberately sign WITHOUT the keychain-access-groups entitlement. It is a
+# *restricted* entitlement that requires an embedded provisioning profile to
+# authorize; applying it to a Developer ID build with no profile makes launchd
+# refuse to spawn the app (RBS "Launchd job spawn failed", POSIX 163 — the app
+# is signed + notarized yet won't open). The declared group was just the app's
+# own default group ($(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)), which
+# every app gets implicitly, so dropping it is a no-op for keychain behavior.
+# (Verified: re-signing the failing app without it → launches.) If amux ever
+# needs a *shared* keychain group, create a Developer ID provisioning profile
+# for com.open330.amux and embed it instead.
+#
+# Sign the bundled runtime in Resources/bin explicitly (a --deep pass does not
+# descend into non-bundle executables there), then one --deep pass signs the
+# app plus every nested bundle (Frameworks, PlugIns/*.plugin, XPCServices)
+# inside-out.
 find "$BIN_DIR" -type f -perm +111 -exec \
   codesign --force --options runtime --timestamp --keychain "$KEYCHAIN" --sign "$IDENTITY" {} \;
 codesign --force --deep --options runtime --timestamp --keychain "$KEYCHAIN" \
-  --entitlements "$ENT" --sign "$IDENTITY" "$APP"
+  --sign "$IDENTITY" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 echo "==> codesign verified"
 
