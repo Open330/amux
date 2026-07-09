@@ -671,6 +671,107 @@ final class RemoteTmuxController {
         return mirror.sendPrompt(text, toPane: pane)
     }
 
+    /// Reads a mirrored pane's screen text plus up to `historyLines` of
+    /// scrollback, with the pane's current `history_size` as an incremental
+    /// cursor: a caller stores it and, on the next read, `history_size -
+    /// lastCursor` bounds how many NEW scrollback lines appeared since. The
+    /// agent-driving read primitive behind `amux.pane_read`. `nil` when the
+    /// workspace is not a live mirror or the capture fails.
+    func readMirrorPane(
+        workspaceId: UUID, tmuxPane: Int?, historyLines: Int
+    ) async -> (pane: Int, text: String, historySize: Int)? {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return nil }
+        let transport = transport(for: mirror.host)
+        let capture = try? await transport.runTmux(
+            ["capture-pane", "-t", "%\(pane)", "-p", "-S", "-\(max(0, historyLines))"]
+        )
+        guard let capture, capture.succeeded else { return nil }
+        let size = try? await transport.runTmux(
+            ["display-message", "-p", "-t", "%\(pane)", "-F", "#{history_size}"]
+        )
+        let historySize = size.flatMap { Int($0.stdout.trimmingCharacters(in: .whitespacesAndNewlines)) } ?? 0
+        return (pane, capture.stdout, historySize)
+    }
+
+    /// A point-in-time observation of a mirrored pane for the `amux.pane_wait`
+    /// poll loop: liveness, foreground classification, and cumulative output
+    /// bytes (the "render quiet" signal — unchanged bytes across a quiet
+    /// window means the pane stopped streaming).
+    struct MirrorPaneObservation {
+        let pane: Int
+        let paneExists: Bool
+        let foreground: RemoteTmuxPaneForegroundState?
+        let outputBytes: Int
+    }
+
+    /// Observes `workspaceId`'s mirrored pane (see ``MirrorPaneObservation``).
+    /// `nil` when the workspace is not a live mirror; when `tmuxPane` is gone
+    /// from the layout the observation reports `paneExists: false` instead of
+    /// retargeting, so a wait-for-exit caller sees the pane's end.
+    func observeMirrorPane(workspaceId: UUID, tmuxPane: Int?) -> MirrorPaneObservation? {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId })
+        else { return nil }
+        let connection = mirror.connection
+        let livePanes = Set(connection.windowsByID.values.flatMap { $0.paneIDsInOrder })
+        let pane: Int
+        if let tmuxPane {
+            pane = tmuxPane
+        } else if let target = mirror.promptTargetPane(preferring: nil) {
+            pane = target
+        } else {
+            return nil
+        }
+        return MirrorPaneObservation(
+            pane: pane,
+            paneExists: livePanes.contains(pane),
+            foreground: connection.paneForegroundStates[pane],
+            outputBytes: connection.paneOutputByteCounts[pane] ?? 0
+        )
+    }
+
+    /// The outcome of a guarded agent-directed send (see
+    /// ``guardedSendToMirror(workspaceId:tmuxPane:text:enter:guarded:)``).
+    enum GuardedMirrorSendOutcome {
+        case sent(pane: Int)
+        case notMirror
+        /// The guard refused: the pane's foreground is not an interactive app
+        /// (a bare shell, or unclassified) — typing agent-directed text there
+        /// would execute it as shell commands.
+        case notSendable(pane: Int, foreground: String?)
+    }
+
+    /// Sends `text` into `workspaceId`'s mirrored pane with an orca-style
+    /// sendability guard: unless `guarded` is false, the pane's foreground
+    /// must be an interactive (non-shell) app — the same classification the
+    /// close-confirmation uses — so a prompt meant for an agent can never be
+    /// executed by a bare shell that took the pane over. Multi-line text goes
+    /// through the bracketed tmux paste path; Enter is queued after the paste
+    /// flush so it can't outrun the chunks.
+    func guardedSendToMirror(
+        workspaceId: UUID, tmuxPane: Int?, text: String, enter: Bool, guarded: Bool
+    ) -> GuardedMirrorSendOutcome {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return .notMirror }
+        let connection = mirror.connection
+        if guarded {
+            let state = connection.paneForegroundStates[pane]
+            guard state?.hasActiveCommand == true else {
+                return .notSendable(pane: pane, foreground: state?.command)
+            }
+        }
+        if text.contains(where: { $0 == "\n" || $0 == "\r" }) {
+            guard connection.pastePane(paneId: pane, text: text, pressEnterAfter: enter) else {
+                return .notMirror
+            }
+        } else {
+            var data = Data(text.utf8)
+            if enter { data.append(0x0d) }
+            guard connection.sendKeys(paneId: pane, data: data) else { return .notMirror }
+        }
+        return .sent(pane: pane)
+    }
+
     /// Focuses tmux pane `%tmuxPane` inside `workspaceId`'s mirror (selects
     /// the window-tab and, for multipane windows, the pane). No-op when the
     /// workspace isn't a mirror or the pane left its layout.

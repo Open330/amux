@@ -1133,9 +1133,16 @@ final class RemoteTmuxControlConnection {
     /// buffer so there's no buffer-name collision; concurrent pastes serialize on
     /// ``pasteFlushTask``.
     @discardableResult
-    func pastePane(paneId: Int, text: String) -> Bool {
+    func pastePane(paneId: Int, text: String, pressEnterAfter: Bool = false) -> Bool {
         guard connectionState == .connected else { return false }
-        guard let commands = Self.pastePaneCommands(paneId: paneId, text: text) else { return false }
+        guard var commands = Self.pastePaneCommands(paneId: paneId, text: text) else { return false }
+        // Enter must be queued INSIDE the serialized flush, after the
+        // paste-buffer command — a caller-side send-keys would race ahead of
+        // the (async, capacity-paced) chunk delivery and submit before the
+        // pasted text exists.
+        if pressEnterAfter {
+            commands.append("send-keys -t %\(paneId) -H 0d")
+        }
         let previous = pasteFlushTask
         pasteFlushTask = Task { @MainActor [weak self] in
             await previous?.value

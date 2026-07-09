@@ -207231,6 +207231,125 @@
         }
       }
     },
+    "socket.amux.paneNotSendable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "واجهة اللوحة الأمامية ليست وكيلًا تفاعليًا (مرر guarded=false للإرسال على أي حال)"
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prednji proces panela nije interaktivni agent (proslijedite guarded=false da ipak pošaljete)"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panelets forgrundsproces er ikke en interaktiv agent (send guarded=false for at sende alligevel)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Vordergrundprozess des Panes ist kein interaktiver Agent (mit guarded=false trotzdem senden)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pane foreground is not an interactive agent (pass guarded=false to send anyway)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El primer plano del panel no es un agente interactivo (pase guarded=false para enviar de todos modos)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le premier plan du panneau n'est pas un agent interactif (passez guarded=false pour envoyer quand même)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il primo piano del pannello non è un agente interattivo (passa guarded=false per inviare comunque)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ペインのフォアグラウンドが対話型エージェントではありません（guarded=false を渡すと強制送信できます）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pane 포그라운드가 대화형 에이전트가 아닙니다 (guarded=false를 전달하면 강제로 전송합니다)"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panelets forgrunn er ikke en interaktiv agent (send guarded=false for å sende likevel)"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pierwszy plan panelu nie jest interaktywnym agentem (przekaż guarded=false, aby mimo to wysłać)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O primeiro plano do painel não é um agente interativo (passe guarded=false para enviar mesmo assim)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Передний план панели не является интерактивным агентом (передайте guarded=false, чтобы всё равно отправить)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โปรเซสเบื้องหน้าของเพนไม่ใช่เอเจนต์แบบโต้ตอบ (ส่ง guarded=false เพื่อส่งต่อไป)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bölmenin ön planı etkileşimli bir ajan değil (yine de göndermek için guarded=false geçirin)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Передній план панелі не є інтерактивним агентом (передайте guarded=false, щоб надіслати попри це)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗格前台不是交互式代理（传入 guarded=false 可强制发送）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗格前台不是互動式代理（傳入 guarded=false 可強制傳送）"
+          }
+        }
+      }
+    },
     "socket.amux.remoteSetupActionInvalid": {
       "extractionState": "manual",
       "localizations": {
@@ -207273,6 +207392,125 @@
           "stringUnit": {
             "state": "translated",
             "value": "action은 status, sync, unsync 중 하나여야 합니다"
+          }
+        }
+      }
+    },
+    "socket.amux.waitForInvalid": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يجب أن يكون for إما \"idle\" أو \"exit\""
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for mora biti \"idle\" ili \"exit\""
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for skal være \"idle\" eller \"exit\""
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for muss \"idle\" oder \"exit\" sein"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for must be \"idle\" or \"exit\""
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for debe ser \"idle\" o \"exit\""
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for doit être \"idle\" ou \"exit\""
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for deve essere \"idle\" o \"exit\""
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for は \"idle\" か \"exit\" である必要があります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for는 \"idle\" 또는 \"exit\"여야 합니다"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for må være \"idle\" eller \"exit\""
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for musi mieć wartość \"idle\" lub \"exit\""
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for deve ser \"idle\" ou \"exit\""
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for должно быть \"idle\" или \"exit\""
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for ต้องเป็น \"idle\" หรือ \"exit\""
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for \"idle\" veya \"exit\" olmalıdır"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for має бути \"idle\" або \"exit\""
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for 必须为 \"idle\" 或 \"exit\""
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for 必須為 \"idle\" 或 \"exit\""
           }
         }
       }

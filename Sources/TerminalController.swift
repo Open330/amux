@@ -1405,6 +1405,12 @@ class TerminalController {
             return v2AmuxSessions(id: request.id, params: request.params)
         case "amux.attach_session":
             return v2AmuxAttachSession(id: request.id, params: request.params)
+        case "amux.pane_read":
+            return v2AmuxPaneRead(id: request.id, params: request.params)
+        case "amux.pane_wait":
+            return v2AmuxPaneWait(id: request.id, params: request.params)
+        case "amux.pane_send":
+            return v2Result(id: request.id, v2AmuxPaneSend(params: request.params))
 #if DEBUG
         case "debug.sidebar.simulate_drag":
             return v2Result(id: request.id, v2DebugSidebarSimulateDrag(params: request.params))
