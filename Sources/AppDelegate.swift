@@ -1812,6 +1812,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
     func applicationDidBecomeActive(_ notification: Notification) {
         PortScanner.shared.setTrackedAgentScanningPaused(false)
+        // Re-assert every mirror's client grid: with a second tmux client
+        // attached at a different size, `window-size latest` follows whichever
+        // client acted last — coming back to cmux should make our grid win
+        // immediately instead of on the next keystroke.
+        remoteTmuxController.reassertClientSizes()
         let activationWindows = mainWindowsForVisibilityController()
         if mainWindowVisibilityController.finishPendingApplicationActivationRestore(windows: activationWindows, reason: .applicationDidBecomeActive) == nil, !hasVisibleMainTerminalWindow() {
             _ = mainWindowVisibilityController.restoreApplicationWindowsAfterActivation(windows: activationWindows, reason: .applicationDidBecomeActive)

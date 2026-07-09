@@ -79,9 +79,21 @@ struct RemoteTmuxControlMessageDecoding {
         else if on("mouse_standard_flag") { seq += "\u{1b}[?1000h" }
         if on("mouse_sgr_flag") { seq += "\u{1b}[?1006h" }
         else if on("mouse_utf8_flag") { seq += "\u{1b}[?1005h" }
-        // (Bracketed-paste mode is intentionally not seeded: tmux exposes no
-        // reliable pane format for it, and paste fidelity is handled by tmux's own
-        // `paste-buffer -p` in ``pastePane(paneId:text:)``.)
+        // Bracketed paste (?2004): tmux ≥3.4 exposes `bracket_paste_flag`
+        // (verified live on 3.7b — the flag tracks the pane's real pty state).
+        // Seed BOTH directions so a surface reused across reconnect can't keep a
+        // stale value. On older tmux the field is absent from the reply → emit
+        // nothing (surface default stays). Paste fidelity itself is handled by
+        // tmux's own `paste-buffer -p` in ``pastePane(paneId:text:)``; seeding
+        // this keeps the mirror's terminal state faithful for everything else.
+        // (The kitty keyboard protocol and alt-scroll ?1007 remain unseedable:
+        // tmux 3.7b exposes no pane format that tracks them — `pane_key_mode`
+        // stays "VT10x" after a `CSI >1u` push, verified empirically. An app
+        // that enables them AFTER attach still works: those enables arrive in
+        // the live `%output` stream and ghostty applies them normally.)
+        if let bracketPaste = fields["bracket_paste_flag"] {
+            seq += bracketPaste == "1" ? "\u{1b}[?2004h" : "\u{1b}[?2004l"
+        }
         // Origin mode (DECOM) before the cursor — changing it homes the cursor.
         let originOn = on("origin_flag")
         seq += originOn ? "\u{1b}[?6h" : "\u{1b}[?6l"

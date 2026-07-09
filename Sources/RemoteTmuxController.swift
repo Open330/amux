@@ -1392,6 +1392,16 @@ final class RemoteTmuxController {
         removeCachedConnection(forKey: key)?.stop()
     }
 
+    /// Re-asserts every live mirror's client grid (see
+    /// ``RemoteTmuxControlConnection/reassertClientSize()``). Called when the
+    /// app becomes active so a session shared with another differently-sized
+    /// tmux client snaps back to the mirror's grid on focus return.
+    func reassertClientSizes() {
+        for connection in connectionsByHostSession.values {
+            connection.reassertClientSize()
+        }
+    }
+
     /// Detaches every control connection on app quit and closes the shared SSH
     /// ControlMasters, so quitting cmux closes the ssh connections it opened (the
     /// CLI's `ssh -f` left them persistent). Does NOT kill any remote tmux

@@ -45,18 +45,28 @@ final class RemoteTmuxWindowMirror {
     /// minted at panel-creation time so the view body is a pure read.
     @ObservationIgnored private var syntheticPaneIds: [Int: PaneID] = [:]
 
+    /// Panels handed over at creation time (keyed by tmux pane id): the
+    /// window's original single-pane DISPLAY panel is adopted as that pane's
+    /// mirror panel, so the first split preserves its live surface and
+    /// scrollback instead of re-seeding from a `capture-pane` snapshot.
+    /// Consumed by the first ``reconcile``; leftovers (pane already gone) are
+    /// closed.
+    @ObservationIgnored private var pendingAdoptedPanels: [Int: TerminalPanel]
+
     init(
         windowId: Int,
         panelId: UUID,
         connection: RemoteTmuxControlConnection,
         layout: RemoteTmuxLayoutNode,
         renderedLayout: RemoteTmuxLayoutNode? = nil,
+        adoptedPanels: [Int: TerminalPanel] = [:],
         makePanel: @escaping (_ tmuxPaneId: Int) -> TerminalPanel?
     ) {
         self.windowId = windowId
         self.panelId = panelId
         self.connection = connection
         self.makePanel = makePanel
+        self.pendingAdoptedPanels = adoptedPanels
         self.fullLayout = layout
         self.layout = renderedLayout ?? layout
         reconcile(fullLayout: layout, renderedLayout: renderedLayout ?? layout)
@@ -111,12 +121,33 @@ final class RemoteTmuxWindowMirror {
         fullLayout = newFullLayout
         let livePaneIds = Set(newFullLayout.paneIDsInOrder)
         for paneId in newFullLayout.paneIDsInOrder where panelsByPaneId[paneId] == nil {
+            // Adoption first: the window's original display panel is already
+            // live and painted for this pane — reuse it (keeping its surface
+            // and scrollback) instead of minting a fresh panel and re-seeding
+            // from a capture-pane snapshot.
+            if let adopted = pendingAdoptedPanels.removeValue(forKey: paneId) {
+                panelsByPaneId[paneId] = adopted
+                syntheticPaneIds[paneId] = PaneID()
+                continue
+            }
             guard let panel = makePanel(paneId) else { continue }
             panelsByPaneId[paneId] = panel
             syntheticPaneIds[paneId] = PaneID()
+            // Backlog overflow discards the buffered stream whole; re-seed from
+            // tmux so the first paint is the true screen (see
+            // ``TerminalSurface/onRemoteOutputOverflowReseed``).
+            panel.surface.onRemoteOutputOverflowReseed = { [weak connection] in
+                connection?.seedPane(paneId: paneId)
+            }
             // Canonical seed (reflow classification → capture → cwd). The session
             // mirror's cwd observer maps the pane back to this window's tab.
             connection?.seedPane(paneId: paneId)
+        }
+        // An adopted panel whose pane vanished before this reconcile has no
+        // owner left — close it rather than leak the live surface.
+        if !pendingAdoptedPanels.isEmpty {
+            for panel in pendingAdoptedPanels.values { panel.close() }
+            pendingAdoptedPanels.removeAll()
         }
         for (paneId, panel) in panelsByPaneId where !livePaneIds.contains(paneId) {
             // Use the full panel close (detaches the portal from the registry

@@ -553,6 +553,16 @@ final class RemoteTmuxControlConnection {
         }
     }
 
+    /// Re-sends the stored client grid immediately, bypassing the debounce and
+    /// the same-size dedup. Used when cmux regains app focus: with another tmux
+    /// client attached at a different size, `window-size latest` follows the
+    /// last client that acted, so re-asserting on activation snaps the session
+    /// back to the mirror's grid without waiting for a keystroke.
+    func reassertClientSize() {
+        guard connectionState == .connected, let size = lastClientSize else { return }
+        send("refresh-client -C \(size.columns)x\(size.rows)")
+    }
+
     /// Requests the current window list + layouts (used to (re)build topology).
     ///
     /// `#{window_name}` is placed last because it can contain spaces, while the
@@ -640,7 +650,8 @@ final class RemoteTmuxControlConnection {
                 + "wrap_flag=#{wrap_flag},origin_flag=#{origin_flag},pane_height=#{pane_height},"
                 + "mouse_all_flag=#{mouse_all_flag},mouse_button_flag=#{mouse_button_flag},"
                 + "mouse_standard_flag=#{mouse_standard_flag},"
-                + "mouse_sgr_flag=#{mouse_sgr_flag},mouse_utf8_flag=#{mouse_utf8_flag}\"",
+                + "mouse_sgr_flag=#{mouse_sgr_flag},mouse_utf8_flag=#{mouse_utf8_flag},"
+                + "bracket_paste_flag=#{bracket_paste_flag}\"",
             kind: .paneState(paneId)
         )
     }

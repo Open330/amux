@@ -504,10 +504,18 @@ extension TerminalSurface {
     public func processRemoteOutput(_ data: Data) {
         guard !data.isEmpty else { return }
         guard let surface = liveSurfaceForGhosttyAccess(reason: "remoteOutput") else {
-            pendingRemoteOutput.append(data)
-            if pendingRemoteOutput.count > maxPendingRemoteOutputBytes {
-                pendingRemoteOutput.removeFirst(pendingRemoteOutput.count - maxPendingRemoteOutputBytes)
+            // Once the buffer overflows, dropping its FRONT would replay a
+            // stream that starts mid-escape or mid-UTF-8 and garble the first
+            // frame. Drop the WHOLE backlog instead and remember to re-seed
+            // from tmux when the surface goes live — `capture-pane` reproduces
+            // the current screen exactly, which the truncated tail cannot.
+            if pendingRemoteOutputOverflowed { return }
+            if pendingRemoteOutput.count + data.count > maxPendingRemoteOutputBytes {
+                pendingRemoteOutput = Data()
+                pendingRemoteOutputOverflowed = true
+                return
             }
+            pendingRemoteOutput.append(data)
             return
         }
         flushPendingRemoteOutput(to: surface)
@@ -554,6 +562,16 @@ extension TerminalSurface {
 
     @MainActor
     func flushPendingRemoteOutput(to surface: ghostty_surface_t) {
+        if pendingRemoteOutputOverflowed {
+            pendingRemoteOutputOverflowed = false
+            // Clear to a sane base frame, then let the owner re-seed the real
+            // content (the backlog that would have painted it was discarded).
+            writeProcessOutputData(Data("\u{1b}[m\u{1b}[H\u{1b}[2J".utf8), to: surface)
+            if let reseed = onRemoteOutputOverflowReseed {
+                Task { @MainActor in reseed() }
+            }
+            return
+        }
         guard !pendingRemoteOutput.isEmpty else { return }
         let buffered = pendingRemoteOutput
         pendingRemoteOutput = Data()

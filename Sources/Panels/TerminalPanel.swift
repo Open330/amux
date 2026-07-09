@@ -657,6 +657,10 @@ final class TerminalPanel: Panel, ObservableObject {
     }
 
     func close() {
+        // Idempotent: a mirrored tmux window's ADOPTED first-pane panel is owned
+        // by both the window mirror (pane lifecycle) and the workspace tab
+        // (window close), so it can legitimately be closed from both paths.
+        guard !isClosingPanel else { return }
         isClosingPanel = true
         discardTextBoxContentForClose()
         // The surface will be cleaned up by its deinit

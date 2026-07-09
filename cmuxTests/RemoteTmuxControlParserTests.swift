@@ -393,6 +393,25 @@ import Testing
         #expect(seq.hasSuffix("\u{1b}[47;3H"))    // absolute cursor, placed last
     }
 
+    @Test func paneStateSeedRestoresBracketedPasteBothDirections() {
+        // tmux ≥3.4 reports the pane's real ?2004 state via bracket_paste_flag;
+        // both directions are seeded so a reused surface can't keep a stale value.
+        let decoding = RemoteTmuxControlMessageDecoding()
+        let on = String(decoding: decoding.paneStateSeedSequence(
+            from: "cursor_x=0,cursor_y=0,bracket_paste_flag=1"
+        ), as: UTF8.self)
+        #expect(on.contains("\u{1b}[?2004h"))
+        let off = String(decoding: decoding.paneStateSeedSequence(
+            from: "cursor_x=0,cursor_y=0,bracket_paste_flag=0"
+        ), as: UTF8.self)
+        #expect(off.contains("\u{1b}[?2004l"))
+        // Older tmux: field absent → neither direction emitted (surface default).
+        let absent = String(decoding: decoding.paneStateSeedSequence(
+            from: "cursor_x=0,cursor_y=0"
+        ), as: UTF8.self)
+        #expect(!absent.contains("?2004"))
+    }
+
     // MARK: - Optimistic window reorder (rapid-drag race fix)
 
     @Test func windowOrderApplyingReorderRearrangesSubsetInPlace() {

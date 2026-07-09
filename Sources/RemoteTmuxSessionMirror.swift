@@ -318,6 +318,12 @@ final class RemoteTmuxSessionMirror {
                         connection?.setClientSize(columns: columns, rows: rows)
                     }
                 ) else { continue }
+                // Backlog overflow (surface not yet live under a >4MB burst)
+                // discards the buffered stream whole; re-seed from tmux so the
+                // first paint is the true screen, not a truncated tail.
+                panel.surface.onRemoteOutputOverflowReseed = { [weak connection] in
+                    connection?.seedPane(paneId: firstPaneId)
+                }
                 panelIdByWindow[windowId] = panel.id
                 panelIdByPane[firstPaneId] = panel.id
                 if Self.shouldSeedSinglePaneDisplay(for: window) {
@@ -419,12 +425,25 @@ final class RemoteTmuxSessionMirror {
             return
         }
         guard window.paneIDsInOrder.count > 1 else { return }
+        // Hand the window's original single-pane display panel to the mirror as
+        // that pane's panel: its surface is live and already painted, so the
+        // first split keeps the pane's scrollback intact instead of flashing a
+        // fresh capture-pane re-seed. Clear its resize hook FIRST — the mirror
+        // owns client sizing from here (see below).
+        var adoptedPanels: [Int: TerminalPanel] = [:]
+        if let adoptedPaneId = panelIdByPane.first(where: { $0.value == panelId })?.key,
+           window.paneIDsInOrder.contains(adoptedPaneId),
+           let displayPanel = workspace.panels[panelId] as? TerminalPanel {
+            displayPanel.surface.onManualGridResize = nil
+            adoptedPanels[adoptedPaneId] = displayPanel
+        }
         let mirror = RemoteTmuxWindowMirror(
             windowId: windowId,
             panelId: panelId,
             connection: connection,
             layout: window.layout,
             renderedLayout: window.renderedLayout,
+            adoptedPanels: adoptedPanels,
             makePanel: { [weak workspace, weak connection] tmuxPaneId in
                 workspace?.makeRemoteTmuxPanePanel(onInput: { data in
                     // Main QUEUE, not `Task {}`: preserves the serial I/O thread's

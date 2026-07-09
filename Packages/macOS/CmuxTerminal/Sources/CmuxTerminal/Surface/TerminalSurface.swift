@@ -187,6 +187,15 @@ public final class TerminalSurface: Identifiable, ObservableObject {
     /// surface is created so background mirror output is not lost.
     var pendingRemoteOutput = Data()
     let maxPendingRemoteOutputBytes = 4 * 1_048_576
+    /// Set when `pendingRemoteOutput` overflowed and was discarded. A truncated
+    /// tail can start mid-escape/mid-UTF-8 and garble the first paint, so on
+    /// overflow the buffer is dropped WHOLE and the flush asks the owner to
+    /// re-seed the pane from tmux instead (see ``onRemoteOutputOverflowReseed``).
+    var pendingRemoteOutputOverflowed = false
+    /// Called (once per overflow, on the main actor, after the runtime surface
+    /// exists) so the mirror can re-seed this pane via `capture-pane`. Unset for
+    /// non-mirror surfaces.
+    public var onRemoteOutputOverflowReseed: (@MainActor () -> Void)?
     /// Coalesces view-presentation wakeups for MANUAL-I/O output. `processRemoteOutput`
     /// can receive several tmux `%output` chunks in one event turn; Ghostty still
     /// parses every chunk immediately, but the AppKit/Metal view only needs one
