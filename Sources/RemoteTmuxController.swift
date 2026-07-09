@@ -532,113 +532,17 @@ final class RemoteTmuxController {
     /// ``mirrorLocalAmuxSession(sessionName:into:)`` it never reuses an
     /// existing session, so each invocation is a brand-new workspace.
     @discardableResult
-    func createLocalAmuxWorkspace(
-        sessionName requestedSessionName: String? = nil,
-        workingDirectory: String? = nil,
-        initialInput: String? = nil,
-        environment: [String: String] = [:],
-        into tabManager: TabManager
-    ) async throws -> String {
+    func createLocalAmuxWorkspace(into tabManager: TabManager) async throws -> String {
         let host = RemoteTmuxHost.amuxLocal()
-        var args = ["new-session", "-d", "-P", "-F", "#{session_name}"]
-        if let requestedSessionName = requestedSessionName?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !requestedSessionName.isEmpty {
-            args.append(contentsOf: ["-s", requestedSessionName])
-        }
-        if let workingDirectory = workingDirectory?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !workingDirectory.isEmpty {
-            args.append(contentsOf: ["-c", workingDirectory])
-        }
-        for key in environment.keys.sorted() {
-            guard let value = environment[key] else { continue }
-            args.append(contentsOf: ["-e", "\(key)=\(value)"])
-        }
-        let result = try await transport(for: host).runTmux(args)
+        let result = try await transport(for: host).runTmux(
+            ["new-session", "-d", "-P", "-F", "#{session_name}"]
+        )
         let name = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
         guard result.succeeded, !name.isEmpty else {
             throw RemoteTmuxError.commandFailed(exitCode: result.exitCode, stderr: result.stderr)
         }
-        if let initialInput = initialInput?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !initialInput.isEmpty {
-            let literalResult = try await transport(for: host).runTmux(
-                ["send-keys", "-t", name, "-l", initialInput]
-            )
-            guard literalResult.succeeded else {
-                throw RemoteTmuxError.commandFailed(exitCode: literalResult.exitCode, stderr: literalResult.stderr)
-            }
-            let enterResult = try await transport(for: host).runTmux(
-                ["send-keys", "-t", name, "Enter"]
-            )
-            guard enterResult.succeeded else {
-                throw RemoteTmuxError.commandFailed(exitCode: enterResult.exitCode, stderr: enterResult.stderr)
-            }
-        }
         try mirrorSession(host: host, sessionName: name, into: tabManager)
         return name
-    }
-
-    func annotateLocalAmuxTaskWorkspace(
-        sessionName: String,
-        worktree: CmuxExtensionWorktreePrototype.AmuxTaskWorktreeCreationResult,
-        issue: String?
-    ) -> String? {
-        guard let workspace = localMirrorWorkspace(sessionName: sessionName) else { return nil }
-        _ = workspace.setCustomTitle(worktree.task, source: .auto)
-        workspace.workspaceEnvironment["AMUX_TASK"] = worktree.task
-        workspace.workspaceEnvironment["AMUX_REPO"] = worktree.repositoryPath
-        workspace.workspaceEnvironment["AMUX_WORKTREE"] = worktree.worktreePath
-        workspace.workspaceEnvironment["AMUX_BASE_REF"] = worktree.baseRef
-        workspace.workspaceEnvironment["AMUX_BRANCH"] = worktree.branchName
-        if let issue, !issue.isEmpty {
-            workspace.workspaceEnvironment["AMUX_ISSUE"] = issue
-        }
-
-        let now = Date()
-        workspace.statusEntries["amux.task"] = SidebarStatusEntry(
-            key: "amux.task",
-            value: worktree.task,
-            icon: "target",
-            priority: 90,
-            timestamp: now
-        )
-        workspace.statusEntries["amux.repo"] = SidebarStatusEntry(
-            key: "amux.repo",
-            value: worktree.repositoryPath,
-            icon: "folder",
-            priority: 80,
-            timestamp: now
-        )
-        workspace.statusEntries["amux.worktree"] = SidebarStatusEntry(
-            key: "amux.worktree",
-            value: worktree.worktreePath,
-            icon: "arrow.triangle.branch",
-            priority: 79,
-            timestamp: now
-        )
-        workspace.statusEntries["amux.ref"] = SidebarStatusEntry(
-            key: "amux.ref",
-            value: worktree.branchName,
-            icon: "point.topleft.down.curvedto.point.bottomright.up",
-            priority: 78,
-            timestamp: now
-        )
-        workspace.statusEntries["amux.base"] = SidebarStatusEntry(
-            key: "amux.base",
-            value: worktree.baseRef,
-            icon: "clock.arrow.circlepath",
-            priority: 77,
-            timestamp: now
-        )
-        if let issue, !issue.isEmpty {
-            workspace.statusEntries["amux.issue"] = SidebarStatusEntry(
-                key: "amux.issue",
-                value: issue,
-                icon: "number",
-                priority: 76,
-                timestamp: now
-            )
-        }
-        return workspace.id.uuidString
     }
 
     /// Every session on the amux local server paired with whether it is
