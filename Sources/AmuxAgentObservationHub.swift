@@ -107,7 +107,9 @@ final class AmuxAgentObservationHub {
 
     private func teardown(_ observer: RemoteObserver) {
         observer.service.stop()
-        let forwarder = observer.forwarder
-        Task { await forwarder.stop() }
+        // Synchronous (`stop()` is nonisolated) so the app-termination path
+        // tears the `ssh -N` down for certain — a scheduled actor hop might
+        // never run once the app is exiting.
+        observer.forwarder.stop()
     }
 }

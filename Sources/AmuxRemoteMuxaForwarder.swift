@@ -1,5 +1,6 @@
 import Darwin
 import Foundation
+import os
 
 /// Holds one SSH host's muxad socket forward open.
 ///
@@ -17,7 +18,13 @@ actor AmuxRemoteMuxaForwarder {
     /// The local unix-socket path clients connect to (the `-L` bind).
     nonisolated var localSocketPath: String { host.muxaForwardSocketPath }
 
-    private var process: Process?
+    /// Lock carve-out: the forward process handle must be terminable
+    /// *synchronously* from the app-termination path (an actor hop scheduled
+    /// in `applicationWillTerminate` may never run, orphaning an `ssh -N`
+    /// that pins the ControlMaster past its ControlPersist window).
+    /// `uncheckedState` because `Process` isn't `Sendable`; the handle never
+    /// escapes the lock's short critical sections.
+    private nonisolated let processBox = OSAllocatedUnfairLock<Process?>(uncheckedState: nil)
     private var remoteSocketPath: String?
 
     /// Creates a forwarder for `host` (kind ``RemoteTmuxHostKind/ssh``).
@@ -33,8 +40,8 @@ actor AmuxRemoteMuxaForwarder {
     /// resolve a remote path or the process cannot launch; a forward that is
     /// slow to come up is not an error (the caller's connect simply retries).
     func ensureForward() async throws {
-        if let process, process.isRunning { return }
-        process = nil
+        if processBox.withLockUnchecked({ $0?.isRunning == true }) { return }
+        processBox.withLockUnchecked { $0 = nil }
 
         try host.ensureControlSocketDirectory()
         let remotePath: String
@@ -70,7 +77,7 @@ actor AmuxRemoteMuxaForwarder {
         forward.standardOutput = FileHandle.nullDevice
         forward.standardError = FileHandle.nullDevice
         try forward.run()
-        process = forward
+        processBox.withLockUnchecked { $0 = forward }
 
         // Bounded, cancellable readiness wait: ssh binds the local socket a
         // few ms after launch and offers no readiness signal on the success
@@ -86,10 +93,18 @@ actor AmuxRemoteMuxaForwarder {
     }
 
     /// Terminates the forward process and removes the local socket file.
-    func stop() {
-        process?.terminationHandler = nil
-        process?.terminate()
-        process = nil
+    ///
+    /// `nonisolated` (synchronous, via the process-handle lock) so the
+    /// app-termination path and the hub's teardown can both call it without
+    /// an actor hop that might never be scheduled.
+    nonisolated func stop() {
+        let process = processBox.withLockUnchecked { handle -> Process? in
+            defer { handle = nil }
+            return handle
+        }
+        if let process, process.isRunning {
+            process.terminate()
+        }
         try? FileManager.default.removeItem(atPath: localSocketPath)
     }
 

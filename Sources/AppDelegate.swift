@@ -2014,6 +2014,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         sentryStopMemoryContextRefresh()
         // Plain quit detaches local ssh clients; explicit close already killed marked sessions.
         remoteTmuxController.detachAll()
+        // Tear down remote muxad observers so their `ssh -N` forward clients
+        // don't outlive the app (an attached mux client pins the ControlMaster
+        // past its ControlPersist window).
+        amuxAgentObservation.stop()
         // Best-effort presence goodbye; unclean exits are covered by the
         // service's missed-heartbeat timeout.
         PresenceHeartbeatClient.shared.appWillTerminate()
