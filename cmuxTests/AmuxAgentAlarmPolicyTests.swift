@@ -61,6 +61,19 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         XCTAssertEqual(alarm?.body, "refactor the parser")
     }
 
+    func testFinishedBodyPrefersPromptOverStaleNotification() {
+        let alarm = AmuxAgentAlarmPolicy.alarm(for: .init(
+            from: .working,
+            to: .idle,
+            agent: agent(
+                state: .idle,
+                lastNotification: "Claude needs your permission",
+                lastPrompt: "refactor the parser"
+            )
+        ))
+        XCTAssertEqual(alarm?.body, "refactor the parser")
+    }
+
     func testStartingToIdleIsQuiet() {
         XCTAssertNil(AmuxAgentAlarmPolicy.alarm(for: .init(
             from: .starting,

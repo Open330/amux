@@ -37,6 +37,7 @@ struct AmuxAgentAlarmPolicy {
         guard transition.from != transition.to else { return nil }
         let agent = transition.agent
         let title: String
+        let body: String
         switch transition.to {
         case .waitingInput, .waitingChoice:
             title = String(
@@ -46,6 +47,7 @@ struct AmuxAgentAlarmPolicy {
                 ),
                 displayName(for: agent.kind)
             )
+            body = agent.lastNotification ?? agent.lastPrompt ?? ""
         case .error:
             title = String(
                 format: String(
@@ -54,6 +56,7 @@ struct AmuxAgentAlarmPolicy {
                 ),
                 displayName(for: agent.kind)
             )
+            body = agent.lastNotification ?? agent.lastPrompt ?? ""
         case .idle where transition.from == .working:
             title = String(
                 format: String(
@@ -62,12 +65,15 @@ struct AmuxAgentAlarmPolicy {
                 ),
                 displayName(for: agent.kind)
             )
+            // A finished turn is described by what was asked, not by a stale
+            // needs-input notification from earlier in the turn.
+            body = agent.lastPrompt ?? ""
         default:
             return nil
         }
         return AmuxAgentAlarm(
             title: title,
-            body: agent.lastNotification ?? agent.lastPrompt ?? "",
+            body: body,
             cooldownKey: "amux.agent.\(agent.sessionId).\(transition.to.rawValue)",
             cooldownInterval: Self.cooldownInterval
         )
