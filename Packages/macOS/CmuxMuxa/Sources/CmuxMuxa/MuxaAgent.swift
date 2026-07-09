@@ -24,6 +24,8 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
     public let lastPrompt: String?
     /// The most recent attention notification message.
     public let lastNotification: String?
+    /// The most recent assistant response text (truncated by muxad).
+    public let lastResponse: String?
     /// The model reported by the agent's heartbeat, when known.
     public let model: String?
     /// Context-window usage percentage from the last heartbeat, when known.
@@ -47,6 +49,7 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
         case state
         case lastPrompt = "last_prompt"
         case lastNotification = "last_notification"
+        case lastResponse = "last_response"
         case model
         case contextUsedPct = "context_used_pct"
         case costUsd = "cost_usd"
@@ -93,6 +96,7 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
         state: MuxaAgentState,
         lastPrompt: String? = nil,
         lastNotification: String? = nil,
+        lastResponse: String? = nil,
         model: String? = nil,
         contextUsedPct: Double? = nil,
         costUsd: Double? = nil,
@@ -108,6 +112,7 @@ public struct MuxaAgent: Sendable, Equatable, Codable {
         self.state = state
         self.lastPrompt = lastPrompt
         self.lastNotification = lastNotification
+        self.lastResponse = lastResponse
         self.model = model
         self.contextUsedPct = contextUsedPct
         self.costUsd = costUsd

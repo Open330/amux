@@ -1387,6 +1387,8 @@ class TerminalController {
             return v2RemoteTmuxMirror(id: request.id, params: request.params)
         case "remote.tmux.window":
             return v2RemoteTmuxWindow(id: request.id, params: request.params)
+        case "amux.remote_setup":
+            return v2AmuxRemoteSetup(id: request.id, params: request.params)
         case "sidebar.custom.validate":
             return v2Result(id: request.id, v2CustomSidebarValidate(params: request.params))
         case "sidebar.custom.reload":
@@ -2258,6 +2260,53 @@ class TerminalController {
         // amux: close a mirror workspace and kill its tmux session.
         case "amux.close_kill":
             return v2Result(id: id, self.v2AmuxCloseKill(params: params))
+
+#if DEBUG
+        // amux: agent-details data path verification (the human surface is
+        // a modal alert; both read the same hub accessor).
+        case "debug.amux.agent_details":
+            guard let workspaceId = self.v2UUID(params, "workspace_id") else {
+                return v2Result(
+                    id: id,
+                    .err(
+                        code: "invalid_params",
+                        message: String(
+                            localized: "socket.amux.workspaceIdRequired",
+                            defaultValue: "workspace_id is required"
+                        ),
+                        data: nil
+                    )
+                )
+            }
+            guard let appDelegate = AppDelegate.shared else {
+                return v2Result(
+                    id: id,
+                    .err(
+                        code: "not_ready",
+                        message: String(localized: "socket.amux.appNotReady", defaultValue: "App is not ready"),
+                        data: nil
+                    )
+                )
+            }
+            let agents = appDelegate.amuxAgentObservation.agents(inWorkspace: workspaceId)
+            return v2Result(
+                id: id,
+                .ok([
+                    "agents": agents.map { agent in
+                        var payload: [String: Any] = [
+                            "kind": agent.kind.rawValue,
+                            "session_id": agent.sessionId,
+                            "state": agent.state.rawValue,
+                        ]
+                        payload["pane"] = agent.pane
+                        payload["model"] = agent.model
+                        payload["last_prompt"] = agent.lastPrompt
+                        payload["last_response"] = agent.lastResponse
+                        return payload
+                    },
+                ])
+            )
+#endif
 
 
         // Surfaces / input: surface.list/current/focus/split/respawn/create/close/move/

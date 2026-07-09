@@ -1,3 +1,4 @@
+import CmuxMuxa
 import Foundation
 
 /// Composes agent observation across daemons: the local muxad plus one
@@ -88,6 +89,19 @@ final class AmuxAgentObservationHub {
         return candidates
             .min { $0.blockedSince < $1.blockedSince }
             .map { ($0.workspace, $0.tmuxPane) }
+    }
+
+    /// Every tracked agent in `workspaceId`, asking each daemon in turn (a
+    /// workspace mirrors exactly one host, so at most one service resolves
+    /// it) — the data behind the agent-details view.
+    func agents(inWorkspace workspaceId: UUID) -> [MuxaAgent] {
+        let local = localService.agents(inWorkspace: workspaceId)
+        if !local.isEmpty { return local }
+        for observer in remoteObservers.values {
+            let agents = observer.service.agents(inWorkspace: workspaceId)
+            if !agents.isEmpty { return agents }
+        }
+        return []
     }
 
     /// The tmux pane of `workspaceId`'s most relevant agent, asking each

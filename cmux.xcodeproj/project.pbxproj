@@ -72,6 +72,8 @@
 		A9F200000000000000000014 /* AgentSessionWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F100000000000000000014 /* AgentSessionWebView.swift */; };
 		REE0CA0000000000000000F2 /* AIAccountCredentialSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = REE0CA0000000000000000F1 /* AIAccountCredentialSources.swift */; };
 		REE0CA0000000000000000E2 /* AIAccountsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = REE0CA0000000000000000E1 /* AIAccountsClient.swift */; };
+		7117F37027C225DF26F04C57 /* AmuxAgentAlarmGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85FF5B60B86FE20F1D5D0ED2 /* AmuxAgentAlarmGate.swift */; };
+		962E5E3EC3D456BBCD419DFF /* AmuxAgentAlarmGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */; };
 		52AD40A1F31F245A72A92F9E /* AmuxAgentAlarmPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */; };
 		22281B0DF8F14335041509F8 /* AmuxAgentAlarmPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD19910C49AA84AD7A2EA6B /* AmuxAgentAlarmPolicyTests.swift */; };
 		27B00B5B8F6B98F75A211AB9 /* AmuxAgentObservationHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */; };
@@ -82,6 +84,9 @@
 		7CF5DA6BDEBA29C857C55524 /* AmuxMuxadLaunchAgentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F763B6F21E006430645D4A60 /* AmuxMuxadLaunchAgentTests.swift */; };
 		20B556DFFD31982C1FBAD2AD /* AmuxMuxaForwardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19DF33891C136F2E0B0D44E0 /* AmuxMuxaForwardTests.swift */; };
 		F0D3873B704AB7DC7AF68D0A /* AmuxOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE47828B1FB148362FE46E65 /* AmuxOnboarding.swift */; };
+		A4C244A005CF60AD6CAA4467 /* AmuxRemoteHostSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F57627EDD1E39B2DC5EDE8B /* AmuxRemoteHostSetup.swift */; };
+		A6A006000000000000000001 /* AmuxRemoteHostSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A006000000000000000002 /* AmuxRemoteHostSetup.swift */; };
+		86EFA0BB2F4304C83FE7D15C /* AmuxRemoteHostSetupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335C057FA5EAEDE543124249 /* AmuxRemoteHostSetupTests.swift */; };
 		6698709B89C493E14DE21A25 /* AmuxRemoteMuxaForwarder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */; };
 		F4350A110000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */; };
 		F4350A120000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */; };
@@ -1201,6 +1206,7 @@
 		46F6AC15863EC84DCD3770A2 /* TerminalAndGhosttyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02FC74F2C27127CC565B3E8C /* TerminalAndGhosttyTests.swift */; };
 		E4D1768B7041CDE4F9A084A4 /* TerminalClearScreenKeepScrollbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7555E04A04849992547A2 /* TerminalClearScreenKeepScrollbackTests.swift */; };
 		C2577000A1B2C3D4E5F60718 /* TerminalCmdClickUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2577001A1B2C3D4E5F60718 /* TerminalCmdClickUITests.swift */; };
+		03D0BA4B955E5C1CA4DE8B09 /* TerminalController+AmuxObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12505CF574482E459415080C /* TerminalController+AmuxObservation.swift */; };
 		C0DE00000000000000000C42 /* TerminalController+ControlAppFocusContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000C41 /* TerminalController+ControlAppFocusContext.swift */; };
 		C0DE00000000000000000C82 /* TerminalController+ControlBrowserPanelContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000C81 /* TerminalController+ControlBrowserPanelContext.swift */; };
 		CA52E0020000000000000000 /* TerminalController+ControlCanvasContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA52F0020000000000000000 /* TerminalController+ControlCanvasContext.swift */; };
@@ -1578,6 +1584,8 @@
 		A9F100000000000000000014 /* AgentSessionWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Panels/AgentSessionWebView.swift; sourceTree = "<group>"; };
 		REE0CA0000000000000000F1 /* AIAccountCredentialSources.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIAccountCredentialSources.swift; sourceTree = "<group>"; };
 		REE0CA0000000000000000E1 /* AIAccountsClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIAccountsClient.swift; sourceTree = "<group>"; };
+		85FF5B60B86FE20F1D5D0ED2 /* AmuxAgentAlarmGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmGate.swift"; sourceTree = "<group>"; };
+		D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmGateTests.swift"; sourceTree = "<group>"; };
 		B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmPolicy.swift"; sourceTree = "<group>"; };
 		7AD19910C49AA84AD7A2EA6B /* AmuxAgentAlarmPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmPolicyTests.swift"; sourceTree = "<group>"; };
 		6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentObservationHub.swift"; sourceTree = "<group>"; };
@@ -1588,6 +1596,9 @@
 		F763B6F21E006430645D4A60 /* AmuxMuxadLaunchAgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxMuxadLaunchAgentTests.swift"; sourceTree = "<group>"; };
 		19DF33891C136F2E0B0D44E0 /* AmuxMuxaForwardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxMuxaForwardTests.swift"; sourceTree = "<group>"; };
 		DE47828B1FB148362FE46E65 /* AmuxOnboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxOnboarding.swift"; sourceTree = "<group>"; };
+		1F57627EDD1E39B2DC5EDE8B /* AmuxRemoteHostSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteHostSetup.swift"; sourceTree = "<group>"; };
+		A6A006000000000000000002 /* AmuxRemoteHostSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteHostSetup.swift"; sourceTree = "<group>"; };
+		335C057FA5EAEDE543124249 /* AmuxRemoteHostSetupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteHostSetupTests.swift"; sourceTree = "<group>"; };
 		65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteMuxaForwarder.swift"; sourceTree = "<group>"; };
 		F4350A130000000000000001 /* AppBundleIconPersistencePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppBundleIconPersistencePolicy.swift; sourceTree = "<group>"; };
 		E761B3D025E9AF34360B7369 /* AppDelegate+AmuxLocalTmux.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+AmuxLocalTmux.swift"; sourceTree = "<group>"; };
@@ -2635,6 +2646,7 @@
 		02FC74F2C27127CC565B3E8C /* TerminalAndGhosttyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalAndGhosttyTests.swift; sourceTree = "<group>"; };
 		F2B7555E04A04849992547A2 /* TerminalClearScreenKeepScrollbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalClearScreenKeepScrollbackTests.swift; sourceTree = "<group>"; };
 		C2577001A1B2C3D4E5F60718 /* TerminalCmdClickUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalCmdClickUITests.swift; sourceTree = "<group>"; };
+		12505CF574482E459415080C /* TerminalController+AmuxObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TerminalController+AmuxObservation.swift"; sourceTree = "<group>"; };
 		C0DE00000000000000000C41 /* TerminalController+ControlAppFocusContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TerminalController+ControlAppFocusContext.swift"; sourceTree = "<group>"; };
 		C0DE00000000000000000C81 /* TerminalController+ControlBrowserPanelContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TerminalController+ControlBrowserPanelContext.swift"; sourceTree = "<group>"; };
 		CA52F0020000000000000000 /* TerminalController+ControlCanvasContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TerminalController+ControlCanvasContext.swift"; sourceTree = "<group>"; };
@@ -3850,8 +3862,12 @@
 					633B3B33234501085E3589FE /* AmuxChoiceParser.swift */,
 					FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */,
 					B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */,
-					6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */,
-					65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */,
+						85FF5B60B86FE20F1D5D0ED2 /* AmuxAgentAlarmGate.swift */,
+						1F57627EDD1E39B2DC5EDE8B /* AmuxRemoteHostSetup.swift */,
+						12505CF574482E459415080C /* TerminalController+AmuxObservation.swift */,
+						6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */,
+						A6A006000000000000000002 /* AmuxRemoteHostSetup.swift */,
+						65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */,
 					3364ABCFB2FA3644ADF93AB7 /* RemoteTmuxHost+MuxaForward.swift */,
 					E1C0FE8EE0A38F9F2FE7FF17 /* RemoteTmuxLocalTransport.swift */,
 					E0FACC363EAAC64617102784 /* RemoteTmuxTransport.swift */,
@@ -4318,6 +4334,8 @@
 				F763B6F21E006430645D4A60 /* AmuxMuxadLaunchAgentTests.swift */,
 				30B2B74D3A88D2117ABDF858 /* AmuxChoiceParserTests.swift */,
 				7AD19910C49AA84AD7A2EA6B /* AmuxAgentAlarmPolicyTests.swift */,
+				D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */,
+				335C057FA5EAEDE543124249 /* AmuxRemoteHostSetupTests.swift */,
 				19DF33891C136F2E0B0D44E0 /* AmuxMuxaForwardTests.swift */,
 				C0DE1A080000000000000002 /* SavedLayoutDefinitionTests.swift */,
 				C0DE1A070000000000000002 /* SavedLayoutStoreTests.swift */,
@@ -4912,12 +4930,15 @@
 				A9F200000000000000000014 /* AgentSessionWebView.swift in Sources */,
 				REE0CA0000000000000000F2 /* AIAccountCredentialSources.swift in Sources */,
 				REE0CA0000000000000000E2 /* AIAccountsClient.swift in Sources */,
+				7117F37027C225DF26F04C57 /* AmuxAgentAlarmGate.swift in Sources */,
 				52AD40A1F31F245A72A92F9E /* AmuxAgentAlarmPolicy.swift in Sources */,
-				27B00B5B8F6B98F75A211AB9 /* AmuxAgentObservationHub.swift in Sources */,
-				1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */,
-				CBE9ED114E0851AC45E68AA2 /* AmuxChoiceParser.swift in Sources */,
+					27B00B5B8F6B98F75A211AB9 /* AmuxAgentObservationHub.swift in Sources */,
+					1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */,
+					CBE9ED114E0851AC45E68AA2 /* AmuxChoiceParser.swift in Sources */,
 				F1D7EC2E03E780781BFDF619 /* AmuxMuxadLaunchAgent.swift in Sources */,
 				F0D3873B704AB7DC7AF68D0A /* AmuxOnboarding.swift in Sources */,
+				A4C244A005CF60AD6CAA4467 /* AmuxRemoteHostSetup.swift in Sources */,
+					A6A006000000000000000001 /* AmuxRemoteHostSetup.swift in Sources */,
 				6698709B89C493E14DE21A25 /* AmuxRemoteMuxaForwarder.swift in Sources */,
 				F4350A110000000000000001 /* AppBundleIconPersistencePolicy.swift in Sources */,
 				6F4D7FB8E98E231A6DA8F7A6 /* AppDelegate+AmuxLocalTmux.swift in Sources */,
@@ -5557,6 +5578,7 @@
 				C7A506000000000000000002 /* TaskManagerView.swift in Sources */,
 				C7A502000000000000000002 /* TaskManagerWindowController.swift in Sources */,
 				7490C00F7490C00F7490C00F /* TaskVMInfoMemoryPressureFootprintSampler.swift in Sources */,
+				03D0BA4B955E5C1CA4DE8B09 /* TerminalController+AmuxObservation.swift in Sources */,
 				C0DE00000000000000000C42 /* TerminalController+ControlAppFocusContext.swift in Sources */,
 				C0DE00000000000000000C82 /* TerminalController+ControlBrowserPanelContext.swift in Sources */,
 				CA52E0020000000000000000 /* TerminalController+ControlCanvasContext.swift in Sources */,
@@ -5881,10 +5903,12 @@
 				D3610B020000000000000001 /* AgentSessionAutoResumeSwiftTests.swift in Sources */,
 				A9E030000000000000000002 /* AgentSessionSocketSurfaceTests.swift in Sources */,
 				A9E050000000000000000002 /* AgentSessionWebRendererTests.swift in Sources */,
+				962E5E3EC3D456BBCD419DFF /* AmuxAgentAlarmGateTests.swift in Sources */,
 				22281B0DF8F14335041509F8 /* AmuxAgentAlarmPolicyTests.swift in Sources */,
 				810D92864A73A66F234DEE62 /* AmuxChoiceParserTests.swift in Sources */,
 				7CF5DA6BDEBA29C857C55524 /* AmuxMuxadLaunchAgentTests.swift in Sources */,
 				20B556DFFD31982C1FBAD2AD /* AmuxMuxaForwardTests.swift in Sources */,
+				86EFA0BB2F4304C83FE7D15C /* AmuxRemoteHostSetupTests.swift in Sources */,
 				725746692D9647948561044D /* AppDelegateBareSpaceShortcutRoutingTests.swift in Sources */,
 				E3309A09 /* AppDelegateEqualizeSplitsShortcutTests.swift in Sources */,
 				F5996001A1B2C3D4E5F60001 /* AppDelegateFileExplorerShortcutRoutingTests.swift in Sources */,
@@ -6468,7 +6492,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_MODULE_NAME = cmux_cli;
-				PRODUCT_NAME = cmux;
+				PRODUCT_NAME = amux;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;

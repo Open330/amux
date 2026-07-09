@@ -153,21 +153,47 @@ struct RemoteTmuxMirrorTargetingTests {
         #expect(unresolved === fallback)
     }
 
-    @Test func workspaceCloseKillTargetSkipsEndedConnections() {
+    @Test func workspaceCloseDetachesByDefaultOnSSH() {
+        // Plain close must never kill the remote session: ssh mirrors promise
+        // detach-by-default exactly like the amux local engine (closing a
+        // workspace while a remote agent runs must not end its session).
+        // Only the explicit force-kill ("Close and Kill") ends the session.
         #expect(RemoteTmuxController.workspaceCloseKillTarget(
-            connectionExited: true,
+            connectionExited: false,
             sessionId: 5,
-            sessionName: "dev"
+            sessionName: "dev",
+            hostKind: .ssh,
+            forceKill: false
         ) == nil)
         #expect(RemoteTmuxController.workspaceCloseKillTarget(
             connectionExited: false,
             sessionId: 5,
-            sessionName: "dev"
+            sessionName: "dev",
+            hostKind: .ssh,
+            forceKill: true
+        ) == "$5")
+    }
+
+    @Test func workspaceCloseKillTargetSkipsEndedConnections() {
+        // Even an explicit force-kill has nothing to kill once the control
+        // client ended; live connections resolve the id-first target.
+        #expect(RemoteTmuxController.workspaceCloseKillTarget(
+            connectionExited: true,
+            sessionId: 5,
+            sessionName: "dev",
+            forceKill: true
+        ) == nil)
+        #expect(RemoteTmuxController.workspaceCloseKillTarget(
+            connectionExited: false,
+            sessionId: 5,
+            sessionName: "dev",
+            forceKill: true
         ) == "$5")
         #expect(RemoteTmuxController.workspaceCloseKillTarget(
             connectionExited: false,
             sessionId: nil,
-            sessionName: "dev"
+            sessionName: "dev",
+            forceKill: true
         ) == "dev")
     }
 

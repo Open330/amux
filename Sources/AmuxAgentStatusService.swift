@@ -145,6 +145,24 @@ final class AmuxAgentStatusService {
         return nil
     }
 
+    /// Every tracked agent whose join resolves to `workspaceId` — the data
+    /// behind the agent-details view (blocked agents first, then most
+    /// recently active, matching ``agentPane(inWorkspace:)``'s relevance).
+    func agents(inWorkspace workspaceId: UUID) -> [MuxaAgent] {
+        agentsBySessionId.values
+            .filter { workspace(for: $0)?.id == workspaceId }
+            .sorted { lhs, rhs in
+                switch (lhs.state.needsAttention, rhs.state.needsAttention) {
+                case (true, false): return true
+                case (false, true): return false
+                default:
+                    let l = lhs.lastActivityDate ?? .distantPast
+                    let r = rhs.lastActivityDate ?? .distantPast
+                    return l > r
+                }
+            }
+    }
+
     /// The tmux pane of `workspaceId`'s most relevant agent — blocked agents
     /// first (longest wait first), then the most recently active — the
     /// preferred headless-prompt target. `nil` when no tracked agent
@@ -187,6 +205,22 @@ final class AmuxAgentStatusService {
         for agent in agentsBySessionId.values {
             guard let workspace = workspace(for: agent) else { continue }
             byWorkspace[workspace.id, default: (workspace, [])].agents.append(agent)
+        }
+
+        // Same-state pass through the alarm sink for EVERY tracked agent.
+        // Real transitions alone lose alarms two ways: a transition that
+        // fires before this service's subscribe connects exists only in the
+        // snapshot, and a transition whose pane is younger than muxad's
+        // inventory arrives before its workspace join resolves. The sink's
+        // gate dedupes episodes, so repeated passes stay quiet; edges
+        // (finished) still come only from real transitions.
+        if let onTransition {
+            for agent in agentsBySessionId.values {
+                onTransition(
+                    MuxaTransition(from: agent.state, to: agent.state, agent: agent),
+                    workspace(for: agent)
+                )
+            }
         }
 
         var updated: [UUID: WeakWorkspace] = [:]

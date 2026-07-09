@@ -12,14 +12,16 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         state: CmuxMuxa.MuxaAgentState,
         kind: CmuxMuxa.MuxaAgentKind = .claudeCode,
         lastNotification: String? = nil,
-        lastPrompt: String? = nil
+        lastPrompt: String? = nil,
+        lastResponse: String? = nil
     ) -> CmuxMuxa.MuxaAgent {
         CmuxMuxa.MuxaAgent(
             kind: kind,
             sessionId: "session-1",
             state: state,
             lastPrompt: lastPrompt,
-            lastNotification: lastNotification
+            lastNotification: lastNotification,
+            lastResponse: lastResponse
         )
     }
 
@@ -61,6 +63,19 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         XCTAssertEqual(alarm?.body, "refactor the parser")
     }
 
+    func testFinishedBodyPrefersResponseText() {
+        let alarm = AmuxAgentAlarmPolicy.alarm(for: .init(
+            from: .working,
+            to: .idle,
+            agent: agent(
+                state: .idle,
+                lastPrompt: "refactor the parser",
+                lastResponse: "Refactored; 12 tests green."
+            )
+        ))
+        XCTAssertEqual(alarm?.body, "Refactored; 12 tests green.")
+    }
+
     func testFinishedBodyPrefersPromptOverStaleNotification() {
         let alarm = AmuxAgentAlarmPolicy.alarm(for: .init(
             from: .working,
@@ -82,14 +97,6 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         )))
     }
 
-    func testSameStateRefreshIsQuiet() {
-        XCTAssertNil(AmuxAgentAlarmPolicy.alarm(for: .init(
-            from: .waitingInput,
-            to: .waitingInput,
-            agent: agent(state: .waitingInput)
-        )))
-    }
-
     func testWorkingAndStoppedAreQuiet() {
         XCTAssertNil(AmuxAgentAlarmPolicy.alarm(for: .init(
             from: .idle,
@@ -100,6 +107,19 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
             from: .working,
             to: .stopped,
             agent: agent(state: .stopped)
+        )))
+    }
+
+    func testSameStateWaitingRefreshStillAlarms() {
+        // muxad's reconciler tick re-emits a waiting agent as a same-state
+        // transition. When the original entry edge could not be joined to a
+        // workspace (a pane younger than the daemon's inventory), that tick
+        // is the only remaining chance to alarm — the policy must not
+        // suppress it (per-agent once-per-episode dedupe is the gate's job).
+        XCTAssertNotNil(AmuxAgentAlarmPolicy.alarm(for: .init(
+            from: .waitingInput,
+            to: .waitingInput,
+            agent: agent(state: .waitingInput, lastNotification: "still waiting")
         )))
     }
 

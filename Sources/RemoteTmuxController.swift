@@ -1,5 +1,6 @@
 import Foundation
 import CmuxSettings
+import CmuxSidebar
 import OSLog
 
 /// Coordinates cmux's mirroring of remote tmux servers.
@@ -563,6 +564,12 @@ final class RemoteTmuxController {
         sessionMirrors.values.contains {
             $0.host.kind == .localAmux && $0.mirroredWorkspaceId == workspaceId
         }
+    }
+
+    /// Whether `workspaceId` is a live mirror workspace on ANY host — the
+    /// gate for host-agnostic mirror actions such as "Close and Kill".
+    func isMirrorWorkspace(_ workspaceId: UUID) -> Bool {
+        sessionMirrors.values.contains { $0.mirroredWorkspaceId == workspaceId }
     }
 
     /// Whether a local amux session named `sessionName` is already mirrored.
