@@ -175,20 +175,25 @@ struct RemoteTmuxMirrorTargetingTests {
     }
 
     @Test func workspaceCloseKillTargetSkipsEndedConnections() {
+        // Even an explicit force-kill has nothing to kill once the control
+        // client ended; live connections resolve the id-first target.
         #expect(RemoteTmuxController.workspaceCloseKillTarget(
             connectionExited: true,
             sessionId: 5,
-            sessionName: "dev"
+            sessionName: "dev",
+            forceKill: true
         ) == nil)
         #expect(RemoteTmuxController.workspaceCloseKillTarget(
             connectionExited: false,
             sessionId: 5,
-            sessionName: "dev"
+            sessionName: "dev",
+            forceKill: true
         ) == "$5")
         #expect(RemoteTmuxController.workspaceCloseKillTarget(
             connectionExited: false,
             sessionId: nil,
-            sessionName: "dev"
+            sessionName: "dev",
+            forceKill: true
         ) == "dev")
     }
 

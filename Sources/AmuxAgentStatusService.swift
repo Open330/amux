@@ -189,6 +189,22 @@ final class AmuxAgentStatusService {
             byWorkspace[workspace.id, default: (workspace, [])].agents.append(agent)
         }
 
+        // Same-state pass through the alarm sink for EVERY tracked agent.
+        // Real transitions alone lose alarms two ways: a transition that
+        // fires before this service's subscribe connects exists only in the
+        // snapshot, and a transition whose pane is younger than muxad's
+        // inventory arrives before its workspace join resolves. The sink's
+        // gate dedupes episodes, so repeated passes stay quiet; edges
+        // (finished) still come only from real transitions.
+        if let onTransition {
+            for agent in agentsBySessionId.values {
+                onTransition(
+                    MuxaTransition(from: agent.state, to: agent.state, agent: agent),
+                    workspace(for: agent)
+                )
+            }
+        }
+
         var updated: [UUID: WeakWorkspace] = [:]
         for (workspaceId, group) in byWorkspace {
             guard let entry = Self.statusEntry(for: group.agents) else { continue }

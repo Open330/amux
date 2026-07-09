@@ -27,14 +27,15 @@ struct AmuxAgentAlarmPolicy {
     /// Seconds within which a repeat of the same agent+state edge is dropped.
     static let cooldownInterval: TimeInterval = 20
 
-    /// The alarm `transition` warrants, or `nil` for quiet edges.
+    /// The alarm `transition` warrants, or `nil` for quiet transitions.
     ///
-    /// Alarming edges: entering `waiting_input`/`waiting_choice` (blocked on
-    /// the user), entering `error`, and `working` → `idle` (the turn
-    /// finished). Everything else — starting, refreshes into the same state,
-    /// stops — is badge-only.
+    /// Alarming: any transition into or within `waiting_input` /
+    /// `waiting_choice` / `error` (a same-state reconciler-tick refresh must
+    /// alarm too — for a pane younger than muxad's inventory it is the first
+    /// transition that joins to a workspace; ``AmuxAgentAlarmGate`` dedupes
+    /// repeats per episode), plus the `working` → `idle` finished edge.
+    /// Everything else — starting, working, stops — is badge-only.
     static func alarm(for transition: MuxaTransition) -> AmuxAgentAlarm? {
-        guard transition.from != transition.to else { return nil }
         let agent = transition.agent
         let title: String
         let body: String

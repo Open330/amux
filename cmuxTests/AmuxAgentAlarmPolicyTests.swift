@@ -82,14 +82,6 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         )))
     }
 
-    func testSameStateRefreshIsQuiet() {
-        XCTAssertNil(AmuxAgentAlarmPolicy.alarm(for: .init(
-            from: .waitingInput,
-            to: .waitingInput,
-            agent: agent(state: .waitingInput)
-        )))
-    }
-
     func testWorkingAndStoppedAreQuiet() {
         XCTAssertNil(AmuxAgentAlarmPolicy.alarm(for: .init(
             from: .idle,

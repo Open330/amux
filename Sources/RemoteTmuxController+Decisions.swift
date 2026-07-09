@@ -158,10 +158,16 @@ extension RemoteTmuxController {
         return .closeWorkspace
     }
 
-    /// The `kill-session` target for a user-initiated mirror-workspace close, or
-    /// nil when the control client already ended. Closing a leftover workspace
-    /// after deliberate detach must not kill the remote session detach promised to
-    /// keep alive (#7364).
+    /// The `kill-session` target for a mirror-workspace close, or nil when
+    /// the close should leave the session running.
+    ///
+    /// Close = detach by default on EVERY host kind: the tmux session
+    /// outlives the workspace (that is the product promise — closing a
+    /// workspace while a remote agent works must not end its session; see
+    /// also #7364 for the leftover-workspace-after-detach case). Only the
+    /// explicit "Close and Kill" action (or the app-quit kill marker) sets
+    /// `forceKill`, and even then a control client that already ended has
+    /// nothing left to kill.
     nonisolated static func workspaceCloseKillTarget(
         connectionExited: Bool,
         sessionId: Int?,
@@ -169,14 +175,7 @@ extension RemoteTmuxController {
         hostKind: RemoteTmuxHostKind = .ssh,
         forceKill: Bool = false
     ) -> String? {
-        // amux local engine: close = detach by default (the session outlives
-        // the app — that is the whole point of the local tmux backend), so a
-        // plain close never kills. Only an explicit "Close and Kill" (or the
-        // app-quit kill marker) sets `forceKill`.
-        if hostKind == .localAmux, !forceKill {
-            return nil
-        }
-        guard !connectionExited else { return nil }
+        guard forceKill, !connectionExited else { return nil }
         return sessionId.map { "$\($0)" } ?? sessionName
     }
 }

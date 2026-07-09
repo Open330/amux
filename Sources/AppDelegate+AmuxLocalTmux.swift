@@ -8,6 +8,19 @@ extension AppDelegate {
     /// the hub and services take closures so they stay testable without an
     /// AppDelegate.
     func makeAmuxAgentObservationHub() -> AmuxAgentObservationHub {
+        // One gate across every daemon: agent session ids are globally
+        // unique, and a single episode memory keeps local + remote sinks
+        // consistent.
+        let alarmGate = AmuxAgentAlarmGate()
+        let onTransition: @MainActor (MuxaTransition, Workspace?) -> Void = { [weak self] transition, workspace in
+            // The gate sees every pass (joined or not) so episode memory
+            // stays fresh, but only a joined attention pass consumes the
+            // episode — an unjoined one must alarm on a later joinable pass.
+            guard let self,
+                  let alarm = alarmGate.alarm(for: transition, joined: workspace != nil),
+                  let workspace else { return }
+            self.amuxDeliverAgentAlarm(alarm, workspace: workspace)
+        }
         let localService = AmuxAgentStatusService(
             workspaceForSession: { [weak self] sessionName in
                 self?.remoteTmuxController.localMirrorWorkspace(sessionName: sessionName)
@@ -15,9 +28,7 @@ extension AppDelegate {
             workspaceForPane: { [weak self] paneId in
                 self?.remoteTmuxController.localMirrorWorkspace(containingPane: paneId)
             },
-            onTransition: { [weak self] transition, workspace in
-                self?.amuxHandleAgentTransition(transition, workspace: workspace)
-            }
+            onTransition: onTransition
         )
         return AmuxAgentObservationHub(
             localService: localService,
@@ -36,24 +47,18 @@ extension AppDelegate {
                         self?.remoteTmuxController.mirrorWorkspace(hostId: hostId, containingPane: paneId)
                     },
                     prepareConnection: { try await forwarder.ensureForward() },
-                    onTransition: { [weak self] transition, workspace in
-                        self?.amuxHandleAgentTransition(transition, workspace: workspace)
-                    }
+                    onTransition: onTransition
                 )
                 return AmuxAgentObservationHub.RemoteObserver(forwarder: forwarder, service: service)
             }
         )
     }
 
-    /// Routes an agent state transition into the notification pipeline:
-    /// alarming edges (needs input / choice, error, work finished — see
-    /// ``AmuxAgentAlarmPolicy``) become workspace-scoped notifications, so
-    /// remote agents alert on this Mac instead of only on the remote host.
-    /// Transitions that don't resolve to a mirrored workspace are dropped.
-    func amuxHandleAgentTransition(_ transition: MuxaTransition, workspace: Workspace?) {
-        guard let workspace,
-              let alarm = AmuxAgentAlarmPolicy.alarm(for: transition),
-              let notificationStore else { return }
+    /// Delivers a gated agent alarm (see ``AmuxAgentAlarmGate``) into the
+    /// notification pipeline as a workspace-scoped notification, so remote
+    /// agents alert on this Mac instead of only on the remote host.
+    func amuxDeliverAgentAlarm(_ alarm: AmuxAgentAlarm, workspace: Workspace) {
+        guard let notificationStore else { return }
         notificationStore.addNotification(
             tabId: workspace.id,
             surfaceId: nil,
@@ -227,13 +232,14 @@ extension AppDelegate {
         }
     }
 
-    /// Closes `workspace` AND kills its amux tmux session (the explicit
-    /// opt-out of detach-by-default). Kills the session first so the
-    /// subsequent tab close is a no-op mirror teardown, then removes the tab.
-    /// Returns `false` when the workspace isn't a live amux mirror.
+    /// Closes `workspace` AND kills its mirrored tmux session (the explicit
+    /// opt-out of detach-by-default) — local engine and SSH hosts alike.
+    /// Kills the session first so the subsequent tab close is a no-op mirror
+    /// teardown, then removes the tab. Returns `false` when the workspace
+    /// isn't a live mirror.
     @discardableResult
     func amuxCloseAndKillWorkspace(_ workspace: Workspace) -> Bool {
-        guard remoteTmuxController.isLocalAmuxMirrorWorkspace(workspace.id) else { return false }
+        guard remoteTmuxController.isMirrorWorkspace(workspace.id) else { return false }
         remoteTmuxController.handleWorkspaceClosed(workspaceId: workspace.id, forceKill: true)
         if let (manager, _) = amuxWorkspace(withId: workspace.id) {
             manager.closeWorkspace(workspace)
