@@ -157,7 +157,7 @@ struct PostHogAnalyticsPropertiesTests {
             ]
         )
 
-        #expect(properties["platform"] as? String == "cmuxterm")
+        #expect(properties["platform"] as? String == "amux")
         #expect(properties["app_version"] as? String == "0.31.0")
         #expect(properties["app_build"] as? String == "230")
     }
@@ -196,7 +196,7 @@ struct PostHogAnalyticsPropertiesTests {
     @Test
     func propertiesOmitVersionFieldsWhenUnavailable() {
         let superProperties = PostHogAnalytics.superProperties(infoDictionary: [:])
-        #expect(superProperties["platform"] as? String == "cmuxterm")
+        #expect(superProperties["platform"] as? String == "amux")
         #expect(superProperties["app_version"] == nil)
         #expect(superProperties["app_build"] == nil)
 
@@ -213,9 +213,9 @@ struct PostHogAnalyticsPropertiesTests {
 
     @Test
     func flushPolicyIncludesDailyAndHourlyActiveEvents() {
-        #expect(PostHogAnalytics.shouldFlushAfterCapture(event: "cmux_daily_active"))
-        #expect(PostHogAnalytics.shouldFlushAfterCapture(event: "cmux_hourly_active"))
-        #expect(!PostHogAnalytics.shouldFlushAfterCapture(event: "cmux_other_event"))
+        #expect(PostHogAnalytics.shouldFlushAfterCapture(event: "amux_daily_active"))
+        #expect(PostHogAnalytics.shouldFlushAfterCapture(event: "amux_hourly_active"))
+        #expect(!PostHogAnalytics.shouldFlushAfterCapture(event: "amux_other_event"))
     }
 
     @Test
@@ -259,7 +259,7 @@ struct PostHogAnalyticsPropertiesTests {
         #expect(eventsCaptured.wait(timeout: .now() + .seconds(1)) == .success)
         #expect(flushCalled.wait(timeout: .now() + .seconds(1)) == .success)
         let events = capturedQueue.sync { capturedEvents }
-        #expect(events.map(\.event) == ["cmux_daily_active", "cmux_hourly_active"])
+        #expect(events.map(\.event) == ["amux_daily_active", "amux_hourly_active"])
         let dailyEvent = try #require(events.first)
         let hourlyEvent = try #require(events.dropFirst().first)
         #expect(dailyEvent.properties["day_utc"] as? String == "2026-02-21")
