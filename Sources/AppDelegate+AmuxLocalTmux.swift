@@ -482,15 +482,43 @@ extension AppDelegate {
     /// it. Returns `false` when the mirror could not be created.
     @discardableResult
     func amuxAttachSession(named name: String, in manager: TabManager) -> Bool {
+        amuxAttachSession(
+            host: .amuxLocal(),
+            sessionName: name,
+            sessionId: nil,
+            in: manager
+        )
+    }
+
+    private func amuxAttachSession(
+        host: RemoteTmuxHost,
+        sessionName: String,
+        sessionId: Int?,
+        in manager: TabManager
+    ) -> Bool {
         do {
-            try remoteTmuxController.mirrorSession(host: .amuxLocal(), sessionName: name, into: manager)
-            if let workspace = remoteTmuxController.localMirrorWorkspace(sessionName: name) {
-                manager.selectWorkspace(workspace)
+            guard let targetManager = remoteTmuxController.sessionAttachTargetTabManager(
+                host: host,
+                fallback: manager
+            ) else { return false }
+            try remoteTmuxController.mirrorSession(
+                host: host,
+                sessionName: sessionName,
+                sessionId: sessionId,
+                into: targetManager
+            )
+            let workspace = sessionId.flatMap {
+                remoteTmuxController.mirrorWorkspace(hostId: host.id, sessionId: $0)
+            } ?? remoteTmuxController.mirrorWorkspace(hostId: host.id, sessionName: sessionName)
+            if let workspace {
+                let owner = amuxWorkspace(withId: workspace.id)?.manager ?? targetManager
+                owner.selectWorkspace(workspace)
+                owner.window?.makeKeyAndOrderFront(nil)
             }
             return true
         } catch {
             #if DEBUG
-            cmuxDebugLog("amux: attach detached session \(name) failed: \(error)")
+            cmuxDebugLog("amux: attach session \(sessionName) on \(host.destination) failed: \(error)")
             #endif
             return false
         }
@@ -504,29 +532,12 @@ extension AppDelegate {
         session: RemoteTmuxSession,
         in manager: TabManager
     ) -> Bool {
-        do {
-            try remoteTmuxController.mirrorSession(
-                host: host,
-                sessionName: session.name,
-                sessionId: RemoteTmuxController.tmuxSessionNumericId(session.id),
-                into: manager
-            )
-            if let workspace = remoteTmuxController.mirrorWorkspace(
-                hostId: host.id,
-                sessionName: session.name
-            ) {
-                let owner = amuxWorkspace(withId: workspace.id)?.manager ?? manager
-                owner.selectWorkspace(workspace)
-            }
-            return true
-        } catch {
-            #if DEBUG
-            cmuxDebugLog(
-                "amux: attach session \(session.name) on \(host.destination) failed: \(error)"
-            )
-            #endif
-            return false
-        }
+        amuxAttachSession(
+            host: host,
+            sessionName: session.name,
+            sessionId: RemoteTmuxController.tmuxSessionNumericId(session.id),
+            in: manager
+        )
     }
 
     /// Closes `workspace` AND kills its mirrored tmux session (the explicit

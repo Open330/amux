@@ -22,6 +22,10 @@ final class RemoteTmuxControlConnection {
     /// The tmux session name this connection attaches to. Mutable because a
     /// `rename-session` changes it (the underlying `$id` is stable).
     private(set) var sessionName: String
+    /// The tmux target used for initial attach and reconnect. Discovery-backed
+    /// connections use `$id`, while create/name-only entrypoints fall back to the
+    /// display name until tmux reports a stable id.
+    private(set) var attachTarget: String
 
     /// Updates the tracked session name after a `rename-session`.
     func setSessionName(_ name: String) { sessionName = name }
@@ -196,9 +200,16 @@ final class RemoteTmuxControlConnection {
     /// Clamped by the remote pane's `history-limit`, so short panes seed less.
     private static let scrollbackCaptureLines = 5_000
 
-    init(host: RemoteTmuxHost, sessionName: String, createIfMissing: Bool = false) {
+    init(
+        host: RemoteTmuxHost,
+        sessionName: String,
+        sessionId: Int? = nil,
+        createIfMissing: Bool = false
+    ) {
         self.host = host
         self.sessionName = sessionName
+        self.sessionId = sessionId
+        self.attachTarget = sessionId.map { "$\($0)" } ?? sessionName
         self.createIfMissing = createIfMissing
     }
 
@@ -335,7 +346,7 @@ final class RemoteTmuxControlConnection {
 
         let proc = Process()
         let invocation = host.controlProcessInvocation(
-            sessionName: sessionName,
+            sessionName: attachTarget,
             createIfMissing: createIfMissing
         )
         proc.executableURL = URL(fileURLWithPath: invocation.executablePath)
@@ -1577,11 +1588,8 @@ final class RemoteTmuxControlConnection {
     }
 
     /// Shared handling for `%session-changed` and `%session-renamed`: validate the
-    /// name, update the tracked `sessionName` (and `sessionId` for session
-    /// switches), then emit the name-change observers (which re-key controller
-    /// state and re-title the mirror workspace). `sessionName` is reused for
-    /// attach/reconnect, so a stale value would make the next reconnect target the
-    /// wrong session and wrongly declare it gone.
+    /// name, update the tracked display name and stable attach target, then emit
+    /// the observers that re-key controller state and re-title the workspace.
     ///
     /// - Parameter refetchWindows: re-fetch the window topology afterwards. A
     ///   session SWITCH (`%session-changed`) brings a different window set, so it
@@ -1596,7 +1604,12 @@ final class RemoteTmuxControlConnection {
             return
         }
         let oldName = sessionName
-        if let newSessionId { sessionId = newSessionId }
+        if let newSessionId {
+            sessionId = newSessionId
+            attachTarget = "$\(newSessionId)"
+        } else if sessionId == nil {
+            attachTarget = safeName
+        }
         sessionName = safeName
         let idSuffix = newSessionId.map { " $\($0)" } ?? ""
         record("\(event)\(idSuffix)")

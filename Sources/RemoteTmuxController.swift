@@ -27,9 +27,8 @@ final class RemoteTmuxController {
     /// owned by ``RemoteTmuxController`` and delegated to for discovery + master teardown.
     private let transportRegistry = RemoteTmuxTransportRegistry()
 
-    /// Live `tmux -CC` control connections keyed by `connectionHash\u{1}session`
-    /// (see ``connectionKey(host:sessionName:)``), so repeated attach requests for
-    /// the same endpoint+session reuse the existing connection.
+    /// Live `tmux -CC` control connections keyed by endpoint plus stable session
+    /// id when known, falling back to the mutable name for name-only entrypoints.
     private var connectionsByHostSession: [String: RemoteTmuxControlConnection] = [:]
     private var connectionObserverTokensByHostSession: [String: RemoteTmuxControlConnection.ObserverToken] = [:]
 
@@ -96,19 +95,26 @@ final class RemoteTmuxController {
     func attach(
         host: RemoteTmuxHost,
         sessionName: String,
+        sessionId: Int? = nil,
         createIfMissing: Bool = false
     ) throws -> RemoteTmuxControlConnection {
-        let key = Self.connectionKey(host: host, sessionName: sessionName)
-        if let existing = connectionsByHostSession[key] {
+        let key = Self.connectionKey(host: host, sessionName: sessionName, sessionId: sessionId)
+        let existing = connectionsByHostSession[key] ?? connectionsByHostSession.values.first { connection in
+            guard connection.host.connectionHash == host.connectionHash else { return false }
+            if let sessionId { return connection.sessionId == sessionId }
+            return connection.sessionName == sessionName
+        }
+        if let existing {
             if !existing.exited { return existing }
             // Replace a dead connection — fully tear down the old one first so
             // its ssh process, stdin fd, stream continuation and ingest task
             // don't leak.
-            removeCachedConnection(forKey: key)?.stop()
+            removeCachedConnection(existing)?.stop()
         }
         let connection = RemoteTmuxControlConnection(
             host: host,
             sessionName: sessionName,
+            sessionId: sessionId,
             createIfMissing: createIfMissing
         )
         // Insert only after a successful launch, so a failed `start()` never
@@ -142,7 +148,7 @@ final class RemoteTmuxController {
             createIfMissing: createIfMissing
         )
         guard await connection.waitUntilConnected() else {
-            stopCachedConnectionIfCurrent(connection, host: host, sessionName: sessionName)
+            stopCachedConnectionIfCurrent(connection, host: host)
             try Task.checkCancellation()
             throw RemoteTmuxError.unreachable("tmux control stream ended before attach for \(host.destination)")
         }
@@ -151,16 +157,18 @@ final class RemoteTmuxController {
 
     private func stopCachedConnectionIfCurrent(
         _ connection: RemoteTmuxControlConnection,
-        host: RemoteTmuxHost,
-        sessionName: String
+        host: RemoteTmuxHost
     ) {
-        let key = Self.connectionKey(host: host, sessionName: sessionName)
-        guard connectionsByHostSession[key] === connection else { return }
-        removeCachedConnection(forKey: key)?.stop()
+        guard connection.host.connectionHash == host.connectionHash else { return }
+        removeCachedConnection(connection)?.stop()
     }
 
     func cacheConnection(_ connection: RemoteTmuxControlConnection, key: String? = nil) {
-        let key = key ?? Self.connectionKey(host: connection.host, sessionName: connection.sessionName)
+        let key = key ?? Self.connectionKey(
+            host: connection.host,
+            sessionName: connection.sessionName,
+            sessionId: connection.sessionId
+        )
         connectionsByHostSession[key] = connection
         connectionObserverTokensByHostSession[key] = connection.addObserver(
             onSessionChanged: { [weak self, weak connection] oldName, newName in
@@ -183,30 +191,31 @@ final class RemoteTmuxController {
         return connection
     }
 
+    @discardableResult
+    private func removeCachedConnection(
+        _ connection: RemoteTmuxControlConnection
+    ) -> RemoteTmuxControlConnection? {
+        guard let key = connectionsByHostSession.first(where: { $0.value === connection })?.key else {
+            return nil
+        }
+        return removeCachedConnection(forKey: key)
+    }
+
     private func handleCachedConnectionSessionNameChanged(
         connection: RemoteTmuxControlConnection,
         oldName: String,
         newName: String
     ) {
         let oldKey = Self.connectionKey(host: connection.host, sessionName: oldName)
-        let newKey = Self.connectionKey(host: connection.host, sessionName: newName)
+        let newKey = Self.connectionKey(
+            host: connection.host,
+            sessionName: newName,
+            sessionId: connection.sessionId
+        )
         guard oldKey != newKey else { return }
         if let existing = connectionsByHostSession[newKey], existing !== connection { return }
-        if connectionsByHostSession[oldKey] === connection {
-            connectionsByHostSession.removeValue(forKey: oldKey)
-            connectionsByHostSession[newKey] = connection
-            if let token = connectionObserverTokensByHostSession.removeValue(forKey: oldKey) {
-                connectionObserverTokensByHostSession[newKey] = token
-            }
-            return
-        }
         guard let currentKey = connectionsByHostSession.first(where: { $0.value === connection })?.key,
-              currentKey != newKey else {
-            if let token = connectionObserverTokensByHostSession.removeValue(forKey: oldKey) {
-                connectionObserverTokensByHostSession[newKey] = token
-            }
-            return
-        }
+              currentKey != newKey else { return }
         connectionsByHostSession.removeValue(forKey: currentKey)
         connectionsByHostSession[newKey] = connection
         if let token = connectionObserverTokensByHostSession.removeValue(forKey: currentKey) {
@@ -257,8 +266,8 @@ final class RemoteTmuxController {
 
     // MARK: - Sidebar mirroring (P3, initial increment)
 
-    /// Active session→workspace mirrors keyed `connectionHash\u{1}session`
-    /// (see ``connectionKey(host:sessionName:)``).
+    /// Active session→workspace mirrors keyed by endpoint plus stable session id
+    /// when known, with a name fallback for create/name-only entrypoints.
     ///
     /// The `didSet` fires on every mutation (add, remove, rekey) and pings
     /// ``mirrorTopologyDidChange`` so the agent-observation layer can
@@ -456,12 +465,31 @@ final class RemoteTmuxController {
         mirrorSessions(sessions, host: host, into: tabManager)
     }
 
+    /// Resolves the authoritative manager for a single discovered-session attach,
+    /// matching bulk mirror routing: a live host-dedicated window wins, otherwise
+    /// the caller's stable dispatch manager is used.
+    func sessionAttachTargetTabManager(host: RemoteTmuxHost, fallback: TabManager?) -> TabManager? {
+        guard let appDelegate = AppDelegate.shared else { return fallback }
+        return Self.mirrorTargetTabManager(
+            dedicatedWindowId: windowRegistry.windowId(forHostHash: host.connectionHash),
+            tabManagerForWindow: { appDelegate.tabManagerFor(windowId: $0) },
+            fallbackTabManager: { fallback }
+        )
+    }
+
     /// The subset of `sessions` not yet mirrored for `host`: stable tmux ids beat
     /// mutable names so bulk discovery can't duplicate mid-rename (#7362, #7365).
     /// Stream-reported ids win; discovery-seeded ids cover the pre-`%enter` gap.
     func unmirroredSessions(_ sessions: [RemoteTmuxSession], host: RemoteTmuxHost) -> [RemoteTmuxSession] {
         let mirrors = sessionMirrors.values.filter { $0.host.connectionHash == host.connectionHash }
-        return Self.unmirroredSessions(sessions, mirroredSessionIds: Set(mirrors.compactMap { $0.connection.sessionId ?? $0.seededSessionId }), mirroredNames: Set(mirrors.map(\.sessionName)))
+        return Self.unmirroredSessions(
+            sessions,
+            mirroredSessionIds: Set(mirrors.compactMap { $0.connection.sessionId ?? $0.seededSessionId }),
+            mirroredNames: Set(mirrors.map(\.sessionName)),
+            idlessMirroredNames: Set(mirrors.compactMap {
+                ($0.connection.sessionId ?? $0.seededSessionId) == nil ? $0.sessionName : nil
+            })
+        )
     }
 
     /// Mirrors each not-yet-mirrored session into `manager` (one failure must not
@@ -620,6 +648,18 @@ final class RemoteTmuxController {
     func mirrorWorkspace(hostId: String, sessionName: String) -> Workspace? {
         sessionMirrors.values
             .first { $0.host.id == hostId && $0.sessionName == sessionName }?
+            .workspace
+    }
+
+    /// The workspace mirroring tmux's stable numeric session id on `hostId`.
+    /// Used after a discovery-backed attach so a concurrent rename cannot make
+    /// selection fall back to a same-named replacement session.
+    func mirrorWorkspace(hostId: String, sessionId: Int) -> Workspace? {
+        sessionMirrors.values
+            .first {
+                $0.host.id == hostId
+                    && ($0.connection.sessionId ?? $0.seededSessionId) == sessionId
+            }?
             .workspace
     }
 
@@ -923,12 +963,24 @@ final class RemoteTmuxController {
         createIfMissing: Bool = false,
         into tabManager: TabManager
     ) throws -> Bool {
-        let key = Self.connectionKey(host: host, sessionName: sessionName)
-        guard sessionMirrors[key] == nil else { return false }
+        let key = Self.connectionKey(host: host, sessionName: sessionName, sessionId: sessionId)
+        let duplicate = sessionMirrors.values.contains { mirror in
+            guard mirror.host.connectionHash == host.connectionHash else { return false }
+            if let sessionId {
+                return (mirror.connection.sessionId ?? mirror.seededSessionId) == sessionId
+            }
+            return mirror.sessionName == sessionName
+        }
+        guard !duplicate else { return false }
         // Attach (and start the ssh process) BEFORE creating the workspace, so a
         // failed connection doesn't leave an orphaned empty mirror workspace in
         // the sidebar.
-        let connection = try attach(host: host, sessionName: sessionName, createIfMissing: createIfMissing)
+        let connection = try attach(
+            host: host,
+            sessionName: sessionName,
+            sessionId: sessionId,
+            createIfMissing: createIfMissing
+        )
         let workspace = tabManager.addWorkspace(
             title: sessionName,
             select: false,
@@ -1022,28 +1074,30 @@ final class RemoteTmuxController {
         oldName: String,
         newName: String
     ) {
-        guard let safeName = RemoteTmuxHost.controlModeLineSafeName(newName),
-              oldName != safeName else {
-            return
-        }
+        guard let safeName = RemoteTmuxHost.controlModeLineSafeName(newName) else { return }
         let host = mirror.host
         let oldKey = Self.connectionKey(host: host, sessionName: oldName)
-        let newKey = Self.connectionKey(host: host, sessionName: safeName)
+        let newKey = Self.connectionKey(
+            host: host,
+            sessionName: safeName,
+            sessionId: mirror.connection.sessionId ?? mirror.seededSessionId
+        )
         if let existing = sessionMirrors[newKey], existing !== mirror { return }
         if let existing = connectionsByHostSession[newKey], existing !== mirror.connection { return }
 
-        mirror.setSessionName(safeName)
-        mirror.connection.setSessionName(safeName)
-        // Reverse of the cmux→tmux rename push: a remote `rename-session` (or an
-        // automatic session rename) re-titles the mirror's sidebar workspace.
-        // This updates the workspace title directly (no `rename-session`
-        // feedback); see `applySessionNameToWorkspaceTitle`.
-        mirror.applySessionNameToWorkspaceTitle(safeName)
+        if oldName != safeName {
+            mirror.setSessionName(safeName)
+            mirror.connection.setSessionName(safeName)
+            // Reverse of the cmux→tmux rename push: a remote `rename-session` (or an
+            // automatic session rename) re-titles the mirror's sidebar workspace.
+            // This updates the workspace title directly (no `rename-session`
+            // feedback); see `applySessionNameToWorkspaceTitle`.
+            mirror.applySessionNameToWorkspaceTitle(safeName)
+        }
 
         if oldKey != newKey {
-            if let entry = sessionMirrors.removeValue(forKey: oldKey) {
-                sessionMirrors[newKey] = entry
-            } else if let currentKey = sessionMirrors.first(where: { $0.value === mirror })?.key {
+            if let currentKey = sessionMirrors.first(where: { $0.value === mirror })?.key,
+               currentKey != newKey {
                 sessionMirrors.removeValue(forKey: currentKey)
                 sessionMirrors[newKey] = mirror
             }
@@ -1324,12 +1378,17 @@ final class RemoteTmuxController {
         workspaceId: UUID,
         forceCloseWorkspace: Bool = false
     ) {
-        let key = Self.connectionKey(host: host, sessionName: sessionName)
-        let mirrorWorkspace = sessionMirrors[key]?.mirroredWorkspace
-        if let mirror = sessionMirrors.removeValue(forKey: key) {
+        let entry = sessionMirrors.first { _, mirror in
+            mirror.host.connectionHash == host.connectionHash
+                && mirror.mirroredWorkspaceId == workspaceId
+        }
+        let key = entry?.key
+        let connection = entry?.value.connection
+        let mirrorWorkspace = entry?.value.mirroredWorkspace
+        if let key, let mirror = sessionMirrors.removeValue(forKey: key) {
             mirror.detachObserver()
         }
-        removeCachedConnection(forKey: key)?.stop()
+        if let connection { removeCachedConnection(connection)?.stop() }
         let hostHasOtherMirrors = sessionMirrors.values.contains(where: { $0.host.connectionHash == host.connectionHash })
         // Capture the dedicated window before teardown; if other sessions remain,
         // losing one session only closes its workspace.
@@ -1436,7 +1495,7 @@ final class RemoteTmuxController {
             affectedHosts[mirror.host.connectionHash] = mirror.host
             mirror.detachObserver()
             sessionMirrors.removeValue(forKey: key)
-            removeCachedConnection(forKey: key)?.stop()
+            removeCachedConnection(mirror.connection)?.stop()
         }
         // For any host left with no live mirror or connection, close its shared SSH
         // ControlMaster now — the dedicated-window/last-session paths already do this,
@@ -1504,7 +1563,7 @@ final class RemoteTmuxController {
         for (key, mirror) in mirrorsInWindow {
             mirror.detachObserver()
             sessionMirrors.removeValue(forKey: key)
-            removeCachedConnection(forKey: key)?.stop()
+            removeCachedConnection(mirror.connection)?.stop()
         }
         let stillUsed = sessionMirrors.values.contains { $0.host.connectionHash == host.connectionHash } || connectionsByHostSession.values.contains { $0.host.connectionHash == host.connectionHash }
         if !stillUsed {
@@ -1518,7 +1577,7 @@ final class RemoteTmuxController {
         let host = entry.value.host
         sessionMirrors.removeValue(forKey: entry.key)
         entry.value.detachObserver()
-        removeCachedConnection(forKey: entry.key)?.stop()
+        removeCachedConnection(entry.value.connection)?.stop()
         let hostHasOtherMirrors = sessionMirrors.values.contains { $0.host.connectionHash == host.connectionHash }
         if !hostHasOtherMirrors { windowRegistry.unbind(hostHash: host.connectionHash) }
         if !hostHasOtherMirrors, !connectionsByHostSession.values.contains(where: { $0.host.connectionHash == host.connectionHash }) { transportRegistry.remove(connectionHash: host.connectionHash); RemoteTmuxSSHTransport.spawnControlMasterExit(host: host) }
@@ -1583,18 +1642,19 @@ final class RemoteTmuxController {
 
     /// Returns the control connection for a host+session, if attached.
     func connection(host: RemoteTmuxHost, sessionName: String) -> RemoteTmuxControlConnection? {
-        connectionsByHostSession[Self.connectionKey(
-            host: host,
-            sessionName: sessionName
-        )]
+        connectionsByHostSession.values.first {
+            $0.host.connectionHash == host.connectionHash && $0.sessionName == sessionName
+        }
     }
 
     /// Detaches a control client and removes its mirror workspace while leaving
     /// the remote session alive (#7364). Internal callers that already removed the
     /// mirror keep the low-level stop-only path, preserving their kill semantics.
     func detach(host: RemoteTmuxHost, sessionName: String) {
-        let key = Self.connectionKey(host: host, sessionName: sessionName)
-        if let workspaceId = sessionMirrors[key]?.mirroredWorkspaceId {
+        let mirrorEntry = sessionMirrors.first { _, mirror in
+            mirror.host.connectionHash == host.connectionHash && mirror.sessionName == sessionName
+        }
+        if let workspaceId = mirrorEntry?.value.mirroredWorkspaceId {
             tearDownMirrorAndCloseWorkspace(
                 host: host,
                 sessionName: sessionName,
@@ -1603,9 +1663,9 @@ final class RemoteTmuxController {
             )
             return
         }
-        if let mirror = sessionMirrors.removeValue(forKey: key) {
+        if let key = mirrorEntry?.key, let mirror = sessionMirrors.removeValue(forKey: key) {
             mirror.detachObserver()
-            removeCachedConnection(forKey: key)?.stop()
+            removeCachedConnection(mirror.connection)?.stop()
             let hostHasOtherMirrors = sessionMirrors.values.contains { $0.host.connectionHash == host.connectionHash }
             if !hostHasOtherMirrors { windowRegistry.unbind(hostHash: host.connectionHash) }
             if !hostHasOtherMirrors,
@@ -1615,7 +1675,11 @@ final class RemoteTmuxController {
             }
             return
         }
-        removeCachedConnection(forKey: key)?.stop()
+        if let connectionEntry = connectionsByHostSession.first(where: {
+            $0.value.host.connectionHash == host.connectionHash && $0.value.sessionName == sessionName
+        }) {
+            removeCachedConnection(forKey: connectionEntry.key)?.stop()
+        }
     }
 
     /// Re-asserts every live mirror's client grid (see
@@ -1653,7 +1717,11 @@ final class RemoteTmuxController {
     /// + port + identity), so the same destination reached on a different port or
     /// with a different identity file never aliases onto another endpoint's
     /// connection.
-    private static func connectionKey(host: RemoteTmuxHost, sessionName: String) -> String {
-        "\(host.connectionHash)\u{1}\(sessionName)"
+    private static func connectionKey(
+        host: RemoteTmuxHost,
+        sessionName: String,
+        sessionId: Int? = nil
+    ) -> String {
+        "\(host.connectionHash)\u{1}\(sessionId.map { "$\($0)" } ?? sessionName)"
     }
 }

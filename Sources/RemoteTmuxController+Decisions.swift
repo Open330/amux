@@ -94,21 +94,19 @@ extension RemoteTmuxController {
     /// Identity per session: a parsed stable id matching a mirrored connection's
     /// sessionId means already mirrored (so a rename whose `%session-renamed` has
     /// not re-keyed the mirror yet can never mirror the same session twice);
-    /// otherwise the mutable name decides. A NEW session that reuses a mirrored
-    /// session's stale pre-rename name therefore stays undiscovered until the
-    /// rename event re-keys the mirror — deliberate: the whole attach pipeline
-    /// (`connectionKey`, `mirrorSession`, `tmux attach -t`) keys sessions by
-    /// name, so surfacing it here would only be dropped by those layers.
-    /// Attaching by stable id end to end is follow-up territory.
+    /// otherwise the mutable name decides. A new stable id is distinct even when
+    /// it reuses a mirror's stale pre-rename name because attach targets ids end to
+    /// end; name-only sessions retain the conservative name fallback.
     nonisolated static func unmirroredSessions(
         _ sessions: [RemoteTmuxSession],
         mirroredSessionIds: Set<Int>,
-        mirroredNames: Set<String>
+        mirroredNames: Set<String>,
+        idlessMirroredNames: Set<String>
     ) -> [RemoteTmuxSession] {
         sessions.filter { session in
-            if let sessionId = tmuxSessionNumericId(session.id),
-               mirroredSessionIds.contains(sessionId) {
-                return false
+            if let sessionId = tmuxSessionNumericId(session.id) {
+                return !mirroredSessionIds.contains(sessionId)
+                    && !idlessMirroredNames.contains(session.name)
             }
             return !mirroredNames.contains(session.name)
         }

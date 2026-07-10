@@ -27,9 +27,14 @@ struct RemoteTmuxMirrorTargetingTests {
     private func cacheConnection(
         controller: RemoteTmuxController,
         host: RemoteTmuxHost,
-        sessionName: String
+        sessionName: String,
+        sessionId: Int? = nil
     ) {
-        controller.cacheConnection(RemoteTmuxControlConnection(host: host, sessionName: sessionName))
+        controller.cacheConnection(RemoteTmuxControlConnection(
+            host: host,
+            sessionName: sessionName,
+            sessionId: sessionId
+        ))
     }
 
     @Test func unmirroredSessionsFiltersAlreadyMirroredNamesForHost() throws {
@@ -58,7 +63,8 @@ struct RemoteTmuxMirrorTargetingTests {
         let renameRace = RemoteTmuxController.unmirroredSessions(
             [session("zeromain", id: "$0")],
             mirroredSessionIds: [0],
-            mirroredNames: ["0"]
+            mirroredNames: ["0"],
+            idlessMirroredNames: []
         )
         #expect(renameRace.isEmpty)
 
@@ -67,7 +73,8 @@ struct RemoteTmuxMirrorTargetingTests {
         let reusedOldName = RemoteTmuxController.unmirroredSessions(
             [session("0", id: "$5")],
             mirroredSessionIds: [0],
-            mirroredNames: ["0"]
+            mirroredNames: ["0"],
+            idlessMirroredNames: []
         )
         #expect(reusedOldName.map(\.name) == ["0"])
 
@@ -75,14 +82,16 @@ struct RemoteTmuxMirrorTargetingTests {
         let midAttach = RemoteTmuxController.unmirroredSessions(
             [session("dev", id: "$5")],
             mirroredSessionIds: [],
-            mirroredNames: ["dev"]
+            mirroredNames: ["dev"],
+            idlessMirroredNames: ["dev"]
         )
         #expect(midAttach.isEmpty)
 
         let fresh = RemoteTmuxController.unmirroredSessions(
             [session("fresh", id: "$7")],
             mirroredSessionIds: [0],
-            mirroredNames: ["old"]
+            mirroredNames: ["old"],
+            idlessMirroredNames: []
         )
         #expect(fresh.map(\.name) == ["fresh"])
     }
@@ -117,6 +126,22 @@ struct RemoteTmuxMirrorTargetingTests {
             .map(\.title)
             .sorted()
         #expect(mirrorTitles == ["new", "old"])
+    }
+
+    @Test func firstStableSessionIdRekeysMirrorAndConnectionTogether() throws {
+        let controller = RemoteTmuxController()
+        let manager = TabManager()
+        let host = RemoteTmuxHost(destination: "user@host")
+        let connection = RemoteTmuxControlConnection(host: host, sessionName: "work")
+        controller.cacheConnection(connection)
+        try controller.mirrorSession(host: host, sessionName: "work", into: manager)
+
+        connection.handleMessageForTesting(.sessionChanged(sessionId: 12, name: "work"))
+        #expect(connection.attachTarget == "$12")
+
+        controller.detach(host: host, sessionName: "work")
+        #expect(controller.connection(host: host, sessionName: "work") == nil)
+        #expect(!manager.tabs.contains { $0.isRemoteTmuxMirror })
     }
 
     @Test func mirrorTargetTabManagerPrefersDedicatedWindowWhenResolvable() {
@@ -169,7 +194,8 @@ struct RemoteTmuxMirrorTargetingTests {
         cacheConnection(
             controller: app.remoteTmuxController,
             host: host,
-            sessionName: "agent-work"
+            sessionName: "agent-work",
+            sessionId: 9
         )
 
         let attached = app.amuxAttachSession(
@@ -182,6 +208,10 @@ struct RemoteTmuxMirrorTargetingTests {
         #expect(dedicatedManager.tabs.contains { $0.isRemoteTmuxMirror && $0.title == "agent-work" })
         #expect(!fallbackManager.tabs.contains { $0.isRemoteTmuxMirror })
         #expect(dedicatedManager.selectedWorkspace?.title == "agent-work")
+        #expect(app.remoteTmuxController.connection(
+            host: host,
+            sessionName: "agent-work"
+        )?.attachTarget == "$9")
     }
 
     @Test func workspaceCloseDetachesByDefaultOnSSH() {
