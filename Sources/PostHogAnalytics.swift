@@ -1,20 +1,13 @@
 import AppKit
 import Foundation
-import PostHog
 
 // `@unchecked Sendable` is safe here because mutable analytics state is confined
 // to `workQueue`; `activeCheckTimer` is only touched through the main queue.
 final class PostHogAnalytics: @unchecked Sendable {
     static let shared = PostHogAnalytics()
 
-    // amux has no Open330-owned PostHog project. The inherited implementation
-    // remains available for a future explicit integration, without credentials.
-    private let apiKey = ""
-
-    private let host = ""
-
-    private let dailyActiveEvent = "cmux_daily_active"
-    private let hourlyActiveEvent = "cmux_hourly_active"
+    private let dailyActiveEvent = "amux_daily_active"
+    private let hourlyActiveEvent = "amux_hourly_active"
 
     private let lastActiveDayUTCKey = "posthog.lastActiveDayUTC"
     private let lastActiveHourUTCKey = "posthog.lastActiveHourUTC"
@@ -32,14 +25,12 @@ final class PostHogAnalytics: @unchecked Sendable {
     private var activeCheckTimer: Timer?
 
     private init(
-        workQueue: DispatchQueue = DispatchQueue(label: "com.cmux.posthog.analytics", qos: .utility),
+        workQueue: DispatchQueue = DispatchQueue(label: "com.open330.amux.analytics", qos: .utility),
         didStart: Bool = false,
         userDefaults: UserDefaults = .standard,
         now: @escaping @Sendable () -> Date = { Date() },
-        capturePostHog: @escaping @Sendable (String, [String: Any]) -> Void = { event, properties in
-            PostHogSDK.shared.capture(event, properties: properties)
-        },
-        flushPostHog: @escaping @Sendable () -> Void = { PostHogSDK.shared.flush() }
+        capturePostHog: @escaping @Sendable (String, [String: Any]) -> Void = { _, _ in },
+        flushPostHog: @escaping @Sendable () -> Void = {}
     ) {
         self.workQueue = workQueue
         self.didStart = didStart
@@ -110,24 +101,7 @@ final class PostHogAnalytics: @unchecked Sendable {
     private func startIfNeededOnWorkQueue() {
         guard !didStart else { return }
         guard isEnabled else { return }
-
-        let config = PostHogConfig(apiKey: apiKey, host: host)
-        config.captureApplicationLifecycleEvents = false
-        config.captureScreenViews = false
-#if DEBUG
-        config.debug = ProcessInfo.processInfo.environment["CMUX_POSTHOG_DEBUG"] == "1"
-#endif
-
-        PostHogSDK.shared.setup(config)
-
-        // Tag every event so PostHog can distinguish desktop from web and
-        // break events down by released app version/build.
-        PostHogSDK.shared.register(Self.superProperties(infoDictionary: Bundle.main.infoDictionary ?? [:]))
-
-        // The SDK automatically generates and persists an anonymous distinct ID.
-
         didStart = true
-
         scheduleActiveCheckTimer()
     }
 
@@ -233,7 +207,7 @@ final class PostHogAnalytics: @unchecked Sendable {
     }
 
     nonisolated static func superProperties(infoDictionary: [String: Any]) -> [String: Any] {
-        var properties: [String: Any] = ["platform": "cmuxterm"]
+        var properties: [String: Any] = ["platform": "amux"]
         properties.merge(versionProperties(infoDictionary: infoDictionary)) { _, new in new }
         return properties
     }
@@ -266,7 +240,7 @@ final class PostHogAnalytics: @unchecked Sendable {
 
     nonisolated static func shouldFlushAfterCapture(event: String) -> Bool {
         switch event {
-        case "cmux_daily_active", "cmux_hourly_active":
+        case "amux_daily_active", "amux_hourly_active":
             return true
         default:
             return false

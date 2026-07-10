@@ -1055,6 +1055,12 @@ if [[ "${CMUX_SKIP_AMUX_RUNTIME:-}" != "1" ]]; then
     echo "Bundled amux runtime: $(ls -1 "$AMUX_RUNTIME_STAGE" | tr '\n' ' ')"
   fi
 fi
+CLI_BIN_DIR="$APP_PATH/Contents/Resources/bin"
+if [[ -x "$CLI_BIN_DIR/amux" ]]; then
+  ln -sf amux "$CLI_BIN_DIR/cmux"
+elif [[ -x "$CLI_BIN_DIR/cmux" ]]; then
+  ln -sf cmux "$CLI_BIN_DIR/amux"
+fi
 if command -v xattr >/dev/null 2>&1; then
   xattr -cr "$APP_PATH" || true
 fi
@@ -1074,10 +1080,8 @@ fi
 CLI_BIN_DIR="$APP_PATH/Contents/Resources/bin"
 if [[ -x "$CLI_BIN_DIR/amux" ]]; then
   CLI_PATH="$CLI_BIN_DIR/amux"
-  ln -sf amux "$CLI_BIN_DIR/cmux" || true
 elif [[ -x "$CLI_BIN_DIR/cmux" ]]; then
   CLI_PATH="$CLI_BIN_DIR/cmux"
-  ln -sf cmux "$CLI_BIN_DIR/amux" || true
 else
   CLI_PATH="$CLI_BIN_DIR/amux"
 fi
