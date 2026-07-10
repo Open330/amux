@@ -11,8 +11,11 @@ struct AmuxAgentCatalogEntry: Sendable, Equatable {
     /// Product name for UI/notifications (a product name — never localized).
     let displayName: String
     /// Binary names probed on PATH, first hit wins. The first entry is also
-    /// the launch binary.
+    /// the default launch binary when detection is unavailable.
     let detectCommands: [String]
+    /// Arguments that always follow the resolved executable (for agents whose
+    /// interactive TUI is a subcommand rather than the binary's default mode).
+    var launchArguments: [String] = []
     /// How an initial prompt travels to the agent.
     enum PromptInjection: Sendable, Equatable {
         /// Appended as a (shell-quoted) positional argument: `claude 'fix x'`.
@@ -28,17 +31,23 @@ struct AmuxAgentCatalogEntry: Sendable, Equatable {
     /// The shell line that starts this agent with `prompt` (already
     /// shell-quoted where it is embedded). For `.typeAfterStart` the prompt is
     /// NOT part of the line — the caller delivers it separately after launch.
-    func launchLine(prompt: String?) -> String {
-        let binary = detectCommands[0]
-        guard let prompt, !prompt.isEmpty else { return binary }
+    func launchLine(prompt: String?, executable: String? = nil) -> String {
+        let binary = executable.map(Self.shellSingleQuoted) ?? detectCommands[0]
+        let base = ([binary] + launchArguments).joined(separator: " ")
+        guard let prompt, !prompt.isEmpty else { return base }
         switch promptInjection {
         case .argv:
-            return "\(binary) \(Self.shellSingleQuoted(prompt))"
+            return "\(base) \(Self.shellSingleQuoted(prompt))"
         case .flag(let flag):
-            return "\(binary) \(flag) \(Self.shellSingleQuoted(prompt))"
+            return "\(base) \(flag) \(Self.shellSingleQuoted(prompt))"
         case .typeAfterStart:
-            return binary
+            return base
         }
+    }
+
+    /// First detected executable for this entry, preserving alias priority.
+    func resolvedExecutable(in paths: [String: String]) -> String? {
+        detectCommands.compactMap { paths[$0] }.first
     }
 
     static func shellSingleQuoted(_ value: String) -> String {
@@ -62,7 +71,7 @@ enum AmuxAgentCatalog {
         ),
         .init(
             id: "gemini", displayName: "Gemini CLI",
-            detectCommands: ["gemini"], promptInjection: .flag("-i")
+            detectCommands: ["gemini"], promptInjection: .flag("--prompt-interactive")
         ),
         .init(
             id: "opencode", displayName: "OpenCode",
@@ -70,7 +79,7 @@ enum AmuxAgentCatalog {
         ),
         .init(
             id: "cursor", displayName: "Cursor Agent",
-            detectCommands: ["cursor-agent", "agent"], promptInjection: .argv
+            detectCommands: ["cursor-agent"], promptInjection: .argv
         ),
         .init(
             id: "droid", displayName: "Droid",
@@ -90,7 +99,7 @@ enum AmuxAgentCatalog {
         ),
         .init(
             id: "grok", displayName: "Grok CLI",
-            detectCommands: ["grok"], promptInjection: .argv
+            detectCommands: ["grok"], promptInjection: .typeAfterStart
         ),
         .init(
             id: "aider", displayName: "Aider",
@@ -102,7 +111,90 @@ enum AmuxAgentCatalog {
         ),
         .init(
             id: "qwen", displayName: "Qwen Code",
-            detectCommands: ["qwen"], promptInjection: .argv
+            detectCommands: ["qwen"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "openclaude", displayName: "OpenClaude",
+            detectCommands: ["openclaude"], promptInjection: .argv
+        ),
+        .init(
+            id: "autohand", displayName: "AutoHand",
+            detectCommands: ["autohand"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "ante", displayName: "Ante",
+            detectCommands: ["ante"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "mimo-code", displayName: "Mimo Code",
+            detectCommands: ["mimo"], promptInjection: .flag("--prompt")
+        ),
+        .init(
+            id: "pi", displayName: "Pi",
+            detectCommands: ["pi"], promptInjection: .argv
+        ),
+        .init(
+            id: "omp", displayName: "oh-my-pi",
+            detectCommands: ["omp"], promptInjection: .argv
+        ),
+        .init(
+            id: "antigravity", displayName: "Antigravity",
+            detectCommands: ["agy"], promptInjection: .flag("--prompt-interactive")
+        ),
+        .init(
+            id: "kilo", displayName: "Kilo Code",
+            detectCommands: ["kilo"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "kiro", displayName: "Kiro CLI",
+            detectCommands: ["kiro-cli"], launchArguments: ["chat", "--tui"],
+            promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "auggie", displayName: "Auggie",
+            detectCommands: ["auggie"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "cline", displayName: "Cline CLI",
+            detectCommands: ["cline"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "codebuff", displayName: "Codebuff",
+            detectCommands: ["codebuff"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "command-code", displayName: "Command Code",
+            detectCommands: ["command-code"], launchArguments: ["--trust"],
+            promptInjection: .argv
+        ),
+        .init(
+            id: "continue", displayName: "Continue CLI",
+            detectCommands: ["cn"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "kimi", displayName: "Kimi Code CLI",
+            detectCommands: ["kimi"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "mistral-vibe", displayName: "Mistral Vibe",
+            detectCommands: ["vibe", "mistral-vibe"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "rovo", displayName: "Rovo Dev CLI",
+            detectCommands: ["rovo", "rovodev"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "hermes", displayName: "Hermes Agent",
+            detectCommands: ["hermes"], launchArguments: ["--tui"],
+            promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "openclaw", displayName: "OpenClaw",
+            detectCommands: ["openclaw"], promptInjection: .typeAfterStart
+        ),
+        .init(
+            id: "devin", displayName: "Devin CLI",
+            detectCommands: ["devin"], promptInjection: .typeAfterStart
         ),
     ]
 
@@ -114,12 +206,24 @@ enum AmuxAgentCatalog {
     /// Emits `<binary>=<path>` per hit and `<binary>=` per miss — a stable,
     /// order-preserving format `parseDetectionOutput` reverses.
     static func detectionScript() -> String {
-        let names = entries.flatMap(\.detectCommands)
+        var seen = Set<String>()
+        let names = entries.flatMap(\.detectCommands).filter { seen.insert($0).inserted }
         let probes = names.map { name in
             "printf '%s=' \(AmuxAgentCatalogEntry.shellSingleQuoted(name)); "
                 + "command -v \(AmuxAgentCatalogEntry.shellSingleQuoted(name)) || printf '\\n'"
         }
         return probes.joined(separator: "; ")
+    }
+
+    /// Runs the detection script through the remote account's configured login
+    /// shell. The script is passed as `$1`, never interpolated into shell code.
+    static func remoteDetectionArguments() -> [String] {
+        [
+            "/bin/sh", "-c",
+            #"exec "${SHELL:-/bin/sh}" -lc "$1""#,
+            "amux-agent-detect",
+            detectionScript(),
+        ]
     }
 
     /// Parses ``detectionScript()`` output into binary → resolved path.
@@ -138,7 +242,7 @@ enum AmuxAgentCatalog {
     /// One detection row per catalog entry against resolved `paths`.
     static func detectionRows(paths: [String: String]) -> [[String: Any]] {
         entries.map { entry in
-            let hit = entry.detectCommands.compactMap { paths[$0] }.first
+            let hit = entry.resolvedExecutable(in: paths)
             var row: [String: Any] = [
                 "agent": entry.id,
                 "name": entry.displayName,

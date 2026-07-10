@@ -48,13 +48,24 @@ Params: `history_lines?` (0–5000, default 0 = visible screen only), `workspace
 ## amux.agents / amux.launch_agent — spawn agents
 
 ```bash
-amux rpc amux.agents '{}'                       # which agent CLIs are installed (login-shell PATH)
+amux rpc amux.agents '{}'                       # local amux host
+amux rpc amux.agents '{"workspace_id":"<uuid>"}' # that mirror's local/SSH host
 amux rpc amux.launch_agent '{"agent": "claude", "prompt": "fix the failing test"}'
 ```
 
 - Without `workspace_id`, `launch_agent` creates a NEW amux session and types the launch line into its first pane; with `workspace_id` it targets that workspace's prompt pane.
+- Detection and launch happen on the workspace's actual host. `amux.agents` reports `host`, `host_kind`, and the resolved executable `path`; launch refuses with `agent_not_installed` before creating a session.
 - A pane already running an interactive app refuses with `pane_busy` — never launches into a running TUI.
-- If the response carries `followup_prompt` (agents with no startup-prompt support), deliver it yourself: `pane_wait for=idle` then `pane_send`.
+- Agents without a startup-prompt flag receive the prompt automatically after tmux reports that the TUI owns the pane. `prompt_sent: true` confirms delivery.
+- `followup_prompt` is a recovery payload only: startup readiness timed out or guarded delivery refused. Inspect with `pane_read`, then retry it with `pane_send` when the agent is ready.
+
+## amux.agent_status — muxa state and usage
+
+```bash
+amux rpc amux.agent_status '{"workspace_id":"<uuid>"}'
+```
+
+`workspace_id` is optional. The response contains every muxa agent correlated with the workspace, including lifecycle state, pane/session/cwd, recent prompt/notification/response, model, `context_used_pct`, `cost_usd`, and activity timestamps. Use this stable RPC instead of the DEBUG-only `debug.amux.agent_details` alias.
 
 ## Recipes
 
@@ -80,6 +91,8 @@ amux rpc amux.pane_wait '{"for": "exit", "timeout_ms": 600000}'
 | `not_sendable` (+`foreground`) | pane foreground is a bare shell, not an agent | agent exited/crashed — relaunch it, or send with `guarded: false` if you meant to type shell commands |
 | `not_mirror` | workspace has no live tmux mirror | `amux rpc amux.sessions '{}'` then `amux.attach_session` |
 | `not_found` | bad/absent `workspace_id` | re-list with `workspace.list` |
+| `agent_not_installed` | selected agent CLI is absent on the target host | call `amux.agents` for that workspace and install or choose a reported agent |
+| `pane_busy` | target pane already owns an interactive process | choose another pane/workspace; do not inject a shell launch line into the TUI |
 | `{"result": "timeout"}` from pane_wait | agent still busy | re-issue the wait; check `agent_state` for waiting_input (it may be asking a question — `pane_read` the screen) |
 
 ## Do NOT

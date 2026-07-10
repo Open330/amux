@@ -766,6 +766,7 @@ extension AppDelegate {
         var headline = "\(AmuxAgentAlarmPolicy.displayName(for: agent.kind)) — \(agent.state.rawValue)"
         if let model = agent.model { headline += " · \(model)" }
         if let pct = agent.contextUsedPct { headline += " · \(Int(pct))%" }
+        if let cost = agent.costUsd { headline += " · \(cost.formatted(.currency(code: "USD")))" }
         lines.append(headline)
         if let prompt = agent.lastPrompt, !prompt.isEmpty {
             lines.append(String(

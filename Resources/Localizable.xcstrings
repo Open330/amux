@@ -207333,6 +207333,23 @@
         }
       }
     },
+    "socket.amux.agentNotInstalled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is not installed on %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ は %2$@ にインストールされていません"
+          }
+        }
+      }
+    },
     "socket.amux.appNotReady": {
       "extractionState": "manual",
       "localizations": {
@@ -207346,6 +207363,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "アプリの準備ができていません"
+          }
+        }
+      }
+    },
+    "socket.amux.paneBusy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pane is already running an interactive application"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ペインではすでに対話型アプリケーションが実行されています"
           }
         }
       }

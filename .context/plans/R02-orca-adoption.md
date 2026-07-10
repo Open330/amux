@@ -2,7 +2,8 @@
 
 > stablyai/orca 4축 심층 분석(2026-07-10) 후속. R01의 로드맵을 보강한다.
 > 이미 채택 완료: pane_read/pane_wait/pane_send + SKILL 플레이북, finished 알람 1.5s 디바운스,
-> working 배지 30분 신선도 감쇠, 에이전트 카탈로그 + amux.agents/amux.launch_agent.
+> working 배지 30분 신선도 감쇠, 호스트별 에이전트 카탈로그 + amux.agents/amux.launch_agent,
+> muxa 전체 상태/컨텍스트/비용을 노출하는 amux.agent_status.
 
 ## 1. 인터-에이전트 메시지 버스 (orca orchestration의 amux 버전) — 다음 라운드 권장
 
@@ -31,7 +32,8 @@ orca 참조 구현: `src/main/rate-limits/*` + `claude-accounts/*`.
 - 핵심 안전장치(그대로 필요): **live-PTY gate** — 실행 중인 claude 세션이 있는 동안
   단일 사용 refresh 토큰을 회전시키지 않는 뮤텍스. 계정 전환 실패 시 롤백.
 - amux 적용: 사이드바 세션 카드에 사용량/리셋 배지(muxa가 이미 `context_used_pct`,
-  `cost_usd`를 나름) → 1차로는 muxa 필드 표면화가 공짜 승리, OAuth 사용량 API는 2차.
+  `cost_usd`를 나름) → `amux.agent_status`와 에이전트 상세 모달로 1차 필드 표면화 완료.
+  사이드바 시각화와 OAuth 사용량 API는 2차.
 
 ## 3. 모바일/원격 관측 — 설계 원칙만 기록
 

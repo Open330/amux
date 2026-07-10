@@ -645,6 +645,41 @@ final class RemoteTmuxController {
         return hosts
     }
 
+    /// Detects catalog agents on the host backing `workspaceId`. A nil target
+    /// means the local amux engine, matching `amux.launch_agent`'s create-new
+    /// behavior. SSH targets run the exact same manifest through the remote
+    /// account's login shell over the mirror's shared ControlMaster.
+    func detectAgentCatalogPaths(
+        workspaceId: UUID?
+    ) async throws -> (paths: [String: String], host: RemoteTmuxHost)? {
+        let host: RemoteTmuxHost
+        if let workspaceId {
+            guard let mirror = sessionMirrors.values.first(where: {
+                $0.mirroredWorkspaceId == workspaceId
+            }) else { return nil }
+            host = mirror.host
+        } else {
+            host = .amuxLocal()
+        }
+
+        switch host.kind {
+        case .ssh:
+            guard let remote = transport(for: host) as? RemoteTmuxSSHTransport else {
+                return nil
+            }
+            let result = try await remote.run(AmuxAgentCatalog.remoteDetectionArguments())
+            guard result.succeeded else {
+                throw RemoteTmuxError.commandFailed(
+                    exitCode: result.exitCode,
+                    stderr: result.stderr
+                )
+            }
+            return (AmuxAgentCatalog.parseDetectionOutput(result.stdout), host)
+        case .localDefault, .localAmux:
+            return (await AmuxAgentCatalog.detectInstalled(), host)
+        }
+    }
+
     /// Captures the visible text of `workspaceId`'s mirrored agent pane via
     /// `tmux capture-pane -p` (a one-shot read against the same server the
     /// control stream is attached to). Targets `tmuxPane` when given and
@@ -728,6 +763,42 @@ final class RemoteTmuxController {
             foreground: connection.paneForegroundStates[pane],
             outputBytes: connection.paneOutputByteCounts[pane] ?? 0
         )
+    }
+
+    /// Event stream that yields the selected pane's foreground classification
+    /// immediately and whenever tmux reports a change. Used by agent startup to
+    /// wait for the launched TUI to replace the shell without polling or sleeps.
+    func mirrorPaneForegroundStream(
+        workspaceId: UUID,
+        tmuxPane: Int
+    ) -> AsyncStream<RemoteTmuxPaneForegroundState>? {
+        guard let mirror = sessionMirrors.values.first(where: {
+            $0.mirroredWorkspaceId == workspaceId
+        }) else { return nil }
+        let connection = mirror.connection
+        return AsyncStream { continuation in
+            if let current = connection.paneForegroundStates[tmuxPane] {
+                continuation.yield(current)
+            }
+            let token = connection.addObserver(
+                onPaneReflow: { pane, _ in
+                    guard pane == tmuxPane,
+                          let state = connection.paneForegroundStates[pane] else { return }
+                    continuation.yield(state)
+                },
+                onExit: {
+                    continuation.finish()
+                },
+                onConnectionStateChanged: { state in
+                    if state == .ended { continuation.finish() }
+                }
+            )
+            continuation.onTermination = { @Sendable [weak connection] _ in
+                Task { @MainActor in
+                    connection?.removeObserver(token)
+                }
+            }
+        }
     }
 
     /// The outcome of a guarded agent-directed send (see

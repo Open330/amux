@@ -362,10 +362,11 @@ extension TerminalController {
     /// Main-actor; returns the id so worker-lane callers don't carry the
     /// non-Sendable `Workspace` across the hop.
     @MainActor
-    private func v2AmuxResolveWorkspaceId(_ params: [String: Any]) -> UUID? {
+    func v2AmuxResolveWorkspaceId(_ params: [String: Any]) -> UUID? {
         guard let appDelegate = AppDelegate.shared else { return nil }
         v2RefreshKnownRefs()
-        if let workspaceId = v2UUID(params, "workspace_id") {
+        if params.keys.contains("workspace_id") {
+            guard let workspaceId = v2UUID(params, "workspace_id") else { return nil }
             return appDelegate.amuxWorkspace(withId: workspaceId)?.workspace.id
         }
         return appDelegate.tabManager?.selectedTab?.id
@@ -448,6 +449,8 @@ extension TerminalController {
             var lockedPane = paneParam
             var lastBytes: Int?
             var quietSince: ContinuousClock.Instant?
+            var lastForeground: String?
+            var lastAgentState: String?
             func payload(_ result: String, pane: Int?, foreground: String?, agentState: String?) -> [String: Any] {
                 var dict: [String: Any] = [
                     "workspace_id": workspaceId.uuidString,
@@ -461,9 +464,10 @@ extension TerminalController {
                 return dict
             }
             while clock.now < deadline {
+                let requestedPane = lockedPane
                 let sample = await MainActor.run {
                     () -> (RemoteTmuxController.MirrorPaneObservation?, String?) in
-                    let observed = controller.observeMirrorPane(workspaceId: workspaceId, tmuxPane: lockedPane)
+                    let observed = controller.observeMirrorPane(workspaceId: workspaceId, tmuxPane: requestedPane)
                     var agentState: String?
                     if let pane = observed?.pane {
                         agentState = observation.agents(inWorkspace: workspaceId)
@@ -477,6 +481,8 @@ extension TerminalController {
                 }
                 if lockedPane == nil { lockedPane = observed.pane }
                 let foreground = observed.foreground?.command
+                lastForeground = foreground
+                lastAgentState = sample.1
                 if !observed.paneExists {
                     return payload("exit", pane: observed.pane, foreground: foreground, agentState: sample.1)
                 }
@@ -499,7 +505,12 @@ extension TerminalController {
                 }
                 try await Task.sleep(for: .milliseconds(250))
             }
-            return payload("timeout", pane: lockedPane, foreground: nil, agentState: nil)
+            return payload(
+                "timeout",
+                pane: lockedPane,
+                foreground: lastForeground,
+                agentState: lastAgentState
+            )
         }
     }
 
@@ -564,13 +575,47 @@ extension TerminalController {
         }
     }
 
-    /// `amux.agents` — detect which catalog agent CLIs are installed (probed
-    /// under the user's login shell so Homebrew/nvm paths resolve). No params.
-    /// Returns `{agents: [{agent, name, installed, path?}]}`. Worker lane.
-    nonisolated func v2AmuxAgents(id: Any?, params _: [String: Any]) -> String {
-        v2VmCall(id: id, timeoutSeconds: 20) {
-            let paths = await AmuxAgentCatalog.detectInstalled()
-            return ["agents": AmuxAgentCatalog.detectionRows(paths: paths)]
+    /// `amux.agents` — detect catalog agent CLIs on the local amux host, or on
+    /// the host backing optional `workspace_id`. Returns the host identity and
+    /// `{agents: [{agent, name, installed, path?}]}`. Worker lane.
+    nonisolated func v2AmuxAgents(id: Any?, params: [String: Any]) -> String {
+        v2AsyncResultCall(id: id, timeoutSeconds: 30) {
+            let explicitTarget = params.keys.contains("workspace_id")
+            let resolved = await MainActor.run { () -> (RemoteTmuxController, UUID?)? in
+                guard let app = AppDelegate.shared else { return nil }
+                if explicitTarget {
+                    guard let workspaceId = self.v2AmuxResolveWorkspaceId(params) else { return nil }
+                    return (app.remoteTmuxController, workspaceId)
+                }
+                return (app.remoteTmuxController, nil)
+            }
+            guard let (controller, workspaceId) = resolved else {
+                return .err(
+                    code: "not_found",
+                    message: String(localized: "socket.amux.workspaceNotFound", defaultValue: "Workspace not found"),
+                    data: nil
+                )
+            }
+            do {
+                guard let detected = try await controller.detectAgentCatalogPaths(
+                    workspaceId: workspaceId
+                ) else {
+                    return .err(
+                        code: "not_mirror",
+                        message: String(localized: "socket.amux.notMirror", defaultValue: "Workspace is not a live tmux mirror"),
+                        data: nil
+                    )
+                }
+                var result: [String: Any] = [
+                    "host": detected.host.destination,
+                    "host_kind": Self.amuxHostKind(detected.host.kind),
+                    "agents": AmuxAgentCatalog.detectionRows(paths: detected.paths),
+                ]
+                if let workspaceId { result["workspace_id"] = workspaceId.uuidString }
+                return .ok(result)
+            } catch {
+                return .err(code: "detection_failed", message: String(describing: error), data: nil)
+            }
         }
     }
 
@@ -579,9 +624,9 @@ extension TerminalController {
     /// create a NEW amux session). The launch line is typed into the pane's
     /// shell behind the inverse sendability guard (a pane running an
     /// interactive app refuses with `pane_busy`). For agents that take no
-    /// startup prompt the response carries `followup_prompt` — deliver it
-    /// with `amux.pane_wait for=idle` + `amux.pane_send` once the TUI owns
-    /// the pane. Worker lane.
+    /// startup prompt amux waits for tmux's foreground event and delivers the
+    /// prompt automatically. A readiness timeout returns `followup_prompt` so
+    /// a coordinator can recover with pane_wait + pane_send. Worker lane.
     nonisolated func v2AmuxLaunchAgent(id: Any?, params: [String: Any]) -> String {
         guard let agentId = (params["agent"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
               let entry = AmuxAgentCatalog.entry(id: agentId) else {
@@ -594,35 +639,101 @@ extension TerminalController {
                 )
             )
         }
-        let prompt = (params["prompt"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawPrompt = params["prompt"] as? String
+        let prompt = rawPrompt.flatMap {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
+        }
         let paneParam = Self.v2TmuxPaneParam(params["pane"])
-        return v2VmCall(id: id, timeoutSeconds: 60) {
+        return v2AsyncResultCall(id: id, timeoutSeconds: 60) {
             var sessionName: String?
-            let resolved: (UUID, RemoteTmuxController)?
-            if params["workspace_id"] != nil {
-                resolved = await MainActor.run { () -> (UUID, RemoteTmuxController)? in
-                    guard let appDelegate = AppDelegate.shared,
-                          let workspaceId = self.v2AmuxResolveWorkspaceId(params) else { return nil }
-                    return (workspaceId, appDelegate.remoteTmuxController)
+            let explicitTarget = params.keys.contains("workspace_id")
+            let appContext = await MainActor.run {
+                AppDelegate.shared.map { ($0.remoteTmuxController, $0.tabManager) }
+            }
+            guard let (controller, manager) = appContext else {
+                return .err(
+                    code: "not_ready",
+                    message: String(localized: "socket.amux.appNotReady", defaultValue: "App is not ready"),
+                    data: nil
+                )
+            }
+
+            let requestedWorkspaceId: UUID?
+            if explicitTarget {
+                requestedWorkspaceId = await MainActor.run {
+                    self.v2AmuxResolveWorkspaceId(params)
+                }
+                guard requestedWorkspaceId != nil else {
+                    return .err(
+                        code: "not_found",
+                        message: String(localized: "socket.amux.workspaceNotFound", defaultValue: "Workspace not found"),
+                        data: nil
+                    )
                 }
             } else {
-                // No target → a fresh amux session (the orca "new worktree +
-                // agent" analogue: new tmux session + agent in its first pane).
-                guard let (controller, manager) = await MainActor.run(body: {
-                    AppDelegate.shared.flatMap { app in app.tabManager.map { (app.remoteTmuxController, $0) } }
-                }) else {
-                    throw RemoteTmuxError.unreachable("app not ready")
+                requestedWorkspaceId = nil
+            }
+
+            let detected: (paths: [String: String], host: RemoteTmuxHost)
+            do {
+                guard let value = try await controller.detectAgentCatalogPaths(
+                    workspaceId: requestedWorkspaceId
+                ) else {
+                    return .err(
+                        code: "not_mirror",
+                        message: String(localized: "socket.amux.notMirror", defaultValue: "Workspace is not a live tmux mirror"),
+                        data: nil
+                    )
                 }
-                let name = try await controller.createLocalAmuxWorkspace(into: manager)
-                sessionName = name
-                resolved = await MainActor.run {
-                    controller.localMirrorWorkspace(sessionName: name).map { ($0.id, controller) }
+                detected = value
+            } catch {
+                return .err(code: "detection_failed", message: String(describing: error), data: nil)
+            }
+            guard let executable = entry.resolvedExecutable(in: detected.paths) else {
+                return .err(
+                    code: "agent_not_installed",
+                    message: String(
+                        format: String(
+                            localized: "socket.amux.agentNotInstalled",
+                            defaultValue: "%@ is not installed on %@"
+                        ),
+                        entry.displayName,
+                        detected.host.destination
+                    ),
+                    data: ["agent": entry.id, "host": detected.host.destination]
+                )
+            }
+
+            let workspaceId: UUID
+            if let requestedWorkspaceId {
+                workspaceId = requestedWorkspaceId
+            } else {
+                guard let manager else {
+                    return .err(
+                        code: "not_ready",
+                        message: String(localized: "socket.amux.appNotReady", defaultValue: "App is not ready"),
+                        data: nil
+                    )
+                }
+                do {
+                    let name = try await controller.createLocalAmuxWorkspace(into: manager)
+                    sessionName = name
+                    guard let createdId = await MainActor.run(body: {
+                        controller.localMirrorWorkspace(sessionName: name)?.id
+                    }) else {
+                        return .err(
+                            code: "not_mirror",
+                            message: String(localized: "socket.amux.notMirror", defaultValue: "Workspace is not a live tmux mirror"),
+                            data: nil
+                        )
+                    }
+                    workspaceId = createdId
+                } catch {
+                    return .err(code: "launch_failed", message: String(describing: error), data: nil)
                 }
             }
-            guard let (workspaceId, controller) = resolved else {
-                throw RemoteTmuxError.unreachable("workspace not found")
-            }
-            let launchLine = entry.launchLine(prompt: prompt)
+
+            let launchLine = entry.launchLine(prompt: prompt, executable: executable)
             // A just-created mirror needs a beat before its pane resolves;
             // retry briefly on .notMirror instead of failing the launch.
             var lastOutcome: RemoteTmuxController.ShellMirrorSendOutcome = .notMirror
@@ -633,7 +744,7 @@ extension TerminalController {
                     )
                 }
                 if case .notMirror = lastOutcome {
-                    try await Task.sleep(for: .milliseconds(250))
+                    try? await Task.sleep(for: .milliseconds(250))
                     continue
                 }
                 break
@@ -645,20 +756,96 @@ extension TerminalController {
                     "pane": pane,
                     "agent": entry.id,
                     "launched": launchLine,
+                    "path": executable,
+                    "host": detected.host.destination,
+                    "host_kind": Self.amuxHostKind(detected.host.kind),
                 ]
                 if let sessionName { result["session"] = sessionName }
                 if let prompt, !prompt.isEmpty, entry.promptInjection == .typeAfterStart {
-                    result["followup_prompt"] = prompt
+                    let stream = await MainActor.run {
+                        controller.mirrorPaneForegroundStream(
+                            workspaceId: workspaceId,
+                            tmuxPane: pane
+                        )
+                    }
+                    let ready = if let stream {
+                        await Self.waitForAgentPaneReady(stream, timeout: .seconds(15))
+                    } else {
+                        false
+                    }
+                    if ready {
+                        let followup = await MainActor.run {
+                            controller.guardedSendToMirror(
+                                workspaceId: workspaceId,
+                                tmuxPane: pane,
+                                text: prompt,
+                                enter: true,
+                                guarded: true
+                            )
+                        }
+                        if case .sent = followup {
+                            result["prompt_sent"] = true
+                        } else {
+                            result["followup_prompt"] = prompt
+                            result["prompt_sent"] = false
+                        }
+                    } else {
+                        result["followup_prompt"] = prompt
+                        result["prompt_sent"] = false
+                    }
                 }
-                return result
+                return .ok(result)
             case .notMirror:
-                throw RemoteTmuxError.unreachable("workspace has no live mirrored pane")
+                return .err(
+                    code: "not_mirror",
+                    message: String(localized: "socket.amux.notMirror", defaultValue: "Workspace is not a live tmux mirror"),
+                    data: nil
+                )
             case let .paneBusy(pane, foreground):
-                throw RemoteTmuxError.commandFailed(
-                    exitCode: -1,
-                    stderr: "pane %\(pane) is busy (foreground: \(foreground ?? "unknown"))"
+                var data: [String: Any] = ["pane": pane]
+                if let foreground { data["foreground"] = foreground }
+                return .err(
+                    code: "pane_busy",
+                    message: String(localized: "socket.amux.paneBusy", defaultValue: "Pane is already running an interactive application"),
+                    data: data
                 )
             }
+        }
+    }
+
+    /// Waits for the launched process to replace the pane's shell. The timeout
+    /// is the intended startup deadline (not a polling delay) and is injected so
+    /// focused tests can use a short duration.
+    nonisolated static func waitForAgentPaneReady(
+        _ states: AsyncStream<RemoteTmuxPaneForegroundState>,
+        timeout: Duration
+    ) async -> Bool {
+        await withTaskGroup(of: Bool.self) { group in
+            group.addTask {
+                for await state in states where state.hasActiveCommand {
+                    return true
+                }
+                return false
+            }
+            group.addTask {
+                do {
+                    try await Task.sleep(for: timeout)
+                } catch {
+                    return false
+                }
+                return false
+            }
+            let ready = await group.next() ?? false
+            group.cancelAll()
+            return ready
+        }
+    }
+
+    nonisolated private static func amuxHostKind(_ kind: RemoteTmuxHostKind) -> String {
+        switch kind {
+        case .ssh: "ssh"
+        case .localDefault: "local_default"
+        case .localAmux: "local_amux"
         }
     }
 

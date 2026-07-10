@@ -4,6 +4,59 @@ import Foundation
 /// Socket handlers for the amux agent-observation layer (badges, details,
 /// remote-host provisioning).
 extension TerminalController {
+    /// `amux.agent_status` - the stable observation surface for every muxa
+    /// agent correlated with a workspace. Omitting `workspace_id` targets the
+    /// selected workspace, matching the pane-driving RPCs.
+    @MainActor
+    func v2AmuxAgentStatus(params: [String: Any]) -> V2CallResult {
+        guard let workspaceId = v2AmuxResolveWorkspaceId(params) else {
+            return .err(
+                code: "not_found",
+                message: String(
+                    localized: "socket.amux.workspaceNotFound",
+                    defaultValue: "Workspace not found"
+                ),
+                data: nil
+            )
+        }
+        guard let appDelegate = AppDelegate.shared else {
+            return .err(
+                code: "not_ready",
+                message: String(
+                    localized: "socket.amux.appNotReady",
+                    defaultValue: "App is not ready"
+                ),
+                data: nil
+            )
+        }
+        let agents = appDelegate.amuxAgentObservation.agents(inWorkspace: workspaceId)
+        return .ok([
+            "workspace_id": workspaceId.uuidString,
+            "agents": agents.map(Self.amuxAgentPayload),
+        ])
+    }
+
+    nonisolated static func amuxAgentPayload(_ agent: MuxaAgent) -> [String: Any] {
+        var payload: [String: Any] = [
+            "kind": agent.kind.rawValue,
+            "session_id": agent.sessionId,
+            "state": agent.state.rawValue,
+        ]
+        payload["pane"] = agent.pane
+        payload["tmux_session"] = agent.tmuxSession
+        payload["cwd"] = agent.cwd
+        payload["last_prompt"] = agent.lastPrompt
+        payload["last_notification"] = agent.lastNotification
+        payload["last_response"] = agent.lastResponse
+        payload["model"] = agent.model
+        payload["context_used_pct"] = agent.contextUsedPct
+        payload["cost_usd"] = agent.costUsd
+        payload["started_at"] = agent.startedAt
+        payload["last_activity_at"] = agent.lastActivityAt
+        payload["state_entered_at"] = agent.stateEnteredAt
+        return payload
+    }
+
     /// `amux.local_tmux_sync` — status/toggle for mirroring the user's default
     /// localhost tmux server into amux workspaces. Shared by the Command Palette
     /// toggle and the `amux sync tmux` CLI. Worker lane because status/sync may
