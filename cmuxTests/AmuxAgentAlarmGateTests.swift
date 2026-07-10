@@ -313,3 +313,31 @@ struct AmuxAgentStatusPayloadTests {
         #expect(payload["state_entered_at"] as? String == "2026-07-10T01:01:00Z")
     }
 }
+
+@MainActor
+@Suite(.serialized)
+struct AmuxWorkspaceTargetingTests {
+    @Test func sendPromptRejectsMalformedExplicitWorkspaceInsteadOfFallingBack() throws {
+        let previousAppDelegate = AppDelegate.shared
+        let appDelegate = AppDelegate()
+        let manager = TabManager(autoWelcomeIfNeeded: false)
+        AppDelegate.shared = appDelegate
+        appDelegate.tabManager = manager
+        defer {
+            manager.tabs.forEach { $0.teardownAllPanels() }
+            AppDelegate.shared = previousAppDelegate
+        }
+
+        _ = try #require(manager.selectedWorkspace)
+        let result = TerminalController.shared.v2AmuxSendPrompt(params: [
+            "text": "do not send this to the selected workspace",
+            "workspace_id": "not-a-workspace-id",
+        ])
+
+        guard case let .err(code, _, _) = result else {
+            Issue.record("Expected malformed explicit workspace_id to fail")
+            return
+        }
+        #expect(code == "not_found")
+    }
+}
