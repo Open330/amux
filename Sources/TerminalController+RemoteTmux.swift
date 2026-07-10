@@ -321,14 +321,8 @@ extension TerminalController {
                     data: nil
                 )
             }
-            self.v2RefreshKnownRefs()
-            let workspace: Workspace?
-            if let workspaceId = self.v2UUID(params, "workspace_id") {
-                workspace = appDelegate.amuxWorkspace(withId: workspaceId)?.workspace
-            } else {
-                workspace = appDelegate.tabManager?.selectedTab
-            }
-            guard let workspace else {
+            guard let workspaceId = self.v2AmuxResolveWorkspaceId(params),
+                  let workspace = appDelegate.amuxWorkspace(withId: workspaceId)?.workspace else {
                 return .err(
                     code: "not_found",
                     message: String(localized: "socket.amux.workspaceNotFound", defaultValue: "Workspace not found"),
