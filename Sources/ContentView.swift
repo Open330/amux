@@ -13840,23 +13840,38 @@ struct TabItemView: View, Equatable {
             SidebarTrailingAccessoryWidthPolicy().closeButtonWidth,
             scaledCloseButtonHitSize
         )
-        let runtimeKindPresentation: (label: String, symbol: String) = switch workspaceSnapshot.runtimeKind {
+        let runtimeKindPresentation: (label: String, chipLabel: String, symbol: String, tint: Color) = switch workspaceSnapshot.runtimeKind {
         case .tmuxSession:
             (
                 String(localized: "sidebar.workspace.runtime.tmux", defaultValue: "tmux session"),
-                "rectangle.split.2x1"
+                String(localized: "sidebar.workspace.runtime.tmux.chip", defaultValue: "tmux"),
+                "rectangle.split.2x1",
+                Color(nsColor: .systemGreen)
             )
         case .sshShell:
             (
                 String(localized: "sidebar.workspace.runtime.ssh", defaultValue: "SSH shell"),
-                "network"
+                String(localized: "sidebar.workspace.runtime.ssh.chip", defaultValue: "SSH"),
+                "network",
+                Color(nsColor: .systemBlue)
             )
         case .localShell:
             (
                 String(localized: "sidebar.workspace.runtime.local", defaultValue: "Local shell"),
-                "apple.terminal"
+                String(localized: "sidebar.workspace.runtime.local.chip", defaultValue: "local"),
+                "apple.terminal",
+                Color.secondary
             )
         }
+        let runtimeChipForegroundColor = usesInvertedActiveForeground
+            ? activeSecondaryColor(0.9)
+            : runtimeKindPresentation.tint
+        let runtimeChipFillColor = usesInvertedActiveForeground
+            ? activeSecondaryColor(0.12)
+            : runtimeKindPresentation.tint.opacity(0.12)
+        let runtimeChipBorderColor = usesInvertedActiveForeground
+            ? activeSecondaryColor(0.22)
+            : runtimeKindPresentation.tint.opacity(0.28)
 
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .top, spacing: 8) {
@@ -13876,14 +13891,6 @@ struct TabItemView: View, Equatable {
                         .foregroundColor(activeSecondaryColor(0.8))
                         .safeHelp(protectedWorkspaceTooltip)
                 }
-
-                Label(runtimeKindPresentation.label, systemImage: runtimeKindPresentation.symbol)
-                    .labelStyle(.titleAndIcon)
-                    .font(magnifiedFont(scaledFontSize(8.5), weight: .medium))
-                    .foregroundColor(activeSecondaryColor(0.68))
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .safeHelp(runtimeKindPresentation.label)
 
                 // Chrome-style media-activity glyphs: a noisy or capturing
                 // background browser pane is surfaced on its workspace row,
@@ -13966,6 +13973,26 @@ struct TabItemView: View, Equatable {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .layoutPriority(1)
                 }
+
+                Label(runtimeKindPresentation.chipLabel, systemImage: runtimeKindPresentation.symbol)
+                    .labelStyle(.titleAndIcon)
+                    .font(magnifiedFont(scaledFontSize(8), weight: .semibold))
+                    .foregroundColor(runtimeChipForegroundColor)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background {
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(runtimeChipFillColor)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                    .strokeBorder(runtimeChipBorderColor, lineWidth: 0.5)
+                            }
+                    }
+                    .safeHelp(runtimeKindPresentation.label)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(runtimeKindPresentation.label)
 
                 // The close button is a sibling that always reserves its width
                 // when the workspace is closable, so the title wraps/truncates

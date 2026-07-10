@@ -205707,6 +205707,29 @@
         }
       }
     },
+    "sidebar.workspace.runtime.local.chip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "local"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカル"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로컬"
+          }
+        }
+      }
+    },
     "sidebar.workspace.runtime.ssh": {
       "extractionState": "manual",
       "localizations": {
@@ -205730,6 +205753,29 @@
         }
       }
     },
+    "sidebar.workspace.runtime.ssh.chip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH"
+          }
+        }
+      }
+    },
     "sidebar.workspace.runtime.tmux": {
       "extractionState": "manual",
       "localizations": {
@@ -205749,6 +205795,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "tmux 세션"
+          }
+        }
+      }
+    },
+    "sidebar.workspace.runtime.tmux.chip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux"
           }
         }
       }
