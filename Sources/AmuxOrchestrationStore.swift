@@ -1,6 +1,13 @@
 import Foundation
 
 actor AmuxOrchestrationStore {
+    private struct MessageWaiter {
+        let recipient: String
+        let groups: Set<String>
+        let afterSequence: Int64
+        let continuation: AsyncStream<Void>.Continuation
+    }
+
     private struct Record: Codable {
         enum Kind: String, Codable {
             case message
@@ -25,6 +32,7 @@ actor AmuxOrchestrationStore {
     private var tasks: [UUID: AmuxOrchestrationTask] = [:]
     private var gates: [UUID: AmuxOrchestrationGate] = [:]
     private var heartbeats: [String: AmuxOrchestrationHeartbeat] = [:]
+    private var messageWaiters: [UUID: MessageWaiter] = [:]
     private let encoder: JSONEncoder
 
     init(storageURL: URL = AmuxOrchestrationStore.defaultStorageURL) {
@@ -89,6 +97,7 @@ actor AmuxOrchestrationStore {
         try append(Record(kind: .message, message: message, task: nil, gate: nil, heartbeat: nil))
         nextMessageSequence += 1
         messages.append(message)
+        notifyMessageWaiters(matching: message)
         return message
     }
 
@@ -101,21 +110,45 @@ actor AmuxOrchestrationStore {
     ) async -> [AmuxOrchestrationMessage] {
         let boundedLimit = min(max(limit, 1), 200)
         let boundedWait = min(max(waitMilliseconds, 0), 300_000)
-        let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: .milliseconds(boundedWait))
-
-        while true {
-            let available = messages.lazy.filter { message in
-                guard message.sequence > afterSequence else { return false }
-                return message.recipients.contains(recipient)
-                    || message.recipients.contains("*")
-                    || !groups.isDisjoint(with: message.groups)
-            }
-            if !available.isEmpty || boundedWait == 0 || clock.now >= deadline || Task.isCancelled {
-                return Array(available.prefix(boundedLimit))
-            }
-            try? await Task.sleep(for: .milliseconds(75))
+        let available = matchingMessages(
+            recipient: recipient,
+            groups: groups,
+            afterSequence: afterSequence,
+            limit: boundedLimit
+        )
+        guard available.isEmpty, boundedWait > 0, !Task.isCancelled else {
+            return available
         }
+
+        let waiterID = UUID()
+        let signal = AsyncStream.makeStream(of: Void.self, bufferingPolicy: .bufferingNewest(1))
+        messageWaiters[waiterID] = MessageWaiter(
+            recipient: recipient,
+            groups: groups,
+            afterSequence: afterSequence,
+            continuation: signal.continuation
+        )
+        // This is a real long-poll deadline. Message arrival signals the stream
+        // directly, so the store does not wake periodically while waiting.
+        let timeoutTask = Task {
+            try? await Task.sleep(for: .milliseconds(boundedWait))
+            guard !Task.isCancelled else { return }
+            signal.continuation.yield(())
+        }
+        defer {
+            timeoutTask.cancel()
+            messageWaiters[waiterID] = nil
+            signal.continuation.finish()
+        }
+
+        var iterator = signal.stream.makeAsyncIterator()
+        _ = await iterator.next()
+        return matchingMessages(
+            recipient: recipient,
+            groups: groups,
+            afterSequence: afterSequence,
+            limit: boundedLimit
+        )
     }
 
     func createTask(
@@ -316,6 +349,30 @@ actor AmuxOrchestrationStore {
     private static func normalized(_ values: [String]) -> [String] {
         Array(Set(values.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }))
             .sorted()
+    }
+
+    private func matchingMessages(
+        recipient: String,
+        groups: Set<String>,
+        afterSequence: Int64,
+        limit: Int
+    ) -> [AmuxOrchestrationMessage] {
+        Array(messages.lazy.filter { message in
+            guard message.sequence > afterSequence else { return false }
+            return message.recipients.contains(recipient)
+                || message.recipients.contains("*")
+                || !groups.isDisjoint(with: message.groups)
+        }.prefix(limit))
+    }
+
+    private func notifyMessageWaiters(matching message: AmuxOrchestrationMessage) {
+        for waiter in messageWaiters.values where message.sequence > waiter.afterSequence {
+            if message.recipients.contains(waiter.recipient)
+                || message.recipients.contains("*")
+                || !waiter.groups.isDisjoint(with: message.groups) {
+                waiter.continuation.yield(())
+            }
+        }
     }
 }
 
