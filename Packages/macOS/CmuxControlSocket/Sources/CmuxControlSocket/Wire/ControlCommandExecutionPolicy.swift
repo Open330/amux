@@ -144,6 +144,19 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         // both use the socket worker's async-result bridge.
         "amux.agents",
         "amux.launch_agent",
+        // Durable agent-to-agent coordination is file-backed and message
+        // checks may long-poll, so the entire orchestration family stays off
+        // the main actor. None are main-thread-callable because each bridges
+        // into the orchestration store actor.
+        "amux.msg_send",
+        "amux.msg_check",
+        "amux.task_create",
+        "amux.task_list",
+        "amux.task_update",
+        "amux.gate_create",
+        "amux.gate_list",
+        "amux.gate_resolve",
+        "amux.heartbeat",
         "amux.local_tmux_sync",
         // amux.remote_setup runs SSH round trips (inspect/provision the
         // remote muxa stack) through v2VmCall — worker lane.

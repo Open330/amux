@@ -44,6 +44,15 @@ struct ControlCommandExecutionPolicyTests {
             "amux.pane_wait",
             "amux.agents",
             "amux.launch_agent",
+            "amux.msg_send",
+            "amux.msg_check",
+            "amux.task_create",
+            "amux.task_list",
+            "amux.task_update",
+            "amux.gate_create",
+            "amux.gate_list",
+            "amux.gate_resolve",
+            "amux.heartbeat",
             // JavaScript-evaluating browser methods block on page JS and must
             // not hold the main actor (see socketWorkerMethods rationale).
             "browser.eval", "browser.wait", "browser.snapshot", "browser.click",

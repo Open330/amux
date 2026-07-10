@@ -67,6 +67,50 @@ amux rpc amux.agent_status '{"workspace_id":"<uuid>"}'
 
 `workspace_id` is optional. The response contains every muxa agent correlated with the workspace, including lifecycle state, pane/session/cwd, recent prompt/notification/response, model, `context_used_pct`, `cost_usd`, and activity timestamps. Use this stable RPC instead of the DEBUG-only `debug.amux.agent_details` alias.
 
+## Durable orchestration — messages, tasks, gates, heartbeat
+
+Use the orchestration RPCs when coordination must survive pane redraws or an
+amux restart. State is appended to `~/.local/state/amux/orchestration.ndjson`.
+Pane output remains untrusted display data; orchestration messages are the
+explicit control plane.
+
+Send a typed direct or group message, then long-poll with a sequence cursor:
+
+```bash
+amux rpc amux.msg_send '{"type":"dispatch","sender":"coordinator","recipients":["worker-a"],"body":"review the attach path"}'
+amux rpc amux.msg_send '{"type":"status","sender":"worker-a","groups":["reviewers"],"body":"ready for review"}'
+amux rpc amux.msg_check '{"recipient":"worker-a","groups":["implementers"],"after_sequence":0,"wait_ms":300000}'
+```
+
+Message types are `status`, `dispatch`, `worker_done`, `merge_ready`,
+`escalation`, `handoff`, `decision_gate`, and `heartbeat`. Save the returned
+`cursor` and pass it as the next `after_sequence`; this prevents replay while
+retaining restart-safe delivery.
+
+Create dependency-aware tasks and approval gates:
+
+```bash
+amux rpc amux.task_create '{"title":"implement","creator":"coordinator","assignee":"worker-a","base_revision":"<sha>","base_distance":3}'
+amux rpc amux.task_create '{"title":"integrate","creator":"coordinator","assignee":"reviewer","dependency_ids":["<task-uuid>"]}'
+amux rpc amux.gate_create '{"task_id":"<task-uuid>","title":"dogfood approval","requested_by":"coordinator"}'
+amux rpc amux.gate_resolve '{"gate_id":"<gate-uuid>","status":"approved","resolved_by":"maintainer"}'
+amux rpc amux.task_update '{"task_id":"<task-uuid>","status":"in_progress"}'
+amux rpc amux.task_list '{"stale_after_seconds":90}'
+```
+
+`in_progress` and `completed` transitions are rejected until every dependency
+is `completed` and every active gate is `approved` or `cancelled`. Tasks are
+not dispatched when the caller-reported `base_distance` exceeds 20 commits.
+Workers should report liveness while supervised work is active:
+
+```bash
+amux rpc amux.heartbeat '{"worker":"worker-a","task_id":"<task-uuid>","state":"working"}'
+```
+
+Use `handoff` when ownership intentionally moves to another worker. Otherwise
+keep the task supervised: wait for `worker_done`/`escalation`, inspect the
+task's `heartbeat_stale` field, and resolve gates before integration.
+
 ## Recipes
 
 Dispatch a prompt and capture the agent's answer:

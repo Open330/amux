@@ -116,6 +116,8 @@ nonisolated private func v2RemotePTYUserFacingErrorMessage(_ message: String) ->
 class TerminalController {
     static let shared = TerminalController()
 
+    nonisolated let amuxOrchestrationStore = AmuxOrchestrationStore()
+
     private nonisolated let remotePTYControllerAvailabilityCondition = NSCondition()
     private nonisolated(unsafe) var remotePTYControllerAvailabilityGeneration: UInt64 = 0
     var tabManager: TabManager?
@@ -1415,6 +1417,24 @@ class TerminalController {
             return v2AmuxPaneWait(id: request.id, params: request.params)
         case "amux.pane_send":
             return v2Result(id: request.id, v2AmuxPaneSend(params: request.params))
+        case "amux.msg_send":
+            return v2AmuxMessageSend(id: request.id, params: request.params)
+        case "amux.msg_check":
+            return v2AmuxMessageCheck(id: request.id, params: request.params)
+        case "amux.task_create":
+            return v2AmuxTaskCreate(id: request.id, params: request.params)
+        case "amux.task_list":
+            return v2AmuxTaskList(id: request.id, params: request.params)
+        case "amux.task_update":
+            return v2AmuxTaskUpdate(id: request.id, params: request.params)
+        case "amux.gate_create":
+            return v2AmuxGateCreate(id: request.id, params: request.params)
+        case "amux.gate_list":
+            return v2AmuxGateList(id: request.id, params: request.params)
+        case "amux.gate_resolve":
+            return v2AmuxGateResolve(id: request.id, params: request.params)
+        case "amux.heartbeat":
+            return v2AmuxHeartbeat(id: request.id, params: request.params)
 #if DEBUG
         case "debug.sidebar.simulate_drag":
             return v2Result(id: request.id, v2DebugSidebarSimulateDrag(params: request.params))
@@ -2483,7 +2503,12 @@ class TerminalController {
             "workspace.remote.pty_bridge",
             "workspace.remote.pty_resize",
             "workspace.remote.pty_attach_end",
-            "workspace.remote.terminal_session_end", "remote.tmux.sessions", "remote.tmux.attach", "remote.tmux.detach", "remote.tmux.state", "remote.tmux.mirror", "remote.tmux.window", "amux.local_tmux_sync",
+            "workspace.remote.terminal_session_end", "remote.tmux.sessions", "remote.tmux.attach", "remote.tmux.detach", "remote.tmux.state", "remote.tmux.mirror", "remote.tmux.window",
+            "amux.local_tmux_sync", "amux.remote_setup", "amux.new_session", "amux.sessions", "amux.attach_session",
+            "amux.agents", "amux.launch_agent", "amux.pane_read", "amux.pane_wait", "amux.pane_send",
+            "amux.attend", "amux.agent_status", "amux.send_prompt", "amux.close_kill",
+            "amux.msg_send", "amux.msg_check", "amux.task_create", "amux.task_list", "amux.task_update",
+            "amux.gate_create", "amux.gate_list", "amux.gate_resolve", "amux.heartbeat",
             "session.restore_previous",
             "settings.open",
             "feedback.open",
