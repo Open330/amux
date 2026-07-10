@@ -46,7 +46,7 @@ extension CMUXCLI {
             throw CLIError(message: String.localizedStringWithFormat(
                 String(
                     localized: "cli.hooks.pi.error.notCmuxExtension",
-                    defaultValue: "%@ exists and is not a cmux extension; leaving it alone"
+                    defaultValue: "%@ exists and is not an amux extension; leaving it alone"
                 ),
                 extensionURL.path
             ))
@@ -85,7 +85,7 @@ extension CMUXCLI {
             print(String.localizedStringWithFormat(
                 String(
                     localized: "cli.hooks.pi.noneFound",
-                    defaultValue: "No Pi cmux extension found at %@"
+                    defaultValue: "No Pi amux extension found at %@"
                 ),
                 extensionURL.path
             ))
@@ -96,7 +96,7 @@ extension CMUXCLI {
             print(String.localizedStringWithFormat(
                 String(
                     localized: "cli.hooks.pi.refuseRemoveMissingMarker",
-                    defaultValue: "Refusing to remove %@: missing cmux marker"
+                    defaultValue: "Refusing to remove %@: missing amux marker"
                 ),
                 extensionURL.path
             ))
@@ -106,7 +106,7 @@ extension CMUXCLI {
         print(String.localizedStringWithFormat(
             String(
                 localized: "cli.hooks.pi.removed",
-                defaultValue: "Removed Pi cmux extension from %@"
+                defaultValue: "Removed Pi amux extension from %@"
             ),
             extensionURL.path
         ))

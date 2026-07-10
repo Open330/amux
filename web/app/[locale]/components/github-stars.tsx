@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import posthog from "posthog-js";
+import { GITHUB_REPOSITORY_URL } from "../../lib/product";
 
 const STARS_CACHE_TTL_MS = 300_000;
 let cachedStars: number | null = null;
@@ -101,12 +101,10 @@ export function GitHubStarsBadge({
 
   return (
     <a
-      href="https://github.com/manaflow-ai/cmux"
+      href={GITHUB_REPOSITORY_URL}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() =>
-        posthog.capture("cmuxterm_github_clicked", { location })
-      }
+      data-location={location}
       className={classes}
     >
       {GITHUB_ICON}

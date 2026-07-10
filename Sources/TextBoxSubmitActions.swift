@@ -584,7 +584,7 @@ extension TextBoxInputContainer {
     }
 
     func openSubmitActionsDocumentation() {
-        guard let url = URL(string: "https://github.com/manaflow-ai/cmux/blob/main/docs/configuration.md#terminaltextboxsubmitactions") else {
+        guard let url = URL(string: "https://github.com/Open330/amux/blob/main/docs/configuration.md#terminaltextboxsubmitactions") else {
             return
         }
         NSWorkspace.shared.open(url)

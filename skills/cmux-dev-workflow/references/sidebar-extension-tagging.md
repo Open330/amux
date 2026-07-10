@@ -19,7 +19,7 @@ com.cmuxterm.app.cmux.sidebar
 Tagged host builds scope it to:
 
 ```text
-com.cmuxterm.app.debug.<tag>.cmux.sidebar
+com.open330.amux.debug.<tag>.cmux.sidebar
 ```
 
 ## Why display name matters

@@ -58,7 +58,7 @@ extension AppDelegate {
             surfaceId: nil,
             title: String(
                 localized: "memoryPressure.critical.title",
-                defaultValue: "cmux is under critical memory pressure"
+                defaultValue: "amux is under critical memory pressure"
             ),
             subtitle: String(
                 localized: "memoryPressure.critical.subtitle",
@@ -66,7 +66,7 @@ extension AppDelegate {
             ),
             body: String(
                 localized: "memoryPressure.critical.body",
-                defaultValue: "macOS is reporting sustained critical memory pressure. cmux has shed hidden resources; close idle workspaces or restart cmux if pressure continues."
+                defaultValue: "macOS is reporting sustained critical memory pressure. amux has shed hidden resources; close idle workspaces or restart amux if pressure continues."
             ),
             cooldownKey: "memory-pressure-critical",
             cooldownInterval: 300

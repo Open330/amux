@@ -488,15 +488,13 @@ struct WorkspaceDetailView: View {
         isFeedbackComposerPresented = true
     }
 
-    /// Whether the current submission will go straight to the agent (privileged
-    /// `@manaflow.ai` user on an active connection) vs the email inbox.
+    /// Whether the current submission will use the retained agent route. amux
+    /// currently resolves every submission to email.
     private var feedbackRoutesToAgent: Bool {
         store.currentFeedbackRoute == .privilegedAgent
     }
 
-    // Release-safe Send Feedback composer. Privileged @manaflow.ai users on an
-    // active connection ship a diagnostic bundle straight to the paired Mac's
-    // agent sink; everyone else emails the feedback inbox. Either way the
+    // Release-safe Send Feedback composer. amux uses the email route; the
     // submission is stamped with build type + version + device.
     private var feedbackComposer: some View {
         NavigationStack {

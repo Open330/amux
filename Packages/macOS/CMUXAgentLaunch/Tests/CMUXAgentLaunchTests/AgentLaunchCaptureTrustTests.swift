@@ -86,9 +86,9 @@ final class AgentLaunchCaptureTrustTests: XCTestCase {
         )
         XCTAssertFalse(
             AgentLaunchCaptureTrust.nativeProcessDescribesKind(
-                processName: "cmux DEV",
+                processName: "amux DEV",
                 arguments: [
-                    "/tmp/cmux-tests/Build/Products/Debug/cmux DEV.app/Contents/MacOS/cmux DEV",
+                    "/tmp/cmux-tests/Build/Products/Debug/amux DEV.app/Contents/MacOS/amux DEV",
                     "-NSTreatUnknownArgumentsAsOpen",
                 ],
                 kind: "codex"

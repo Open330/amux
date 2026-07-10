@@ -1,213 +1,241 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build, sign, notarize, create DMG, generate appcast, and upload to GitHub release.
-# Usage: ./scripts/build-sign-upload.sh <tag> [--allow-overwrite]
-# Requires: source ~/.secrets/cmuxterm.env && export SPARKLE_PRIVATE_KEY
+# Canonical amux release entrypoint: build, sign, notarize, generate the
+# Sparkle appcast, and publish immutable assets to Open330/amux.
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPOSITORY="Open330/amux"
+ALLOW_OVERWRITE=0
 
 usage() {
   cat <<'EOF'
-Usage: ./scripts/build-sign-upload.sh <tag> [--allow-overwrite]
+Usage: ./scripts/build-sign-upload.sh <vX.Y.Z[-prerelease]> [--allow-overwrite]
 
-Options:
-  --allow-overwrite   Permit replacing existing release assets for the same tag.
-                      Use only for emergency rerolls.
+Required environment:
+  SPARKLE_PUBLIC_KEY    amux Sparkle EdDSA public key
+  SPARKLE_PRIVATE_KEY   matching private key
+  GH_TOKEN              token allowed to publish Open330/amux releases
+  HOMEBREW_GITHUB_TOKEN token allowed to update Open330/homebrew-tap
+
+The signing certificate and notarization key are read by
+scripts/build-signed-dmg.sh from the configured Vaultwarden session.
 EOF
 }
 
-ALLOW_OVERWRITE="false"
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --allow-overwrite)
-      ALLOW_OVERWRITE="true"
-      shift
+      ALLOW_OVERWRITE=1
       ;;
     -h|--help)
       usage
       exit 0
       ;;
     -*)
-      echo "Unknown option: $1" >&2
+      echo "error: unknown option: $1" >&2
       usage >&2
       exit 1
       ;;
     *)
       POSITIONAL+=("$1")
-      shift
       ;;
   esac
+  shift
 done
-set -- "${POSITIONAL[@]}"
 
-if [[ $# -ne 1 ]]; then
-  usage >&2
+[[ ${#POSITIONAL[@]} -eq 1 ]] || { usage >&2; exit 1; }
+TAG="${POSITIONAL[0]}"
+[[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]] || {
+  echo "error: release tag must look like v0.2.0 or v0.2.0-alpha" >&2
   exit 1
-fi
+}
 
-TAG="$1"
-SIGN_HASH="A050CC7E193C8221BDBA204E731B046CDCCC1B30"
-ENTITLEMENTS="cmux.entitlements"
-APP_PATH="build/Build/Products/Release/cmux.app"
-GHOSTTYKIT_CRASH_REPORT_SUBDIR="cmux/crash"
+: "${SPARKLE_PUBLIC_KEY:?SPARKLE_PUBLIC_KEY is required}"
+: "${SPARKLE_PRIVATE_KEY:?SPARKLE_PRIVATE_KEY is required}"
+: "${GH_TOKEN:?GH_TOKEN is required}"
+: "${HOMEBREW_GITHUB_TOKEN:?HOMEBREW_GITHUB_TOKEN is required}"
 
-# --- Pre-flight ---
-source ~/.secrets/cmuxterm.env
-export SPARKLE_PRIVATE_KEY
-for tool in zig xcodebuild create-dmg xcrun codesign ditto gh; do
-  command -v "$tool" >/dev/null || { echo "MISSING: $tool" >&2; exit 1; }
+SPARKLE_PRIVATE_KEY_VALUE="$SPARKLE_PRIVATE_KEY"
+GH_TOKEN_VALUE="$GH_TOKEN"
+HOMEBREW_GITHUB_TOKEN_VALUE="$HOMEBREW_GITHUB_TOKEN"
+unset SPARKLE_PRIVATE_KEY GH_TOKEN HOMEBREW_GITHUB_TOKEN
+
+for tool in gh git go jq node plutil python3 shasum swift xmllint; do
+  command -v "$tool" >/dev/null || { echo "error: required tool not found: $tool" >&2; exit 1; }
 done
-echo "Pre-flight checks passed"
 
-# --- Build GhosttyKit ---
-echo "Building GhosttyKit..."
-rm -rf GhosttyKit.xcframework ghostty/macos/GhosttyKit.xcframework
-(
-  cd ghostty
-  zig build -Dcrash-report-subdir="$GHOSTTYKIT_CRASH_REPORT_SUBDIR" -Demit-xcframework=true -Demit-macos-app=false -Dxcframework-target=universal -Doptimize=ReleaseFast
-)
-cp -R ghostty/macos/GhosttyKit.xcframework GhosttyKit.xcframework
+canonicalize_base64() {
+  local value
+  value="$(printf '%s' "$1" | tr -d '[:space:]')"
+  while (( ${#value} % 4 != 0 )); do value="${value}="; done
+  printf '%s' "$value"
+}
 
-# --- Build app (Release, unsigned) ---
-echo "Building app..."
-rm -rf build/
-xcodebuild -scheme cmux -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tail -5
-echo "Build succeeded"
+gh_with_token() {
+  GH_TOKEN="$GH_TOKEN_VALUE" gh "$@"
+}
 
-HELPER_PATH="$APP_PATH/Contents/Resources/bin/ghostty"
-if [ ! -x "$HELPER_PATH" ]; then
-  echo "Ghostty theme picker helper not found at $HELPER_PATH" >&2
+cd "$ROOT_DIR"
+AMUX_RELEASE_GITHUB_TOKEN="$GH_TOKEN_VALUE" ./scripts/release-pretag-guard.sh "$TAG"
+
+git rev-parse --verify "refs/tags/$TAG" >/dev/null 2>&1 || {
+  echo "error: local tag $TAG does not exist; create and push the reviewed tag first" >&2
   exit 1
+}
+LOCAL_TAG_COMMIT="$(git rev-parse "$TAG^{commit}")"
+HEAD_COMMIT="$(git rev-parse HEAD)"
+[[ "$HEAD_COMMIT" == "$LOCAL_TAG_COMMIT" ]] || {
+  echo "error: HEAD $HEAD_COMMIT does not match local $TAG commit $LOCAL_TAG_COMMIT" >&2
+  exit 1
+}
+[[ -z "$(git status --porcelain --untracked-files=no)" ]] || {
+  echo "error: tracked worktree changes are present; refusing to release an uncommitted tree" >&2
+  exit 1
+}
+REMOTE_TAG_COMMIT="$(gh_with_token api "repos/$REPOSITORY/commits/$TAG" --jq .sha 2>/dev/null || true)"
+[[ "$REMOTE_TAG_COMMIT" == "$LOCAL_TAG_COMMIT" ]] || {
+  echo "error: GitHub $TAG commit ${REMOTE_TAG_COMMIT:-<missing>} does not match local $LOCAL_TAG_COMMIT" >&2
+  exit 1
+}
+
+MARKETING_VERSION="${TAG#v}"
+MARKETING_VERSION="${MARKETING_VERSION%%-*}"
+
+DERIVED_SPARKLE_PUBLIC_KEY="$(printf '%s' "$SPARKLE_PRIVATE_KEY_VALUE" | swift scripts/derive_sparkle_public_key.swift -)"
+CANONICAL_SPARKLE_PUBLIC_KEY="$(canonicalize_base64 "$SPARKLE_PUBLIC_KEY")"
+[[ "$(canonicalize_base64 "$DERIVED_SPARKLE_PUBLIC_KEY")" == "$CANONICAL_SPARKLE_PUBLIC_KEY" ]] || {
+  echo "error: SPARKLE_PRIVATE_KEY does not match SPARKLE_PUBLIC_KEY" >&2
+  exit 1
+}
+
+RELEASE_JSON="$(gh_with_token release view "$TAG" --repo "$REPOSITORY" --json assets,isDraft 2>/dev/null || true)"
+RELEASE_EXISTS=0
+RELEASE_IS_DRAFT=0
+EXISTING_ASSETS=""
+if [[ -n "$RELEASE_JSON" ]]; then
+  RELEASE_EXISTS=1
+  EXISTING_ASSETS="$(printf '%s' "$RELEASE_JSON" | jq -r '.assets[].name')"
+  [[ "$(printf '%s' "$RELEASE_JSON" | jq -r '.isDraft')" == "true" ]] && RELEASE_IS_DRAFT=1
 fi
-
-# --- Inject Sparkle keys ---
-echo "Injecting Sparkle keys..."
-SPARKLE_PUBLIC_KEY_DERIVED=$(swift scripts/derive_sparkle_public_key.swift "$SPARKLE_PRIVATE_KEY")
-APP_PLIST="$APP_PATH/Contents/Info.plist"
-/usr/libexec/PlistBuddy -c "Delete :SUPublicEDKey" "$APP_PLIST" 2>/dev/null || true
-/usr/libexec/PlistBuddy -c "Delete :SUFeedURL" "$APP_PLIST" 2>/dev/null || true
-/usr/libexec/PlistBuddy -c "Add :SUPublicEDKey string $SPARKLE_PUBLIC_KEY_DERIVED" "$APP_PLIST"
-/usr/libexec/PlistBuddy -c "Add :SUFeedURL string https://github.com/manaflow-ai/cmux/releases/latest/download/appcast.xml" "$APP_PLIST"
-echo "Sparkle keys injected"
-
-# cmux is a non-sandboxed app. Sparkle's sandbox-only XPC services make the
-# installer handoff wait for an agent connection that never arrives.
-./scripts/remove-sparkle-sandbox-xpc-services.sh "$APP_PATH"
-
-# --- Codesign ---
-echo "Codesigning..."
-./scripts/sign-cmux-bundle.sh "$APP_PATH" "$ENTITLEMENTS" "$SIGN_HASH"
-echo "Codesign verified"
-
-# --- Notarize app ---
-echo "Notarizing app..."
-ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" cmux-notary.zip
-xcrun notarytool submit cmux-notary.zip \
-  --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --wait
-xcrun stapler staple "$APP_PATH"
-xcrun stapler validate "$APP_PATH"
-rm -f cmux-notary.zip
-echo "App notarized"
-
-# --- Create and notarize DMG ---
-echo "Creating DMG..."
-rm -f cmux-macos.dmg
-create-dmg --codesign "$SIGN_HASH" cmux-macos.dmg "$APP_PATH"
-echo "Notarizing DMG..."
-xcrun notarytool submit cmux-macos.dmg \
-  --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --wait
-xcrun stapler staple cmux-macos.dmg
-xcrun stapler validate cmux-macos.dmg
-echo "DMG notarized"
-
-# --- Generate Sparkle appcast ---
-echo "Generating appcast..."
-./scripts/sparkle_generate_appcast.sh cmux-macos.dmg "$TAG" appcast.xml
-
-# --- Create GitHub release (if needed) and upload ---
-if gh release view "$TAG" >/dev/null 2>&1; then
-  echo "Release $TAG already exists"
-  EXISTING_ASSETS="$(gh release view "$TAG" --json assets --jq '.assets[].name' || true)"
-  HAS_CONFLICTING_ASSET="false"
-  for asset in cmux-macos.dmg appcast.xml; do
-    if printf '%s\n' "$EXISTING_ASSETS" | grep -Fxq "$asset"; then
-      HAS_CONFLICTING_ASSET="true"
-      break
-    fi
-  done
-
-  if [[ "$HAS_CONFLICTING_ASSET" == "true" && "$ALLOW_OVERWRITE" != "true" ]]; then
-    echo "ERROR: Refusing to overwrite signed release assets for existing tag $TAG." >&2
-    echo "Use a new tag, or rerun with --allow-overwrite for an emergency reroll." >&2
+IMMUTABLE_ASSETS=()
+while IFS= read -r asset; do
+  [[ -n "$asset" ]] && IMMUTABLE_ASSETS+=("$asset")
+done < <(node -e 'for (const asset of require("./scripts/release_asset_guard").IMMUTABLE_RELEASE_ASSETS) console.log(asset)')
+[[ "${#IMMUTABLE_ASSETS[@]}" -gt 0 ]] || {
+  echo "error: immutable release asset list is empty" >&2
+  exit 1
+}
+EXISTING_REQUIRED_COUNT=0
+for asset in "${IMMUTABLE_ASSETS[@]}"; do
+  printf '%s\n' "$EXISTING_ASSETS" | grep -Fxq "$asset" && EXISTING_REQUIRED_COUNT=$((EXISTING_REQUIRED_COUNT + 1))
+done
+if [[ "$RELEASE_IS_DRAFT" == "1" ]]; then
+  ALLOW_OVERWRITE=1
+elif [[ "$EXISTING_REQUIRED_COUNT" == "${#IMMUTABLE_ASSETS[@]}" && "$ALLOW_OVERWRITE" != "1" ]]; then
+  EXISTING_DMG_DIGEST="$(printf '%s' "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "amux-macos.dmg") | .digest // empty')"
+  EXISTING_DMG_SHA256="${EXISTING_DMG_DIGEST#sha256:}"
+  [[ "$EXISTING_DMG_SHA256" =~ ^[0-9a-f]{64}$ ]] || {
+    echo "error: existing amux DMG has no usable SHA256 digest" >&2
     exit 1
-  fi
+  }
+  GH_TOKEN="$HOMEBREW_GITHUB_TOKEN_VALUE" ./scripts/publish-homebrew-cask.sh "$TAG" "$EXISTING_DMG_SHA256"
+  echo "Release $TAG already has the immutable amux assets; Homebrew cask reconciled."
+  exit 0
+elif [[ "$EXISTING_REQUIRED_COUNT" != "0" && "$ALLOW_OVERWRITE" != "1" ]]; then
+  echo "error: release $TAG has a partial immutable asset set; inspect it and rerun with --allow-overwrite" >&2
+  exit 1
+fi
 
-  if [[ "$ALLOW_OVERWRITE" == "true" ]]; then
-    echo "Uploading with overwrite enabled for existing release $TAG..."
-    gh release upload "$TAG" cmux-macos.dmg appcast.xml --clobber
-  else
-    echo "Uploading to existing release $TAG..."
-    gh release upload "$TAG" cmux-macos.dmg appcast.xml
-  fi
+REMOTE_ASSET_DIR="$ROOT_DIR/build-release-assets"
+rm -rf "$REMOTE_ASSET_DIR"
+mkdir -p "$REMOTE_ASSET_DIR"
+./scripts/build_remote_daemon_release_assets.sh \
+  --version "$MARKETING_VERSION" \
+  --release-tag "$TAG" \
+  --repo "$REPOSITORY" \
+  --output-dir "$REMOTE_ASSET_DIR"
+REMOTE_MANIFEST="$REMOTE_ASSET_DIR/cmuxd-remote-manifest.json"
+for asset in "${IMMUTABLE_ASSETS[@]}"; do
+  case "$asset" in
+    amux-macos.dmg|appcast.xml) ;;
+    *) [[ -f "$REMOTE_ASSET_DIR/$asset" ]] || { echo "error: missing remote daemon release asset: $asset" >&2; exit 1; } ;;
+  esac
+done
+
+AMUX_REMOTE_DAEMON_MANIFEST_PATH="$REMOTE_MANIFEST" \
+  SPARKLE_PUBLIC_KEY="$CANONICAL_SPARKLE_PUBLIC_KEY" \
+  ./scripts/build-signed-dmg.sh --notarize
+
+APP="build-signed/Build/Products/Release/amux.app"
+APP_PLIST="$APP/Contents/Info.plist"
+[[ -d "$APP" ]] || { echo "error: release build did not produce amux.app" >&2; exit 1; }
+
+ACTUAL_NAME="$(plutil -extract CFBundleName raw "$APP_PLIST")"
+ACTUAL_BUNDLE_ID="$(plutil -extract CFBundleIdentifier raw "$APP_PLIST")"
+ACTUAL_FEED="$(plutil -extract SUFeedURL raw "$APP_PLIST")"
+ACTUAL_SPARKLE_KEY="$(canonicalize_base64 "$(plutil -extract SUPublicEDKey raw "$APP_PLIST")")"
+ACTUAL_REMOTE_MANIFEST="$(plutil -extract CMUXRemoteDaemonManifestJSON raw "$APP_PLIST")"
+[[ "$ACTUAL_NAME" == "amux" ]] || { echo "error: release app name is $ACTUAL_NAME" >&2; exit 1; }
+[[ "$ACTUAL_BUNDLE_ID" == "com.open330.amux" ]] || { echo "error: release bundle id is $ACTUAL_BUNDLE_ID" >&2; exit 1; }
+[[ "$ACTUAL_FEED" == "https://github.com/Open330/amux/releases/latest/download/appcast.xml" ]] || {
+  echo "error: release feed points at $ACTUAL_FEED" >&2
+  exit 1
+}
+[[ "$ACTUAL_SPARKLE_KEY" == "$CANONICAL_SPARKLE_PUBLIC_KEY" ]] || {
+  echo "error: built app does not contain the requested amux Sparkle public key" >&2
+  exit 1
+}
+[[ "$(printf '%s' "$ACTUAL_REMOTE_MANIFEST" | jq -cS .)" == "$(jq -cS . "$REMOTE_MANIFEST")" ]] || {
+  echo "error: built app does not contain the release remote daemon manifest" >&2
+  exit 1
+}
+
+rm -f appcast.xml
+SPARKLE_PRIVATE_KEY="$SPARKLE_PRIVATE_KEY_VALUE" \
+  ./scripts/sparkle_generate_appcast.sh amux-macos.dmg "$TAG" appcast.xml
+grep -Fq "github.com/Open330/amux/releases/download/$TAG/amux-macos.dmg" appcast.xml || {
+  echo "error: generated appcast does not point at the amux release asset" >&2
+  exit 1
+}
+
+if [[ "$RELEASE_EXISTS" == "0" ]]; then
+  gh_with_token release create "$TAG" \
+    --repo "$REPOSITORY" \
+    --verify-tag \
+    --draft \
+    --title "$TAG" \
+    --notes "See CHANGELOG.md for details."
+  RELEASE_IS_DRAFT=1
+fi
+
+UPLOAD_ASSETS=(amux-macos.dmg appcast.xml)
+for asset in "${IMMUTABLE_ASSETS[@]}"; do
+  case "$asset" in
+    amux-macos.dmg|appcast.xml) ;;
+    *) UPLOAD_ASSETS+=("$REMOTE_ASSET_DIR/$asset") ;;
+  esac
+done
+if [[ "$ALLOW_OVERWRITE" == "1" ]]; then
+  gh_with_token release upload "$TAG" "${UPLOAD_ASSETS[@]}" --repo "$REPOSITORY" --clobber
 else
-  echo "Creating release $TAG and uploading..."
-  gh release create "$TAG" cmux-macos.dmg appcast.xml --title "$TAG" --notes "See CHANGELOG.md for details"
+  gh_with_token release upload "$TAG" "${UPLOAD_ASSETS[@]}" --repo "$REPOSITORY"
 fi
 
-# --- Verify ---
-gh release view "$TAG"
-
-# --- Update Homebrew cask (skip for nightlies) ---
-if [[ "$TAG" != *"-nightly"* ]]; then
-  VERSION="${TAG#v}"
-  DMG_SHA256=$(shasum -a 256 cmux-macos.dmg | cut -d' ' -f1)
-  echo "Updating homebrew cask to $VERSION (SHA: $DMG_SHA256)..."
-  CASK_FILE="homebrew-cmux/Casks/cmux.rb"
-  if [ -f "$CASK_FILE" ]; then
-    cat > "$CASK_FILE" << CASKEOF
-cask "cmux" do
-  version "${VERSION}"
-  sha256 "${DMG_SHA256}"
-
-  url "https://github.com/manaflow-ai/cmux/releases/download/v#{version}/cmux-macos.dmg"
-  name "cmux"
-  desc "Lightweight native macOS terminal with vertical tabs for AI coding agents"
-  homepage "https://github.com/manaflow-ai/cmux"
-
-  livecheck do
-    url :url
-    strategy :github_latest
-  end
-
-  depends_on macos: ">= :ventura"
-
-  app "cmux.app"
-  binary "#{appdir}/cmux.app/Contents/Resources/bin/amux"
-
-  zap trash: [
-    "~/Library/Application Support/cmux",
-    "~/Library/Caches/cmux",
-    "~/Library/Preferences/ai.manaflow.cmuxterm.plist",
-  ]
-end
-CASKEOF
-    cd homebrew-cmux
-    git add Casks/cmux.rb
-    if git diff --staged --quiet; then
-      echo "Homebrew cask already up to date"
-    else
-      git commit -m "Update cmux to ${VERSION}"
-      git push
-      echo "Homebrew cask updated"
-    fi
-    cd ..
+DMG_SHA256="$(shasum -a 256 amux-macos.dmg | awk '{print $1}')"
+if [[ "$RELEASE_IS_DRAFT" == "1" ]]; then
+  if [[ "$TAG" == "v$MARKETING_VERSION" ]]; then
+    RELEASE_CHANNEL=stable
   else
-    echo "WARNING: homebrew-cmux submodule not found, skipping cask update"
+    RELEASE_CHANNEL=prerelease
   fi
+  GH_TOKEN="$GH_TOKEN_VALUE" HOMEBREW_GITHUB_TOKEN="$HOMEBREW_GITHUB_TOKEN_VALUE" \
+    ./scripts/finalize-amux-release.sh "$TAG" "$DMG_SHA256" "$RELEASE_CHANNEL"
+else
+  GH_TOKEN="$HOMEBREW_GITHUB_TOKEN_VALUE" ./scripts/publish-homebrew-cask.sh "$TAG" "$DMG_SHA256"
 fi
 
-# --- Cleanup ---
-rm -rf build/ cmux-macos.dmg appcast.xml
-echo ""
-echo "=== Release $TAG complete ==="
-say "cmux release complete"
+echo "Published $REPOSITORY $TAG"
+echo "amux-macos.dmg sha256: $DMG_SHA256"
+echo "Published Open330/homebrew-tap Casks/amux.rb"

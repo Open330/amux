@@ -497,7 +497,7 @@ final class GhosttyCrashBreadcrumbTests: XCTestCase {
         )
         _ = try writeCrashEnvelope(
             named: "foreign.ghosttycrash",
-            executablePath: "/private/tmp/cmux-tbinput-unit/Build/Products/Debug/cmux DEV.app/Contents/MacOS/cmux DEV",
+            executablePath: "/private/tmp/cmux-tbinput-unit/Build/Products/Debug/amux DEV.app/Contents/MacOS/amux DEV",
             modifiedAt: foreignCrashDate
         )
 
@@ -521,7 +521,7 @@ final class GhosttyCrashBreadcrumbTests: XCTestCase {
         )
         _ = try writeCrashEnvelope(
             named: "foreign-leading-item.ghosttycrash",
-            executablePath: "/private/tmp/cmux-tbinput-unit/Build/Products/Debug/cmux DEV.app/Contents/MacOS/cmux DEV",
+            executablePath: "/private/tmp/cmux-tbinput-unit/Build/Products/Debug/amux DEV.app/Contents/MacOS/amux DEV",
             modifiedAt: foreignCrashDate,
             leadingItems: [
                 (type: "attachment", payload: Data(#"{"filename":"metadata.txt"}"#.utf8)),
@@ -540,7 +540,7 @@ final class GhosttyCrashBreadcrumbTests: XCTestCase {
     func testPendingCrashReturnsNilForOnlyDifferentExecutableCrash() throws {
         _ = try writeCrashEnvelope(
             named: "foreign-only.ghosttycrash",
-            executablePath: "/private/tmp/cmux-tbinput-unit/Build/Products/Debug/cmux DEV.app/Contents/MacOS/cmux DEV",
+            executablePath: "/private/tmp/cmux-tbinput-unit/Build/Products/Debug/amux DEV.app/Contents/MacOS/amux DEV",
             modifiedAt: Date(timeIntervalSince1970: 300)
         )
 
@@ -1734,19 +1734,19 @@ final class NotificationMenuSnapshotBuilderTests: XCTestCase {
 
 final class MenuBarBuildHintFormatterTests: XCTestCase {
     func testReleaseBuildShowsNoHint() {
-        XCTAssertNil(MenuBarBuildHintFormatter.menuTitle(appName: "cmux DEV menubar-extra", isDebugBuild: false))
+        XCTAssertNil(MenuBarBuildHintFormatter.menuTitle(appName: "amux DEV menubar-extra", isDebugBuild: false))
     }
 
     func testDebugBuildWithTagShowsTag() {
         XCTAssertEqual(
-            MenuBarBuildHintFormatter.menuTitle(appName: "cmux DEV menubar-extra", isDebugBuild: true),
+            MenuBarBuildHintFormatter.menuTitle(appName: "amux DEV menubar-extra", isDebugBuild: true),
             "Build Tag: menubar-extra"
         )
     }
 
     func testDebugBuildWithoutTagShowsUntagged() {
         XCTAssertEqual(
-            MenuBarBuildHintFormatter.menuTitle(appName: "cmux DEV", isDebugBuild: true),
+            MenuBarBuildHintFormatter.menuTitle(appName: "amux DEV", isDebugBuild: true),
             "Build: DEV (untagged)"
         )
     }

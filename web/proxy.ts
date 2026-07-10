@@ -7,21 +7,61 @@ import {
   featureWorkflowDocRequestForPathname,
 } from "./i18n/locale-availability";
 import { buildAlternateLinkHeader } from "./i18n/seo";
+import { GITHUB_RELEASES_URL, GITHUB_REPOSITORY_URL } from "./app/lib/product";
 
 const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
-  const host = request.headers.get("host") ?? "";
+  const { pathname } = request.nextUrl;
 
-  // 301 redirect cmux.dev (and www.cmux.dev) to cmux.com, preserving path and query
-  if (host === "cmux.dev" || host === "www.cmux.dev") {
-    const url = new URL(request.url);
-    url.host = "cmux.com";
-    url.protocol = "https:";
-    return NextResponse.redirect(url.toString(), 301);
+  if (pathname === "/api/github-stars") {
+    return NextResponse.next();
+  }
+  if (pathname === "/agent-page-variant") {
+    return NextResponse.json(
+      { error: "This internal renderer is unavailable as a public endpoint." },
+      { status: 410 },
+    );
+  }
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json(
+      { error: "This inherited hosted service is unavailable in amux." },
+      { status: 410 },
+    );
+  }
+  if (pathname === "/handler" || pathname.startsWith("/handler/")) {
+    return NextResponse.redirect(GITHUB_REPOSITORY_URL, 307);
   }
 
-  const { pathname } = request.nextUrl;
+  const localizedProductPath = pathname.replace(/^\/[a-z]{2}(?:-[A-Z]{2})?(?=\/|$)/, "") || "/";
+  const productPath = localizedProductPath.replace(/\.(?:md|txt)$/, "");
+  if (productPath.startsWith("/compare/cmux-vs-")) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace("/compare/cmux-vs-", "/compare/amux-vs-");
+    return NextResponse.redirect(url, 301);
+  }
+  const unavailablePrefixes = [
+    "/app-pricing",
+    "/billing",
+    "/blog",
+    "/community",
+    "/dashboard",
+    "/enterprise",
+    "/ios",
+    "/pricing",
+    "/privacy-policy",
+    "/terms-of-service",
+    "/wall-of-love",
+    "/eula",
+    "/docs/ios",
+    "/docs/vault",
+  ];
+  if (unavailablePrefixes.some((prefix) => productPath === prefix || productPath.startsWith(`${prefix}/`))) {
+    return NextResponse.redirect(GITHUB_REPOSITORY_URL, 307);
+  }
+  if (productPath === "/nightly" || productPath.startsWith("/nightly/")) {
+    return NextResponse.redirect(GITHUB_RELEASES_URL, 307);
+  }
 
   // Temporary redirect: /changelog → /docs/changelog, preserving any locale prefix.
   const changelogMatch = pathname.match(/^(\/[a-z]{2}(?:-[A-Z]{2})?)?\/changelog\/?$/);
@@ -40,17 +80,6 @@ export default function middleware(request: NextRequest) {
     return NextResponse.rewrite(url, {
       request: { headers: requestHeaders },
     });
-  }
-
-  if (pathname === "/app-pricing" || pathname === "/app-pricing/") {
-    return NextResponse.next();
-  }
-
-  // Post-checkout pages live outside the [locale] tree, like /app-pricing.
-  // Without this bypass next-intl rewrites them into /<locale>/billing/...,
-  // which has no route and 404s via the pass-through root layout.
-  if (pathname === "/billing" || pathname.startsWith("/billing/")) {
-    return NextResponse.next();
   }
 
   if (pathname.includes(".")) {
@@ -125,5 +154,5 @@ function requestOrigin(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|agent-page-variant|handler).*)"],
+  matcher: ["/((?!_next|_vercel).*)"],
 };

@@ -82,7 +82,7 @@ def all_processes() -> list[tuple[int, str]]:
 
 def find_pid(label: str, processes: list[tuple[int, str]]) -> int | None:
     if label == "mac":
-        needle = f"cmux-{TAG}/Build/Products/Debug/cmux DEV {TAG}.app/Contents/MacOS/cmux DEV"
+        needle = f"cmux-{TAG}/Build/Products/Debug/amux DEV {TAG}.app/Contents/MacOS/amux DEV"
         for pid, command in processes:
             if needle in command:
                 return pid

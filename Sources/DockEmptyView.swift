@@ -87,7 +87,7 @@ struct DockEmptyView: View {
     }
 
     private func openDockDocs() {
-        guard let url = URL(string: "https://cmux.com/docs/dock") else { return }
+        guard let url = URL(string: "https://github.com/Open330/amux/blob/main/docs/dock.md") else { return }
         NSWorkspace.shared.open(url)
     }
 
@@ -95,14 +95,14 @@ struct DockEmptyView: View {
         String(
             localized: "dock.empty.agentPrompt",
             defaultValue: """
-            Set up cmux Dock controls for the current context.
+            Set up amux Dock controls for the current context.
 
             First, learn the feature before editing:
-            1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://cmux.com/docs/dock.
+            1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux/blob/main/docs/dock.md.
             2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.
             3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.
 
-            Dock is cmux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.
+            Dock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.
 
             Choose where to write the config:
             - In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.

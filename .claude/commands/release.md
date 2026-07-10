@@ -1,6 +1,6 @@
 # Release
 
-Prepare a new release for cmux. This command updates the changelog, bumps the version, creates a PR, monitors CI, and then merges and tags.
+Prepare a new release for amux. This command updates the changelog, bumps the version, creates a PR, monitors CI, and then merges and tags.
 
 ## Steps
 
@@ -18,11 +18,11 @@ Prepare a new release for cmux. This command updates the changelog, bumps the ve
    - Categorize changes into: Added, Changed, Fixed, Removed
    - **Collect contributors:** For each PR referenced in the commits, get the author:
      ```bash
-     gh pr view <N> --repo manaflow-ai/cmux --json author --jq '.author.login'
+     gh pr view <N> --repo Open330/amux --json author --jq '.author.login'
      ```
    - Also check for linked issue reporters (the person who filed the bug):
      ```bash
-     gh issue view <N> --repo manaflow-ai/cmux --json author --jq '.author.login'
+     gh issue view <N> --repo Open330/amux --json author --jq '.author.login'
      ```
    - Build a deduplicated list of all contributor `@handle`s for the release
 
@@ -31,7 +31,7 @@ Prepare a new release for cmux. This command updates the changelog, bumps the ve
    - **Only include changes that affect the end-user experience** - things users will see, feel, or interact with
    - Write clear, user-facing descriptions (not raw commit messages)
    - **Credit contributors inline** (see Contributor Credits below)
-   - Also update `docs-site/content/docs/changelog.mdx` with the same content
+   - The web changelog reads `CHANGELOG.md` directly; do not maintain a second copy
    - If there are no user-facing changes, ask the user if they still want to release
 
 5. **Bump the version in Xcode project**
@@ -63,19 +63,18 @@ Prepare a new release for cmux. This command updates the changelog, bumps the ve
     - Push tag: `git push origin vX.Y.Z`
 
 11. **Monitor the release workflow**
-    - Watch: `gh run watch --repo manaflow-ai/cmux`
-    - Verify the release appears at: https://github.com/manaflow-ai/cmux/releases
+    - Watch: `gh run watch --repo Open330/amux`
+    - Verify the release appears at: https://github.com/Open330/amux/releases
     - Check that the DMG is attached to the release
 
-12. **Verify homebrew cask update**
-    - The "Update Homebrew Cask" workflow triggers automatically after the release workflow completes
-    - Watch: `gh run list --workflow=update-homebrew.yml --limit=1` and `gh run watch`
-    - Verify: `cd homebrew-cmux && git pull && grep version Casks/cmux.rb`
-    - Run `bash tests/test_homebrew_sha.sh` to confirm the SHA matches
+12. **Verify the Homebrew cask publication**
+    - The release script updates `Casks/amux.rb` in `Open330/homebrew-tap` after publishing the immutable DMG
+    - Confirm the tap cask contains the released version and printed DMG SHA256
+    - Update the checked-in template, then run `bash tests/test_homebrew_sha.sh` against the immutable release asset
 
 13. **Notify**
-    - On success: `say "cmux release complete"`
-    - On failure: `say "cmux release failed"`
+    - On success: `say "amux release complete"`
+    - On failure: `say "amux release failed"`
 
 ## Changelog Guidelines
 
@@ -129,14 +128,14 @@ Credit the people who made each release happen. This builds community and encour
 ## [0.13.0] - 2025-01-30
 
 ### Added
-- New keyboard shortcut for quick tab switching ([#42](https://github.com/manaflow-ai/cmux/pull/42)) — thanks @contributor!
+- New keyboard shortcut for quick tab switching ([#42](https://github.com/Open330/amux/pull/42)) — thanks @contributor!
 
 ### Fixed
-- Memory leak when closing split panes ([#38](https://github.com/manaflow-ai/cmux/pull/38)) — thanks @fixer!
-- Notification badges not clearing properly ([#35](https://github.com/manaflow-ai/cmux/pull/35)) — thanks @reporter for the report!
+- Memory leak when closing split panes ([#38](https://github.com/Open330/amux/pull/38)) — thanks @fixer!
+- Notification badges not clearing properly ([#35](https://github.com/Open330/amux/pull/35)) — thanks @reporter for the report!
 
 ### Changed
-- Improved terminal rendering performance ([#40](https://github.com/manaflow-ai/cmux/pull/40))
+- Improved terminal rendering performance ([#40](https://github.com/Open330/amux/pull/40))
 
 ### Thanks to 4 contributors!
 

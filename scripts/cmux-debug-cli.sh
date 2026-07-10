@@ -59,7 +59,7 @@ EOF
   exit 1
 fi
 
-app_path="${HOME}/Library/Developer/Xcode/DerivedData/cmux-${tag_slug}/Build/Products/Debug/cmux DEV ${tag_slug}.app"
+app_path="${HOME}/Library/Developer/Xcode/DerivedData/cmux-${tag_slug}/Build/Products/Debug/amux DEV ${tag_slug}.app"
 cli_path="${app_path}/Contents/Resources/bin/amux"
 if [[ ! -x "$cli_path" ]]; then
   cli_path="${app_path}/Contents/Resources/bin/cmux"
@@ -86,6 +86,6 @@ unset CMUXD_UNIX_PATH
 unset CMUX_DEBUG_LOG
 export CMUX_SOCKET_PATH="$socket_path"
 export CMUX_TAG="$tag_slug"
-export CMUX_BUNDLE_ID="com.cmuxterm.app.debug.${tag_bundle_id}"
+export CMUX_BUNDLE_ID="com.open330.amux.debug.${tag_bundle_id}"
 export CMUX_BUNDLED_CLI_PATH="$cli_path"
 exec "$cli_path" "$@"

@@ -8,7 +8,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--teammate-mode",
                     "auto",
@@ -33,7 +33,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--teammate-mode",
                 "auto",
@@ -61,7 +61,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control",
                     "--no-chrome",
@@ -73,7 +73,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control",
                 "--no-chrome",
@@ -89,7 +89,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "fix",
@@ -97,7 +97,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
@@ -108,7 +108,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "fix",
@@ -118,7 +118,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
@@ -129,7 +129,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "--dangerously-skip-permissions investigate this",
@@ -139,7 +139,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
@@ -150,7 +150,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "explain",
@@ -160,14 +160,14 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "explain",
@@ -178,7 +178,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
@@ -189,7 +189,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "fix",
@@ -200,7 +200,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
@@ -211,7 +211,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "fix",
@@ -222,7 +222,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
@@ -233,7 +233,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--dangerously-skip-permissions",
                     "--tmux",
@@ -242,7 +242,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--dangerously-skip-permissions",
             ]
@@ -250,7 +250,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--permission-mode",
                     "auto",
@@ -260,7 +260,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--permission-mode",
                 "auto",
@@ -273,7 +273,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--worktree",
                     "--tmux",
@@ -284,7 +284,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--worktree",
             ]
@@ -296,7 +296,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control",
                     "team",
@@ -304,7 +304,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control",
                 "team",
@@ -317,7 +317,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control",
                     "my-phone",
@@ -327,7 +327,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control",
                 "my-phone",
@@ -342,7 +342,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control",
                     "team",
@@ -351,7 +351,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control",
                 "team",
@@ -360,7 +360,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--prompt-suggestions",
                     "false",
@@ -369,7 +369,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--prompt-suggestions",
                 "false",
@@ -382,7 +382,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--prompt-suggestions",
                     "fix",
@@ -390,7 +390,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--prompt-suggestions",
             ]
@@ -402,7 +402,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--future-mode=enabled",
                     "--chrome",
@@ -411,7 +411,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--future-mode=enabled",
                 "--chrome",
@@ -424,7 +424,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--future-boolean",
                     "fix",
@@ -434,7 +434,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--future-boolean",
             ]
@@ -446,7 +446,7 @@ struct ClaudeTeamsRestoreFlagTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--future-boolean",
                     "initial prompt should not replay",
@@ -454,7 +454,7 @@ struct ClaudeTeamsRestoreFlagTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--future-boolean",
             ]

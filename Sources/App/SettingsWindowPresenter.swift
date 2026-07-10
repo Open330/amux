@@ -12,7 +12,7 @@ struct SettingsWindowPresenter {
     /// Release-safe diagnostics so intermittent "Settings won't open" reports
     /// (https://github.com/manaflow-ai/cmux/issues/5770) become attributable
     /// from `log show --predicate 'subsystem == "com.cmuxterm.app" && category == "Settings"'`.
-    private nonisolated static let log = Logger(subsystem: "com.cmuxterm.app", category: "Settings")
+    private nonisolated static let log = Logger(subsystem: "com.open330.amux", category: "Settings")
     /// Number of times to re-request the SwiftUI window when an open request
     /// produces no window. The single `Window` scene's `openWindow(id:)` can
     /// silently no-op mid-teardown, which is the "nothing happens" symptom.

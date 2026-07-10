@@ -416,7 +416,7 @@ final class SessionPersistenceTests: XCTestCase {
 
     func testRestorePolicySkipsWhenLaunchHasExplicitArguments() {
         let shouldRestore = SessionRestorePolicy.shouldAttemptRestore(
-            arguments: ["/Applications/cmux.app/Contents/MacOS/cmux", "--window", "window:1"],
+            arguments: ["/Applications/amux.app/Contents/MacOS/cmux", "--window", "window:1"],
             environment: [:]
         )
 
@@ -425,7 +425,7 @@ final class SessionPersistenceTests: XCTestCase {
 
     func testRestorePolicyAllowsFinderStyleLaunchArgumentsOnly() {
         let shouldRestore = SessionRestorePolicy.shouldAttemptRestore(
-            arguments: ["/Applications/cmux.app/Contents/MacOS/cmux", "-psn_0_12345"],
+            arguments: ["/Applications/amux.app/Contents/MacOS/cmux", "-psn_0_12345"],
             environment: [:]
         )
 
@@ -434,7 +434,7 @@ final class SessionPersistenceTests: XCTestCase {
 
     func testRestorePolicySkipsWhenRunningUnderXCTest() {
         let shouldRestore = SessionRestorePolicy.shouldAttemptRestore(
-            arguments: ["/Applications/cmux.app/Contents/MacOS/cmux"],
+            arguments: ["/Applications/amux.app/Contents/MacOS/cmux"],
             environment: ["XCTestConfigurationFilePath": "/tmp/xctest.xctestconfiguration"]
         )
 
@@ -3665,9 +3665,9 @@ final class SocketListenerAcceptPolicyTests: XCTestCase {
             workingDirectory: "/tmp/team repo",
             launchCommand: AgentLaunchCommandSnapshot(
                 launcher: "claudeTeams",
-                executablePath: "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                executablePath: "/Applications/amux.app/Contents/Resources/bin/cmux",
                 arguments: [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--teammate-mode",
                     "auto",
@@ -3693,7 +3693,7 @@ final class SocketListenerAcceptPolicyTests: XCTestCase {
 
         XCTAssertEqual(
             snapshot.resumeCommand,
-            "cd -- '/tmp/team repo' 2>/dev/null || [ ! -d '/tmp/team repo' ] && 'env' 'CMUX_CUSTOM_CLAUDE_PATH=/opt/Claude Code/bin/claude' '/Applications/cmux.app/Contents/Resources/bin/cmux' 'claude-teams' '--resume' 'claude-team-session' '--teammate-mode' 'auto' '--model' 'sonnet' '--remote-control-session-name-prefix' 'cmux-team' '--permission-mode' 'auto'"
+            "cd -- '/tmp/team repo' 2>/dev/null || [ ! -d '/tmp/team repo' ] && 'env' 'CMUX_CUSTOM_CLAUDE_PATH=/opt/Claude Code/bin/claude' '/Applications/amux.app/Contents/Resources/bin/cmux' 'claude-teams' '--resume' 'claude-team-session' '--teammate-mode' 'auto' '--model' 'sonnet' '--remote-control-session-name-prefix' 'cmux-team' '--permission-mode' 'auto'"
         )
     }
 

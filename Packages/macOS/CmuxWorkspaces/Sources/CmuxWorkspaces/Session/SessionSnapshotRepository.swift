@@ -63,8 +63,13 @@ public struct SessionSnapshotRepository<SnapshotValue: SessionSnapshotRepresenti
     }
 
     public func load(fileURL: URL? = nil) -> SnapshotValue? {
-        guard let fileURL = fileURL ?? defaultSnapshotFileURL() else { return nil }
-        guard case .loaded(let snapshot) = loadOutcome(fileURL: fileURL) else { return nil }
+        let outcome: SessionSnapshotLoadOutcome<SnapshotValue>
+        if let fileURL {
+            outcome = loadOutcome(fileURL: fileURL)
+        } else {
+            outcome = defaultLoadOutcome(suffix: "")
+        }
+        guard case .loaded(let snapshot) = outcome else { return nil }
         return snapshot
     }
 
@@ -92,21 +97,28 @@ public struct SessionSnapshotRepository<SnapshotValue: SessionSnapshotRepresenti
     }
 
     public func removeSnapshot(fileURL: URL? = nil) {
-        guard let fileURL = fileURL ?? defaultSnapshotFileURL() else { return }
-        try? fileManager.removeItem(at: fileURL)
+        if let fileURL {
+            try? fileManager.removeItem(at: fileURL)
+            return
+        }
+        if let canonicalURL = defaultSnapshotFileURL() {
+            try? fileManager.removeItem(at: canonicalURL)
+        }
+        if let legacyURL = legacySnapshotFileURL(suffix: "") {
+            try? fileManager.removeItem(at: legacyURL)
+        }
     }
 
     public func loadReopenSessionSnapshot(fileURL: URL? = nil) -> SnapshotValue? {
-        guard let fileURL = fileURL ?? manualRestoreSnapshotFileURL() else {
-            return nil
-        }
-        return load(fileURL: fileURL)
+        if let fileURL { return load(fileURL: fileURL) }
+        guard case .loaded(let snapshot) = defaultLoadOutcome(suffix: "-previous") else { return nil }
+        return snapshot
     }
 
     public func syncManualRestoreSnapshotCache() {
         guard let backupURL = manualRestoreSnapshotFileURL() else { return }
-        guard let primaryURL = defaultSnapshotFileURL() else { return }
-        switch loadOutcome(fileURL: primaryURL) {
+        guard defaultSnapshotFileURL() != nil else { return }
+        switch defaultLoadOutcome(suffix: "") {
         case .loaded(let snapshot):
             _ = save(snapshot, fileURL: backupURL)
         case .missing:
@@ -121,7 +133,7 @@ public struct SessionSnapshotRepository<SnapshotValue: SessionSnapshotRepresenti
 
     public func loadStartupSnapshot() -> SnapshotValue? {
         guard let primaryURL = defaultSnapshotFileURL() else { return nil }
-        switch loadOutcome(fileURL: primaryURL) {
+        switch defaultLoadOutcome(suffix: "") {
         case .loaded(let snapshot):
             return snapshot
         case .missing:
@@ -147,6 +159,43 @@ public struct SessionSnapshotRepository<SnapshotValue: SessionSnapshotRepresenti
     }
 
     private func snapshotFileURL(suffix: String) -> URL? {
+        snapshotFileURL(suffix: suffix, bundleIdentifier: resolvedBundleIdentifier)
+    }
+
+    private var resolvedBundleIdentifier: String {
+        (bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+            ? bundleIdentifier!
+            : "com.open330.amux"
+    }
+
+    private func legacySnapshotFileURL(suffix: String) -> URL? {
+        guard let legacyBundleIdentifier else { return nil }
+        return snapshotFileURL(suffix: suffix, bundleIdentifier: legacyBundleIdentifier)
+    }
+
+    private var legacyBundleIdentifier: String? {
+        let canonicalPrefix = "com.open330.amux"
+        let legacyPrefix = "com.cmuxterm.app"
+        let current = resolvedBundleIdentifier
+        guard current == canonicalPrefix || current.hasPrefix("\(canonicalPrefix).") else { return nil }
+        return legacyPrefix + current.dropFirst(canonicalPrefix.count)
+    }
+
+    private func defaultLoadOutcome(suffix: String) -> SessionSnapshotLoadOutcome<SnapshotValue> {
+        guard let canonicalURL = snapshotFileURL(suffix: suffix) else { return .missing }
+        let canonicalOutcome = loadOutcome(fileURL: canonicalURL)
+        guard case .missing = canonicalOutcome,
+              let legacyURL = legacySnapshotFileURL(suffix: suffix) else {
+            return canonicalOutcome
+        }
+        let legacyOutcome = loadOutcome(fileURL: legacyURL)
+        if case .loaded(let snapshot) = legacyOutcome {
+            _ = save(snapshot, fileURL: canonicalURL)
+        }
+        return legacyOutcome
+    }
+
+    private func snapshotFileURL(suffix: String, bundleIdentifier: String) -> URL? {
         let resolvedAppSupport: URL
         if let appSupportDirectory {
             resolvedAppSupport = appSupportDirectory
@@ -155,10 +204,7 @@ public struct SessionSnapshotRepository<SnapshotValue: SessionSnapshotRepresenti
         } else {
             return nil
         }
-        let bundleId = (bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
-            ? bundleIdentifier!
-            : "com.cmuxterm.app"
-        let safeBundleId = bundleId.replacingOccurrences(
+        let safeBundleId = bundleIdentifier.replacingOccurrences(
             of: "[^A-Za-z0-9._-]",
             with: "_",
             options: .regularExpression

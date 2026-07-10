@@ -1,17 +1,10 @@
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { HeroScreenshot } from "@/app/[locale]/components/hero-screenshot";
 import { TypingTagline } from "@/app/[locale]/typing";
 import { DownloadButton } from "@/app/[locale]/components/download-button";
 import { GitHubButton } from "@/app/[locale]/components/github-button";
-import { WaitlistCallout } from "@/app/[locale]/components/waitlist-callout";
-import { FaqPlatformAnswer } from "@/app/[locale]/components/faq-platform-answer";
 import { SiteHeader } from "@/app/[locale]/components/site-header";
 import { BrandLogoLink } from "@/app/[locale]/components/brand-logo-link";
-import {
-  testimonials,
-  getTestimonialSubtitle,
-  getTestimonialTranslation,
-} from "@/app/[locale]/testimonials";
 import { Link } from "@/i18n/navigation";
 
 export default function Home() {
@@ -21,9 +14,6 @@ export default function Home() {
 function HomeContent() {
   const t = useTranslations("home");
   const tc = useTranslations("common");
-  const tt = useTranslations("testimonials");
-  const tst = useTranslations("testimonialSubtitles");
-  const locale = useLocale();
 
   const linkClass =
     "underline underline-offset-2 decoration-link-underline hover:decoration-foreground transition-colors";
@@ -31,9 +21,9 @@ function HomeContent() {
   // FAQPage structured data, built from the same FAQ copy rendered below so the
   // Q&As are eligible for Google rich results and AI answer engines.
   const faqKeys = [
-    "Ghostty", "Platform", "Ios", "Agents", "Orchestration", "Remote",
+    "Ghostty", "Platform", "Agents", "Orchestration", "Remote",
     "Notifications", "Scriptable", "Browser", "Skills", "Shortcuts",
-    "Customize", "Sessions", "Tmux", "Free", "Support", "Feature",
+    "Customize", "Sessions", "Tmux", "Free",
   ];
   const stripTags = (s: string) => s.replace(/<\/?[a-zA-Z]+>/g, "");
   const faqJsonLd = {
@@ -64,13 +54,13 @@ function HomeContent() {
           <BrandLogoLink className="shrink-0">
             <img
               src="/logo.png"
-              alt="cmux icon"
+              alt="amux icon"
               width={48}
               height={48}
               className="rounded-xl"
             />
           </BrandLogoLink>
-          <h1 className="text-2xl font-semibold tracking-tight">cmux</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">amux</h1>
         </div>
 
         {/* Tagline */}
@@ -160,20 +150,6 @@ function HomeContent() {
                 </span>
               </span>
             </li>
-            <li className="flex gap-3">
-              <span className="text-muted shrink-0">-</span>
-              <span>
-                <strong className="font-medium">
-                  <a
-                    href="https://github.com/manaflow-ai/cmux#founders-edition"
-                    className={linkClass}
-                  >
-                    {t("feature.ios")}
-                  </a>
-                </strong>
-                <span className="text-muted">{t("feature.iosDesc")}</span>
-              </span>
-            </li>
           </ul>
         </section>
 
@@ -216,22 +192,7 @@ function HomeContent() {
             </div>
             <div>
               <p className="font-medium mb-1">{t("faqPlatformQ")}</p>
-              <FaqPlatformAnswer linkClass={linkClass} />
-            </div>
-            <div>
-              <p className="font-medium mb-1">{t("faqIosQ")}</p>
-              <p className="text-muted">
-                {t.rich("faqIosA", {
-                  foundersLink: (chunks) => (
-                    <a
-                      href="https://github.com/manaflow-ai/cmux#founders-edition"
-                      className={linkClass}
-                    >
-                      {chunks}
-                    </a>
-                  ),
-                })}
-              </p>
+              <p className="text-muted">{t("faqPlatformA")}</p>
             </div>
             <div>
               <p className="font-medium mb-1">{t("faqAgentsQ")}</p>
@@ -324,7 +285,7 @@ function HomeContent() {
                 {t.rich("faqSkillsA", {
                   skillsLink: (chunks) => (
                     <a
-                      href="https://github.com/manaflow-ai/cmux-skills"
+                      href="https://github.com/Open330/amux/tree/main/skills"
                       className={linkClass}
                     >
                       {chunks}
@@ -407,53 +368,7 @@ function HomeContent() {
                 {t.rich("faqFreeA", {
                   link: (chunks) => (
                     <a
-                      href="https://github.com/manaflow-ai/cmux"
-                      className={linkClass}
-                    >
-                      {chunks}
-                    </a>
-                  ),
-                })}
-              </p>
-            </div>
-            <div>
-              <p className="font-medium mb-1">{t("faqSupportQ")}</p>
-              <p className="text-muted">
-                {t.rich("faqSupportA", {
-                  foundersLink: (chunks) => (
-                    <a
-                      href="https://github.com/manaflow-ai/cmux#founders-edition"
-                      className={linkClass}
-                    >
-                      {chunks}
-                    </a>
-                  ),
-                })}
-              </p>
-            </div>
-            <div>
-              <p className="font-medium mb-1">{t("faqFeatureQ")}</p>
-              <p className="text-muted">
-                {t.rich("faqFeatureA", {
-                  issuesLink: (chunks) => (
-                    <a
-                      href="https://github.com/manaflow-ai/cmux/issues"
-                      className={linkClass}
-                    >
-                      {chunks}
-                    </a>
-                  ),
-                  prLink: (chunks) => (
-                    <a
-                      href="https://github.com/manaflow-ai/cmux/pulls"
-                      className={linkClass}
-                    >
-                      {chunks}
-                    </a>
-                  ),
-                  mailLink: (chunks) => (
-                    <a
-                      href="mailto:founders@manaflow.com?subject=%5Bcmux%20feature%20request%20landing%5D&body=Hi%20cmux%20team%2C%20"
+                      href="https://github.com/Open330/amux"
                       className={linkClass}
                     >
                       {chunks}
@@ -465,78 +380,10 @@ function HomeContent() {
           </div>
         </section>
 
-        {/* Community */}
-        <section data-dev="community" className="mb-10">
-          <h2 className="text-xs font-medium text-muted tracking-tight mb-3">
-            {t("communitySection")}
-          </h2>
-          <ul
-            data-dev="community-ul"
-            className="text-[15px]"
-            style={{
-              lineHeight: 1.5,
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            {testimonials.map((item) => {
-              const translation = getTestimonialTranslation(item, locale, tt);
-              const subtitle = getTestimonialSubtitle(item, tst);
-              return (
-              <li key={item.url}>
-                <span>
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group"
-                  >
-                    <span className="text-muted group-hover:text-foreground transition-colors">
-                      &quot;{item.text}&quot;
-                    </span>
-                    {translation && (
-                      <span className="text-muted/60 text-xs italic">
-                        {" "}
-                        — {translation}
-                      </span>
-                    )}
-                  </a>{" "}
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-muted hover:text-foreground transition-colors"
-                  >
-                    —
-                    {item.avatar && (
-                      <img
-                        src={item.avatar}
-                        alt={item.name}
-                        width={16}
-                        height={16}
-                        loading="lazy"
-                        decoding="async"
-                        className="rounded-full inline-block object-cover"
-                      />
-                    )}
-                    {item.name}
-                    {subtitle ? `, ${subtitle}` : ""}
-                  </a>
-                </span>
-              </li>
-              );
-            })}
-          </ul>
-        </section>
-
         {/* Bottom CTA */}
         <div className="flex flex-wrap items-center justify-center gap-3 mt-12">
           <DownloadButton location="bottom" />
           <GitHubButton />
-        </div>
-        <div className="mt-3 flex justify-center">
-          <WaitlistCallout location="bottom" />
         </div>
         <div className="flex justify-center gap-4 mt-6">
           <Link

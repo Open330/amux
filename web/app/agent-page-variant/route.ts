@@ -15,6 +15,10 @@ import {
   markdownFromHtml,
   plainTextFromMarkdown,
 } from "../lib/agent-page-markdown";
+import {
+  HAS_CONFIGURED_PUBLIC_SITE,
+  PUBLIC_SITE_URL,
+} from "../lib/product";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +34,11 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Not found\n", { status: 404 });
   }
 
-  const origin = request.nextUrl.origin;
+  if (!HAS_CONFIGURED_PUBLIC_SITE) {
+    return new NextResponse("Not found\n", { status: 404 });
+  }
+
+  const origin = new URL(PUBLIC_SITE_URL).origin;
 
   if (variant.kind === "llms") {
     return new NextResponse(buildLlmsText(origin), {
@@ -38,9 +46,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const htmlUrl = new URL(request.url);
-  htmlUrl.pathname = variant.canonicalPath;
-  htmlUrl.search = "";
+  const htmlUrl = new URL(variant.canonicalPath, origin);
 
   const canonicalFetchHeaders = headersForCanonicalFetch({
     requestHeaders: request.headers,

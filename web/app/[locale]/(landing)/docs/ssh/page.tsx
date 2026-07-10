@@ -31,16 +31,16 @@ export default async function SshPage({
       <iframe
         className="my-6 rounded-lg w-full aspect-video"
         src="https://www.youtube.com/embed/RoR9pMOZWkk"
-        title="cmux SSH demo"
+        title="amux SSH demo"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
 
       <DocsHeading level={2} id="usage">{t("usage")}</DocsHeading>
-      <CodeBlock lang="bash">{`cmux ssh user@remote
-cmux ssh user@remote --name "dev server"
-cmux ssh user@remote -p 2222
-cmux ssh user@remote -i ~/.ssh/id_ed25519`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux ssh user@remote
+amux ssh user@remote --name "dev server"
+amux ssh user@remote -p 2222
+amux ssh user@remote -i ~/.ssh/id_ed25519`}</CodeBlock>
       <p>{t("usageDesc")}</p>
 
       <DocsHeading level={2} id="flags-title">{t("flagsTitle")}</DocsHeading>
@@ -62,25 +62,10 @@ cmux ssh user@remote -i ~/.ssh/id_ed25519`}</CodeBlock>
 
       <DocsHeading level={2} id="ssh-deep-links">{t("deepLinksTitle")}</DocsHeading>
       <p>{t("deepLinksDesc")}</p>
-      <CodeBlock lang="text">{`cmux://ssh?host=dev.example.com
-cmux://ssh?host=dev.example.com&user=alice&port=2222&title=GPU%20box
-cmux://ssh?host=workspace123.vm-ssh.freestyle.sh&user=workspace123%2Csession-token
-cmux://ssh?host=dev.example.com&host-key-policy=accept-new&no-focus=true`}</CodeBlock>
-      <p>{t("deepLinksWebFallbackDesc")}</p>
-      <CodeBlock lang="text">{`https://cmux.com/deeplink/ssh?host=workspace123.vm-ssh.freestyle.sh&user=workspace123%2Csession-token&title=Freestyle`}</CodeBlock>
-      <p>{t("deepLinksPromptRulesDesc")}</p>
-      <CodeBlock lang="text">{`https://cmux.com/deeplink/prompt?text=Review%20this%20branch
-https://cmux.com/deeplink/rules?name=freestyle&text=Prefer%20commas,%20colons:%20and%20small%20PRs`}</CodeBlock>
-      <p>{t("deepLinksIconDesc")}</p>
-      <CodeBlock lang="text">{`https://cmux.com/logo.png`}</CodeBlock>
-      <p>{t("deepLinksButtonDesc")}</p>
-      <CodeBlock lang="tsx">{`const params = new URLSearchParams({
-  host: "workspace123.vm-ssh.freestyle.sh",
-  user: "workspace123,session-token",
-  title: "Freestyle",
-});
-
-const href = "https://cmux.com/deeplink/ssh?" + params.toString();`}</CodeBlock>
+      <CodeBlock lang="text">{`amux://ssh?host=dev.example.com
+amux://ssh?host=dev.example.com&user=alice&port=2222&title=GPU%20box
+amux://ssh?host=workspace123.vm-ssh.freestyle.sh&user=workspace123%2Csession-token
+amux://ssh?host=dev.example.com&host-key-policy=accept-new&no-focus=true`}</CodeBlock>
       <table>
         <thead>
           <tr>
@@ -115,8 +100,8 @@ const href = "https://cmux.com/deeplink/ssh?" + params.toString();`}</CodeBlock>
       <DocsHeading level={2} id="agents-title">{t("agentsTitle")}</DocsHeading>
       <p>{t("agentsDesc")}</p>
       <CodeBlock lang="bash">{`# Inside an SSH session:
-cmux claude-teams
-cmux omo`}</CodeBlock>
+amux claude-teams
+amux omo`}</CodeBlock>
 
       <DocsHeading level={2} id="reconnect-title">{t("reconnectTitle")}</DocsHeading>
       <p>{t("reconnectDesc")}</p>

@@ -72,6 +72,7 @@
 		A9F200000000000000000014 /* AgentSessionWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F100000000000000000014 /* AgentSessionWebView.swift */; };
 		REE0CA0000000000000000F2 /* AIAccountCredentialSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = REE0CA0000000000000000F1 /* AIAccountCredentialSources.swift */; };
 		REE0CA0000000000000000E2 /* AIAccountsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = REE0CA0000000000000000E1 /* AIAccountsClient.swift */; };
+		A5001623 /* amux.sdef in Resources */ = {isa = PBXBuildFile; fileRef = A5001622 /* amux.sdef */; };
 		7117F37027C225DF26F04C57 /* AmuxAgentAlarmGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85FF5B60B86FE20F1D5D0ED2 /* AmuxAgentAlarmGate.swift */; };
 		962E5E3EC3D456BBCD419DFF /* AmuxAgentAlarmGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */; };
 		52AD40A1F31F245A72A92F9E /* AmuxAgentAlarmPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */; };
@@ -89,7 +90,6 @@
 		A6C100000000000000000004 /* AmuxOrchestrationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C100000000000000000003 /* AmuxOrchestrationStore.swift */; };
 		A6C100000000000000000008 /* AmuxOrchestrationStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C100000000000000000007 /* AmuxOrchestrationStoreTests.swift */; };
 		A4C244A005CF60AD6CAA4467 /* AmuxRemoteHostSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F57627EDD1E39B2DC5EDE8B /* AmuxRemoteHostSetup.swift */; };
-		A6A006000000000000000001 /* AmuxRemoteHostSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A006000000000000000002 /* AmuxRemoteHostSetup.swift */; };
 		86EFA0BB2F4304C83FE7D15C /* AmuxRemoteHostSetupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335C057FA5EAEDE543124249 /* AmuxRemoteHostSetupTests.swift */; };
 		6698709B89C493E14DE21A25 /* AmuxRemoteMuxaForwarder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */; };
 		A0C500000000000000000001 /* AmuxSessionSwitcherCommandCandidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0C500000000000000000011 /* AmuxSessionSwitcherCommandCandidate.swift */; };
@@ -326,7 +326,6 @@
 		B900000BA1B2C3D4E5F60719 /* cmux in Copy CLI */ = {isa = PBXBuildFile; fileRef = B9000004A1B2C3D4E5F60719 /* cmux */; };
 		C1ADE20002A1B2C3D4E5F719 /* cmux-claude-wrapper in Copy CLI */ = {isa = PBXBuildFile; fileRef = C1ADE20001A1B2C3D4E5F719 /* cmux-claude-wrapper */; };
 		C1ADE30002A1B2C3D4E5F719 /* cmux-codex-wrapper in Copy CLI */ = {isa = PBXBuildFile; fileRef = C1ADE30001A1B2C3D4E5F719 /* cmux-codex-wrapper */; };
-		A5001623 /* cmux.sdef in Resources */ = {isa = PBXBuildFile; fileRef = A5001622 /* cmux.sdef */; };
 		B9000002A1B2C3D4E5F60719 /* cmux.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000001A1B2C3D4E5F60719 /* cmux.swift */; };
 		C0DE1A060000000000000001 /* cmux_layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE1A060000000000000002 /* cmux_layout.swift */; };
 		B9000034A1B2C3D4E5F60719 /* cmux_open.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000030A1B2C3D4E5F60719 /* cmux_open.swift */; };
@@ -1600,6 +1599,8 @@
 		A9F100000000000000000014 /* AgentSessionWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Panels/AgentSessionWebView.swift; sourceTree = "<group>"; };
 		REE0CA0000000000000000F1 /* AIAccountCredentialSources.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIAccountCredentialSources.swift; sourceTree = "<group>"; };
 		REE0CA0000000000000000E1 /* AIAccountsClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AIAccountsClient.swift; sourceTree = "<group>"; };
+		A5001000 /* amux.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = amux.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5001622 /* amux.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.sdef; path = amux.sdef; sourceTree = "<group>"; };
 		85FF5B60B86FE20F1D5D0ED2 /* AmuxAgentAlarmGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmGate.swift"; sourceTree = "<group>"; };
 		D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmGateTests.swift"; sourceTree = "<group>"; };
 		B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmPolicy.swift"; sourceTree = "<group>"; };
@@ -1617,7 +1618,6 @@
 		A6C100000000000000000003 /* AmuxOrchestrationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmuxOrchestrationStore.swift; sourceTree = "<group>"; };
 		A6C100000000000000000007 /* AmuxOrchestrationStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmuxOrchestrationStoreTests.swift; sourceTree = "<group>"; };
 		1F57627EDD1E39B2DC5EDE8B /* AmuxRemoteHostSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteHostSetup.swift"; sourceTree = "<group>"; };
-		A6A006000000000000000002 /* AmuxRemoteHostSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteHostSetup.swift"; sourceTree = "<group>"; };
 		335C057FA5EAEDE543124249 /* AmuxRemoteHostSetupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteHostSetupTests.swift"; sourceTree = "<group>"; };
 		65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxRemoteMuxaForwarder.swift"; sourceTree = "<group>"; };
 		A0C500000000000000000011 /* AmuxSessionSwitcherCommandCandidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmuxSessionSwitcherCommandCandidate.swift; sourceTree = "<group>"; };
@@ -1854,8 +1854,6 @@
 		A5001018 /* cmux-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "cmux-Bridging-Header.h"; sourceTree = "<group>"; };
 		C1ADE20001A1B2C3D4E5F719 /* cmux-claude-wrapper */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "Resources/bin/cmux-claude-wrapper"; sourceTree = SOURCE_ROOT; };
 		C1ADE30001A1B2C3D4E5F719 /* cmux-codex-wrapper */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "Resources/bin/cmux-codex-wrapper"; sourceTree = SOURCE_ROOT; };
-		A5001000 /* cmux.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cmux.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A5001622 /* cmux.sdef */ = {isa = PBXFileReference; lastKnownFileType = text.sdef; path = cmux.sdef; sourceTree = "<group>"; };
 		B9000001A1B2C3D4E5F60719 /* cmux.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cmux.swift; sourceTree = "<group>"; };
 		C0DE1A060000000000000002 /* cmux_layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cmux_layout.swift; sourceTree = "<group>"; };
 		B9000030A1B2C3D4E5F60719 /* cmux_open.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cmux_open.swift; sourceTree = "<group>"; };
@@ -3042,7 +3040,7 @@
 				A9E010000000000000000006 /* agent-session-react */,
 				A9E010000000000000000007 /* agent-session-solid */,
 
-				A5001622 /* cmux.sdef */,
+				A5001622 /* amux.sdef */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -3901,7 +3899,6 @@
 						12505CF574482E459415080C /* TerminalController+AmuxObservation.swift */,
 						A6C100000000000000000005 /* TerminalController+AmuxOrchestration.swift */,
 						6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */,
-						A6A006000000000000000002 /* AmuxRemoteHostSetup.swift */,
 						65A547D2196B0A5ED47E1592 /* AmuxRemoteMuxaForwarder.swift */,
 					3364ABCFB2FA3644ADF93AB7 /* RemoteTmuxHost+MuxaForward.swift */,
 					E1C0FE8EE0A38F9F2FE7FF17 /* RemoteTmuxLocalTransport.swift */,
@@ -4044,7 +4041,7 @@
 		A5001042 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A5001000 /* cmux.app */,
+				A5001000 /* amux.app */,
 				B9000004A1B2C3D4E5F60719 /* cmux */,
 				D1320AA0D1320AA0D1320AA5 /* CmuxDockTilePlugin.plugin */,
 				7E7E6EF344A568AC7FEE3715 /* cmuxUITests.xctest */,
@@ -4585,7 +4582,7 @@
 				EFB18E3B3099DFE2ECA3C263 /* CMUXMobileCore */,
 			);
 			productName = cmux;
-			productReference = A5001000 /* cmux.app */;
+			productReference = A5001000 /* amux.app */;
 			productType = "com.apple.product-type.application";
 		};
 		B9000005A1B2C3D4E5F60719 /* cmux-cli */ = {
@@ -4786,8 +4783,8 @@
 
 				A9E020000000000000000006 /* agent-session-react in Resources */,
 				A9E020000000000000000007 /* agent-session-solid in Resources */,
+				A5001623 /* amux.sdef in Resources */,
 				A5001100 /* Assets.xcassets in Resources */,
-				A5001623 /* cmux.sdef in Resources */,
 				FEED0A00000000000000F007 /* feed-tui in Resources */,
 				DA7A10CA710E000000000004 /* InfoPlist.xcstrings in Resources */,
 				DA7A10CA710E000000000003 /* Localizable.xcstrings in Resources */,
@@ -4989,7 +4986,6 @@
 				A6C100000000000000000002 /* AmuxOrchestrationModels.swift in Sources */,
 				A6C100000000000000000004 /* AmuxOrchestrationStore.swift in Sources */,
 				A4C244A005CF60AD6CAA4467 /* AmuxRemoteHostSetup.swift in Sources */,
-					A6A006000000000000000001 /* AmuxRemoteHostSetup.swift in Sources */,
 				6698709B89C493E14DE21A25 /* AmuxRemoteMuxaForwarder.swift in Sources */,
 				A0C500000000000000000001 /* AmuxSessionSwitcherCommandCandidate.swift in Sources */,
 				A0C500000000000000000002 /* AmuxSessionSwitcherCoordinator.swift in Sources */,
@@ -6362,12 +6358,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cmuxterm.appuitests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = cmux;
@@ -6440,12 +6436,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Debug";
-				CMUX_AUTH_CALLBACK_SCHEME = "cmux-dev";
-				CMUX_SIDEBAR_EXTENSION_POINT_ID = com.cmuxterm.app.cmux.sidebar;
+				CMUX_AUTH_CALLBACK_SCHEME = "amux-dev";
+				CMUX_SIDEBAR_EXTENSION_POINT_ID = com.open330.amux.debug.cmux.sidebar;
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -6454,7 +6450,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				OTHER_LDFLAGS = (
 					"-lc++",
 					"-framework",
@@ -6468,13 +6464,14 @@
 					"-framework",
 					Carbon,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cmuxterm.app.debug;
-				PRODUCT_NAME = "cmux DEV";
+				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.debug;
+				PRODUCT_MODULE_NAME = cmux_DEV;
+				PRODUCT_NAME = "amux DEV";
 				OTHER_SWIFT_FLAGS = (
 					"-Xllvm",
 					"-global-isel=0",
 				);
-				SPARKLE_PUBLIC_KEY = "avjcgKibf1FTvhIjLBxhd+0HSpsXU4D0IGlVk8cgqRc=";
+				SPARKLE_PUBLIC_KEY = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_ENABLE_BATCH_MODE = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "cmux-Bridging-Header.h";
@@ -6486,12 +6483,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CMUX_AUTH_CALLBACK_SCHEME = cmux;
-				CMUX_SIDEBAR_EXTENSION_POINT_ID = com.cmuxterm.app.cmux.sidebar;
+				CMUX_AUTH_CALLBACK_SCHEME = amux;
+				CMUX_SIDEBAR_EXTENSION_POINT_ID = com.open330.amux.cmux.sidebar;
 				CODE_SIGN_ENTITLEMENTS = Resources/cmux.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -6500,7 +6497,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"-lc++",
@@ -6516,8 +6513,9 @@
 					Carbon,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux;
+				PRODUCT_MODULE_NAME = cmux;
 				PRODUCT_NAME = amux;
-				SPARKLE_PUBLIC_KEY = "avjcgKibf1FTvhIjLBxhd+0HSpsXU4D0IGlVk8cgqRc=";
+				SPARKLE_PUBLIC_KEY = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "cmux-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -6567,12 +6565,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cmuxterm.appuitests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_VERSION = 5.0;
@@ -6585,17 +6583,17 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "cmux Dock Tile Plugin";
+				INFOPLIST_KEY_CFBundleDisplayName = "amux Dock Tile Plugin";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.64.17;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cmuxterm.app.docktileplugin.debug;
+				MARKETING_VERSION = 0.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.docktileplugin.debug;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -6610,16 +6608,16 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "cmux Dock Tile Plugin";
+				INFOPLIST_KEY_CFBundleDisplayName = "amux Dock Tile Plugin";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.docktileplugin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -6634,16 +6632,16 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cmuxterm.apptests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/cmux DEV.app/Contents/MacOS/cmux DEV";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/amux DEV.app/Contents/MacOS/amux DEV";
 				TEST_TARGET_NAME = cmux;
 			};
 			name = Debug;
@@ -6653,15 +6651,15 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 97;
+				CURRENT_PROJECT_VERSION = 98;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.64.17;
+				MARKETING_VERSION = 0.2.0;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cmuxterm.apptests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/cmux.app/Contents/MacOS/cmux";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/amux.app/Contents/MacOS/amux";
 				TEST_TARGET_NAME = cmux;
 			};
 			name = Release;

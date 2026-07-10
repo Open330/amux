@@ -2,7 +2,7 @@ internal import CMUXAuthCore
 import Foundation
 import OSLog
 
-private let authLog = Logger(subsystem: "ai.manaflow.cmux", category: "auth")
+private let authLog = Logger(subsystem: "com.open330.amux", category: "auth")
 
 extension AuthCoordinator {
     // MARK: - Tokens

@@ -26,9 +26,9 @@ export default function OhMyClaudeCodePage() {
       <p>{t("intro")}</p>
 
       <DocsHeading level={2} id="usage">{t("usage")}</DocsHeading>
-      <CodeBlock lang="bash">{`cmux omc
-cmux omc team 3:claude "implement feature"
-cmux omc --watch`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux omc
+amux omc team 3:claude "implement feature"
+amux omc --watch`}</CodeBlock>
       <p>{t("usageDesc")}</p>
 
       <DocsHeading level={2} id="what-you-get">{t("whatYouGet")}</DocsHeading>

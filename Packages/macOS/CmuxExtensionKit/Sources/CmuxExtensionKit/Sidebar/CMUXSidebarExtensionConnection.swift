@@ -85,7 +85,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
                 return
             }
             guard let payload else {
-                self?.report(.error("cmux did not send a workspace snapshot"), ifCurrentGeneration: generation)
+                self?.report(.error(CmuxSidebarConnectionStrings.missingSnapshot), ifCurrentGeneration: generation)
                 return
             }
             self?.receive(snapshot: Data(referencing: payload), ifCurrentGeneration: generation)
@@ -98,7 +98,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
         reply: @escaping ActionReplyHandler = { _ in }
     ) -> CmuxSidebarActionCancellation? {
         guard let target = currentHost() else {
-            let message = "Waiting for cmux"
+            let message = CmuxSidebarConnectionStrings.waitingForHost
             report(.waitingForHost, ifCurrentGeneration: currentGeneration())
             deliver(.rejected(message), to: reply)
             return nil
@@ -109,12 +109,12 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
             let payload = try CmuxSidebarXPCCodec.encodeAction(action)
             let actionID = UUID()
             guard storePendingAction(id: actionID, generation: generation, reply: reply) else {
-                deliver(.rejected("cmux connection changed"), to: reply)
+                deliver(.rejected(CmuxSidebarConnectionStrings.connectionChanged), to: reply)
                 return nil
             }
             target.host.performSidebarAction(payload) { [weak self] resultPayload, error in
                 guard let self else {
-                    Self.deliver(.rejected("cmux connection was lost"), to: reply)
+                    Self.deliver(.rejected(CmuxSidebarConnectionStrings.connectionLost), to: reply)
                     return
                 }
                 if let error {
@@ -124,7 +124,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
                     return
                 }
                 guard let resultPayload else {
-                    let message = "cmux did not send an action result"
+                    let message = CmuxSidebarConnectionStrings.missingActionResult
                     guard self.completePendingAction(id: actionID, result: .rejected(message)) else { return }
                     self.report(.error(message), ifCurrentGeneration: generation)
                     return
@@ -164,7 +164,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
             return (connection, pendingReplies, state.generation)
         }
         connection?.invalidate()
-        deliver(.rejected("cmux connection was closed"), to: pendingReplies)
+        deliver(.rejected(CmuxSidebarConnectionStrings.connectionClosed), to: pendingReplies)
         report(.waitingForHost, ifCurrentGeneration: generation)
     }
 
@@ -208,7 +208,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
             return replies
         }
         if let repliesToDrain {
-            deliver(.rejected("cmux connection was interrupted"), to: repliesToDrain)
+            deliver(.rejected(CmuxSidebarConnectionStrings.connectionInterrupted), to: repliesToDrain)
             report(.waitingForHost, ifCurrentGeneration: generation)
         }
     }
@@ -222,7 +222,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
             return replies
         }
         if let repliesToDrain {
-            deliver(.rejected("cmux connection was closed"), to: repliesToDrain)
+            deliver(.rejected(CmuxSidebarConnectionStrings.connectionClosed), to: repliesToDrain)
             report(.waitingForHost, ifCurrentGeneration: generation)
         }
     }
@@ -238,7 +238,7 @@ final class CMUXSidebarExtensionConnection: @unchecked Sendable {
             return (state.generation, oldConnection, pendingReplies)
         }
         oldConnection?.invalidate()
-        deliver(.rejected("cmux connection changed"), to: pendingReplies)
+        deliver(.rejected(CmuxSidebarConnectionStrings.connectionChanged), to: pendingReplies)
         return generation
     }
 

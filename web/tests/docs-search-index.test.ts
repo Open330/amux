@@ -50,7 +50,7 @@ describe("docs search index", () => {
     ).toBe(false);
     expect(
       pages.some((page) => page.locale === "ja" && page.href === "/docs/vault"),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       pages.some((page) => page.locale === "ja" && page.href === "/docs/task-manager"),
     ).toBe(true);

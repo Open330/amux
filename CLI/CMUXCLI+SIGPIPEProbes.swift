@@ -82,7 +82,7 @@ extension CMUXCLI {
               FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory),
               !isDirectory.boolValue,
               FileManager.default.isExecutableFile(atPath: path) else {
-            throw CLIError(message: "SIGPIPE probe could not resolve cmux executable path")
+            throw CLIError(message: "SIGPIPE probe could not resolve amux executable path")
         }
         return path
     }

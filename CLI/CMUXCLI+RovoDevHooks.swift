@@ -51,11 +51,11 @@ extension CMUXCLI {
         let oldString = try readAgentHookConfig(filePath: filePath, displayName: def.displayName)
         let newString = try rovoDevHooksContent(existing: oldString, def: def, shouldInstall: false)
         guard oldString != newString else {
-            print("Removed 0 cmux hook(s) from \(filePath)")
+            print("Removed 0 amux hook(s) from \(filePath)")
             return
         }
         try newString.write(toFile: filePath, atomically: true, encoding: .utf8)
-        print("Removed Rovo Dev cmux hooks from \(filePath)")
+        print("Removed Rovo Dev amux hooks from \(filePath)")
     }
 
     private func rovoDevHooksContent(

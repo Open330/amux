@@ -5,7 +5,7 @@ import { join } from "path";
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "cmux — The terminal built for multitasking";
+export const alt = "amux - The terminal built for agent multitasking";
 
 const S = 2; // render at 2x for sharper images on social platforms
 
@@ -110,7 +110,7 @@ export default async function Image() {
                     marginTop: -8 * S,
                   }}
                 >
-                  cmux
+                  amux
                 </div>
                 <div
                   style={{
@@ -121,7 +121,7 @@ export default async function Image() {
                     lineHeight: 1,
                   }}
                 >
-                  The terminal built for multitasking
+                  The terminal built for agent multitasking
                 </div>
               </div>
             </div>

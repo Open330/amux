@@ -77,11 +77,11 @@ struct MacAuthComposition {
                 .absoluteString,
             apiBaseURL: AuthEnvironment.apiBaseURL.absoluteString
         )
-        // DEBUG-only: make a tagged `cmux DEV` build come up already signed in
+        // DEBUG-only: make a tagged `amux DEV` build come up already signed in
         // as the dogfood account, mirroring iOS. A tagged build is a separate
         // bundle (separate keychain), so it starts signed out. iOS injects
         // `CMUX_UITEST_STACK_*` into the launch environment; the Mac app needs
-        // the same, but a `cmux DEV` opened from Finder / the CMUX Tag Opener
+        // the same, but a `amux DEV` opened from Finder / the CMUX Tag Opener
         // does not inherit a shell's environment, so the resolver also reads
         // `~/.secrets/cmuxterm-dev.env` / `~/.secrets/cmux.env` directly. The
         // resolver runs unconditionally and applies dogfood-account-first

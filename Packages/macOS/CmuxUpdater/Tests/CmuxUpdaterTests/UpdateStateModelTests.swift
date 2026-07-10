@@ -132,7 +132,7 @@ import Testing
             userInfo: [NSUnderlyingErrorKey: underlying]
         )
         #expect(UpdateStateModel.userFacingErrorTitle(for: err).contains("Start Updater"))
-        #expect(UpdateManualDownloadRecovery().url(for: err)?.absoluteString.hasSuffix("cmux-macos.dmg") == true)
+        #expect(UpdateManualDownloadRecovery().url(for: err)?.absoluteString.hasSuffix("amux-macos.dmg") == true)
     }
 
     @Test func agentInvalidationErrorIsTreatedAsAgentFailure() {

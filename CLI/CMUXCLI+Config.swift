@@ -23,12 +23,12 @@ extension CMUXCLI {
             print(configUsage())
         case "get":
             guard args.count == 2, let key = canonicalFontSizeKey(args[1]) else {
-                throw CLIError(message: "Usage: cmux config get <sidebar-font-size|surface-tab-bar-font-size>")
+                throw CLIError(message: "Usage: amux config get <sidebar-font-size|surface-tab-bar-font-size>")
             }
             try runConfigGetFontSize(forKey: key, jsonOutput: wantsJSON)
         case "set":
             guard args.count == 3, let key = canonicalFontSizeKey(args[1]) else {
-                throw CLIError(message: "Usage: cmux config set <sidebar-font-size|surface-tab-bar-font-size> <points>")
+                throw CLIError(message: "Usage: amux config set <sidebar-font-size|surface-tab-bar-font-size> <points>")
             }
             try runConfigSetFontSize(
                 forKey: key,
@@ -49,30 +49,30 @@ extension CMUXCLI {
                     jsonOutput: wantsJSON
                 )
             } else {
-                throw CLIError(message: "Usage: cmux config \(subcommand) [points]")
+                throw CLIError(message: "Usage: amux config \(subcommand) [points]")
             }
         case "path", "paths":
             guard args.count == 1 else {
-                throw CLIError(message: "Usage: cmux config path")
+                throw CLIError(message: "Usage: amux config path")
             }
             printSettingsPaths(jsonOutput: wantsJSON)
         case "docs", "documentation":
             guard args.count == 1 else {
-                throw CLIError(message: "Usage: cmux config docs")
+                throw CLIError(message: "Usage: amux config docs")
             }
             try runDocsCommand(commandArgs: ["settings"], jsonOutput: wantsJSON)
         case "doctor", "check", "validate":
             let doctorArgs = Array(args.dropFirst())
             let report = try runConfigDoctor(arguments: doctorArgs, jsonOutput: wantsJSON)
             if report.errorCount > 0 {
-                throw CLIError(message: "cmux config doctor found \(report.errorCount) error(s)")
+                throw CLIError(message: "amux config doctor found \(report.errorCount) error(s)")
             }
         case "reload":
             guard args.count == 1 else {
-                throw CLIError(message: "Usage: cmux config reload")
+                throw CLIError(message: "Usage: amux config reload")
             }
             guard let socketPath else {
-                throw CLIError(message: "cmux config reload requires a socket-backed cmux command path")
+                throw CLIError(message: "amux config reload requires a socket-backed amux command path")
             }
             let client = try connectClient(
                 socketPath: socketPath,
@@ -86,7 +86,7 @@ extension CMUXCLI {
             }
             print(response)
         default:
-            throw CLIError(message: "Unknown config subcommand '\(subcommand)'. Run 'cmux config --help'.")
+            throw CLIError(message: "Unknown config subcommand '\(subcommand)'. Run 'amux config --help'.")
         }
     }
 
@@ -106,17 +106,17 @@ extension CMUXCLI {
 
     func configUsage() -> String {
         return """
-        Usage: cmux config <doctor|check|validate|path|paths|docs|documentation|reload|get|set|sidebar-font-size|surface-tab-bar-font-size>
+        Usage: amux config <doctor|check|validate|path|paths|docs|documentation|reload|get|set|sidebar-font-size|surface-tab-bar-font-size>
 
         Inspect cmux.json, print configuration references, update selected Ghostty config keys, or reload the running app.
 
         Subcommands:
-          doctor|check|validate [--path <path>]   Validate JSONC syntax for cmux config files.
+          doctor|check|validate [--path <path>]   Validate JSONC syntax for amux config files.
           path|paths                              Print cmux.json paths, docs URL, and schema URL.
-          docs|documentation                      Print the same output as `cmux docs settings`.
-          reload                                  Reload Ghostty config + cmux.json and refresh terminals (alias for `cmux reload-config`).
+          docs|documentation                      Print the same output as `amux docs settings`.
+          reload                                  Reload Ghostty config + cmux.json and refresh terminals (alias for `amux reload-config`).
           get <key>                               Print sidebar-font-size or surface-tab-bar-font-size.
-          set <key> <points>                      Set sidebar-font-size (10-20 pt) or surface-tab-bar-font-size (8-24 pt), then reload if cmux is running.
+          set <key> <points>                      Set sidebar-font-size (10-20 pt) or surface-tab-bar-font-size (8-24 pt), then reload if amux is running.
           sidebar-font-size [points]              Get or set the left sidebar text size.
           surface-tab-bar-font-size [points]      Get or set the workspace tab bar text size.
 
@@ -125,17 +125,17 @@ extension CMUXCLI {
           legacy config: \(Self.legacySettingsDisplayPath)
           legacy app support: \(Self.fallbackSettingsDisplayPath)
 
-        Related (not cmux-owned, but cmux reads it for terminal behavior):
+        Related (not amux-owned, but amux reads it for terminal behavior):
           \(Self.ghosttyConfigDisplayPath)
 
         Examples:
-          cmux config doctor
-          cmux config doctor --path .cmux/cmux.json
-          cmux config set sidebar-font-size 14
-          cmux config sidebar-font-size 12.5
-          cmux config set surface-tab-bar-font-size 13
-          cmux config surface-tab-bar-font-size 11
-          cmux config reload
+          amux config doctor
+          amux config doctor --path .cmux/cmux.json
+          amux config set sidebar-font-size 14
+          amux config sidebar-font-size 12.5
+          amux config set surface-tab-bar-font-size 13
+          amux config surface-tab-bar-font-size 11
+          amux config reload
         """
     }
 
@@ -146,11 +146,11 @@ extension CMUXCLI {
             "fallback": Self.fallbackSettingsDisplayPath,
             "ghostty_config": [
                 "path": Self.ghosttyConfigDisplayPath,
-                "note": "Not cmux-owned, but cmux reads it. Use for terminal transparency (background-opacity), blur, font, theme, etc.",
+                "note": "Not amux-owned, but amux reads it. Use for terminal transparency (background-opacity), blur, font, theme, etc.",
             ],
             "docs_url": Self.settingsDocsURL,
             "schema_url": Self.settingsSchemaURL,
-            "reload_command": "cmux reload-config",
+            "reload_command": "amux reload-config",
             "reload_scope": "Reloads Ghostty config + cmux.json and refreshes terminals in place. No app restart needed.",
             "backup": "Back up any existing cmux.json file to a timestamped .bak copy before editing so the user can revert.",
         ]
@@ -165,7 +165,7 @@ extension CMUXCLI {
         print("  legacy config: \(Self.legacySettingsDisplayPath)")
         print("  legacy app support: \(Self.fallbackSettingsDisplayPath)")
         print()
-        print("Related (not cmux-owned, but cmux reads it for terminal behavior):")
+        print("Related (not amux-owned, but amux reads it for terminal behavior):")
         print("  \(Self.ghosttyConfigDisplayPath)")
         print()
         print("Docs:")
@@ -178,7 +178,7 @@ extension CMUXCLI {
         print("  Back up any existing cmux.json file to a timestamped .bak copy so the user can revert.")
         print()
         print("Reload after editing (covers BOTH cmux.json and Ghostty config; no app restart needed):")
-        print("  cmux reload-config")
+        print("  amux reload-config")
     }
 
     /// Normalizes a user-supplied key to a supported editable font-size key, or nil if unsupported.
@@ -298,10 +298,10 @@ extension CMUXCLI {
             if let message = reloadResult.message {
                 print("reload: \(message)")
             }
-            print("Run `cmux config reload` after cmux is running to apply it.")
+            print("Run `amux config reload` after amux is running to apply it.")
         default:
             print("OK \(key) = \(formattedValue) (saved)")
-            print("Run `cmux config reload` to apply it.")
+            print("Run `amux config reload` to apply it.")
         }
         print("path: \(Self.tildePath(url.path))")
     }
@@ -419,7 +419,7 @@ extension CMUXCLI {
                 "ok": errorCount == 0,
                 "error_count": errorCount,
                 "findings": findings.map(\.payload),
-                "reload_command": "cmux reload-config",
+                "reload_command": "amux reload-config",
                 "docs_url": CMUXCLI.settingsDocsURL,
                 "schema_url": CMUXCLI.settingsSchemaURL,
             ]
@@ -458,7 +458,7 @@ extension CMUXCLI {
             if argument == "--path" {
                 let nextIndex = index + 1
                 guard nextIndex < arguments.count else {
-                    throw CLIError(message: "cmux config doctor --path requires a path")
+                    throw CLIError(message: "amux config doctor --path requires a path")
                 }
                 paths.append(arguments[nextIndex])
                 index += 2
@@ -467,7 +467,7 @@ extension CMUXCLI {
             if argument.hasPrefix("--path=") {
                 let rawPath = String(argument.dropFirst("--path=".count))
                 guard !rawPath.isEmpty else {
-                    throw CLIError(message: "cmux config doctor --path requires a path")
+                    throw CLIError(message: "amux config doctor --path requires a path")
                 }
                 paths.append(rawPath)
                 index += 1
@@ -561,7 +561,10 @@ extension CMUXCLI {
         guard fileManager.fileExists(atPath: target.path, isDirectory: &isDirectory) else {
             let message = target.missingIsError
                 ? "file not found"
-                : "not found; cmux will use defaults until this file exists"
+                : String(
+                    localized: "cli.configDoctor.defaultFallback",
+                    defaultValue: "Not found; amux will use defaults until this file exists."
+                )
             return ConfigDoctorFinding(
                 label: target.label,
                 displayPath: target.displayPath,
@@ -633,7 +636,7 @@ extension CMUXCLI {
     }
 
     private func printConfigDoctorReport(_ report: ConfigDoctorReport) {
-        print("cmux config doctor")
+        print("amux config doctor")
         for finding in report.findings {
             print("\(finding.status.uppercased()) \(finding.label): \(finding.displayPath)")
             print("  path: \(finding.path)")
@@ -650,7 +653,7 @@ extension CMUXCLI {
         print()
         print("Docs: \(Self.settingsDocsURL)")
         print("Schema: \(Self.settingsSchemaURL)")
-        print("Reload: cmux reload-config")
+        print("Reload: amux reload-config")
     }
 
     private static func absoluteConfigPath(_ rawPath: String) -> String {

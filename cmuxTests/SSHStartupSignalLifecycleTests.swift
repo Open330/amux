@@ -551,8 +551,8 @@ extension CLINotifyProcessIntegrationRegressionTests {
 
         XCTAssertFalse(result.timedOut, result.stderr)
         XCTAssertEqual(result.status, 1, result.stderr)
-        XCTAssertTrue(result.stderr.contains("[cmux] ssh exited with status 1."), result.stderr)
-        XCTAssertTrue(result.stderr.contains("[cmux] press Enter to close this pane."), result.stderr)
+        XCTAssertTrue(result.stderr.contains("[amux] ssh exited with status 1."), result.stderr)
+        XCTAssertTrue(result.stderr.contains("[amux] press Enter to close this pane."), result.stderr)
     }
 
     func testSSHStartupForwardsStdinToBackgroundedSSH() throws {

@@ -48,14 +48,14 @@ extension ControlCommandCoordinator {
         if params["window_id"] != nil && requestedWindowID == nil {
             return .invalid(.err(
                 code: "invalid_params",
-                message: "Invalid window selector. Use --window <id|ref|index> to target one window, or run `cmux list-windows` to see available windows and retry.",
+                message: "Invalid window selector. Use --window <id|ref|index> to target one window, or run `amux list-windows` to see available windows and retry.",
                 data: systemWindowSelectorDetails(params)
             ))
         }
         if includeAllWindows, requestedWindowID != nil {
             return .invalid(.err(
                 code: "invalid_params",
-                message: "Choose either --window <id|ref|index> or --all-windows, not both. Run `cmux list-windows` to see available windows and retry.",
+                message: "Choose either --window <id|ref|index> or --all-windows, not both. Run `amux list-windows` to see available windows and retry.",
                 data: systemWindowSelectorDetails(params)
             ))
         }
@@ -104,7 +104,7 @@ extension ControlCommandCoordinator {
     func systemWindowNotFound(_ params: [String: JSONValue], windowID: UUID) -> ControlCallResult {
         .err(
             code: "not_found",
-            message: "Window not found. Run `cmux list-windows` to see available windows, then retry with --window <id|ref|index>.",
+            message: "Window not found. Run `amux list-windows` to see available windows, then retry with --window <id|ref|index>.",
             data: systemWindowSelectorDetails(params)
                 ?? .object(["window_id": .string(windowID.uuidString)])
         )

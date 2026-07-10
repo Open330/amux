@@ -1,6 +1,6 @@
 # Release Checklist
 
-This reference expands the cmux release workflow.
+This reference expands the amux release workflow.
 
 ## Default path
 
@@ -44,7 +44,7 @@ Manual tag flow:
 ```bash
 git tag vX.Y.Z
 git push origin vX.Y.Z
-gh run watch --repo manaflow-ai/cmux
+gh run watch --repo Open330/amux
 ```
 
 ## Release asset
@@ -52,13 +52,13 @@ gh run watch --repo manaflow-ai/cmux
 The expected release asset is:
 
 ```text
-cmux-macos.dmg
+amux-macos.dmg
 ```
 
 The README download button points to:
 
 ```text
-releases/latest/download/cmux-macos.dmg
+releases/latest/download/amux-macos.dmg
 ```
 
 If the asset name changes, update every surface that assumes this path.
@@ -67,6 +67,10 @@ If the asset name changes, update every surface that assumes this path.
 
 Release signing/notarization depends on:
 
+- `AMUX_SPARKLE_PUBLIC_KEY`
+- `AMUX_SPARKLE_PRIVATE_KEY`
+- `AMUX_GITHUB_TOKEN`
+- `AMUX_HOMEBREW_GITHUB_TOKEN`
 - `APPLE_CERTIFICATE_BASE64`
 - `APPLE_CERTIFICATE_PASSWORD`
 - `APPLE_SIGNING_IDENTITY`

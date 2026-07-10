@@ -7,17 +7,17 @@ Usage: start-cmux-profiling [--pid <pid> | --channel <stable|nightly|staging|dev
                             [--duration <seconds>] [--out <dir>] [--template <name>...]
                             [--list-targets] [--open-output] [--no-submit]
 
-Capture a short Instruments bundle for a live cmux process. The default capture
+Capture a short Instruments bundle for a live amux process. The default capture
 runs the useful general-purpose templates for support diagnostics:
 Time Profiler, SwiftUI, Allocations, and System Trace.
 
 Target selection:
-  --pid <pid>        Profile exactly this process. Best when more than one cmux is running.
+  --pid <pid>        Profile exactly this process. Best when more than one amux is running.
   --channel <name>   Select stable, nightly, staging, or dev by bundle identifier.
   --tag <tag>        Narrow dev/nightly/staging selection to a tagged build.
-  --list-targets     Print discovered cmux processes and exit.
+  --list-targets     Print discovered amux processes and exit.
 
-If no target selector is passed, the script profiles the only discovered cmux
+If no target selector is passed, the script profiles the only discovered amux
 process. If several are running, it prints them and asks for --pid.
 
 After a successful capture, the script opens a separate submission helper that
@@ -319,7 +319,7 @@ write_system_info() {
   display_text="$(display_summary || true)"
 
   {
-    echo "# cmux Profile System Info"
+    echo "# amux Profile System Info"
     echo
     echo "Collected: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo
@@ -388,7 +388,9 @@ write_system_info() {
       echo "- Version: $(plist_value "$app_path/Contents/Info.plist" CFBundleShortVersionString || true)"
       echo "- Build: $(plist_value "$app_path/Contents/Info.plist" CFBundleVersion || true)"
     fi
-    if [ -n "$app_path" ] && [ -f "$app_path/Contents/MacOS/cmux" ]; then
+    if [ -n "$app_path" ] && [ -f "$app_path/Contents/MacOS/amux" ]; then
+      echo "- Executable: $(file -b "$app_path/Contents/MacOS/amux" 2>/dev/null || printf 'unknown')"
+    elif [ -n "$app_path" ] && [ -f "$app_path/Contents/MacOS/cmux" ]; then
       echo "- Executable: $(file -b "$app_path/Contents/MacOS/cmux" 2>/dev/null || printf 'unknown')"
     fi
     echo
@@ -412,16 +414,16 @@ system_info_value() {
 channel_for_bundle() {
   local bundle_id="$1"
   case "$bundle_id" in
-    com.cmuxterm.app)
+    com.open330.amux|com.cmuxterm.app)
       printf 'stable'
       ;;
-    com.cmuxterm.app.nightly|com.cmuxterm.app.nightly.*)
+    com.open330.amux.nightly|com.open330.amux.nightly.*|com.cmuxterm.app.nightly|com.cmuxterm.app.nightly.*)
       printf 'nightly'
       ;;
-    com.cmuxterm.app.staging|com.cmuxterm.app.staging.*)
+    com.open330.amux.staging|com.open330.amux.staging.*)
       printf 'staging'
       ;;
-    com.cmuxterm.app.debug|com.cmuxterm.app.debug.*)
+    com.open330.amux.debug|com.open330.amux.debug.*)
       printf 'dev'
       ;;
     *)
@@ -448,9 +450,9 @@ discover_targets() {
   local pid args executable app_path plist bundle_id display_name channel
   while read -r pid args; do
     [[ "${pid:-}" =~ ^[0-9]+$ ]] || continue
-    [[ "${args:-}" =~ (/.*cmux[^/]*\.app/Contents/MacOS/cmux)([[:space:]]|$) ]] || continue
+    [[ "${args:-}" =~ (/.*(amux|cmux)[^/]*\.app/Contents/MacOS/(amux|cmux))([[:space:]]|$) ]] || continue
     executable="${BASH_REMATCH[1]}"
-    app_path="${executable%/Contents/MacOS/cmux}"
+    app_path="${executable%/Contents/MacOS/*}"
     plist="${app_path}/Contents/Info.plist"
     bundle_id="$(plist_value "$plist" "CFBundleIdentifier")"
     display_name="$(plist_value "$plist" "CFBundleDisplayName")"
@@ -471,7 +473,7 @@ discover_targets() {
 
 print_targets() {
   if [ "${#pids[@]}" -eq 0 ]; then
-    echo "No running cmux app processes found."
+    echo "No running amux app processes found."
     return
   fi
 
@@ -499,12 +501,12 @@ tag_matches() {
       return 0
       ;;
   esac
-  [ "$display_name" = "cmux DEV ${path_tag}" ] && return 0
-  [ "$display_name" = "cmux NIGHTLY ${path_tag}" ] && return 0
-  [ "$display_name" = "cmux STAGING ${path_tag}" ] && return 0
-  [ "$app_base" = "cmux DEV ${path_tag}" ] && return 0
-  [ "$app_base" = "cmux NIGHTLY ${path_tag}" ] && return 0
-  [ "$app_base" = "cmux STAGING ${path_tag}" ] && return 0
+  [ "$display_name" = "amux DEV ${path_tag}" ] && return 0
+  [ "$display_name" = "amux NIGHTLY ${path_tag}" ] && return 0
+  [ "$display_name" = "amux STAGING ${path_tag}" ] && return 0
+  [ "$app_base" = "amux DEV ${path_tag}" ] && return 0
+  [ "$app_base" = "amux NIGHTLY ${path_tag}" ] && return 0
+  [ "$app_base" = "amux STAGING ${path_tag}" ] && return 0
   return 1
 }
 
@@ -550,20 +552,20 @@ if [ "${#selected_indexes[@]}" -eq 0 ]; then
     channels=("unknown")
     selected_indexes=(0)
   else
-    echo "start-cmux-profiling: no cmux process matched the selector" >&2
+    echo "start-cmux-profiling: no amux process matched the selector" >&2
     print_targets >&2
     exit 1
   fi
 fi
 
 if [ -z "$target_pid" ] && [ -z "$target_channel" ] && [ -z "$target_tag" ] && [ "${#pids[@]}" -gt 1 ]; then
-  echo "start-cmux-profiling: multiple cmux processes are running. Re-run with --pid." >&2
+  echo "start-cmux-profiling: multiple amux processes are running. Re-run with --pid." >&2
   print_targets >&2
   exit 1
 fi
 
 if [ "${#selected_indexes[@]}" -gt 1 ]; then
-  echo "start-cmux-profiling: selector matched multiple cmux processes. Re-run with --pid." >&2
+  echo "start-cmux-profiling: selector matched multiple amux processes. Re-run with --pid." >&2
   print_targets >&2
   exit 1
 fi
@@ -585,11 +587,11 @@ safe_name() {
 }
 
 if [ -z "$out_dir" ]; then
-  profile_root="${HOME}/Desktop/cmux-profiles"
+  profile_root="${HOME}/Desktop/amux-profiles"
   if [ ! -d "${HOME}/Desktop" ]; then
-    profile_root="${TMPDIR:-/tmp}/cmux-profiles"
+    profile_root="${TMPDIR:-/tmp}/amux-profiles"
   fi
-  out_dir="${profile_root}/cmux-profile-${pid}-$(date +%Y%m%d-%H%M%S)"
+  out_dir="${profile_root}/amux-profile-${pid}-$(date +%Y%m%d-%H%M%S)"
 fi
 
 if [ "$dry_run" = "true" ]; then
@@ -607,7 +609,7 @@ write_system_info
 
 write_manifest() {
   cat > "$out_dir/summary.md" <<EOF
-# cmux Profiling Capture
+# amux Profiling Capture
 
 Target:
 - PID: $pid
@@ -764,4 +766,4 @@ if [ "$submit_profile" = "true" ]; then
   fi
 fi
 
-printf 'cmux profiling capture written to %s\n' "$out_dir"
+printf 'amux profiling capture written to %s\n' "$out_dir"

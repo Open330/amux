@@ -17,7 +17,7 @@ extension ContentView {
         return [
             CommandPaletteCommandContribution(
                 commandId: commandPaletteProUpgradeCommandId,
-                title: constant(String(localized: "command.pro.upgrade.title", defaultValue: "Upgrade to cmux Pro")),
+                title: constant(String(localized: "command.pro.upgrade.title", defaultValue: "Upgrade to amux Pro")),
                 subtitle: constant(String(localized: "command.auth.subtitle", defaultValue: "Account")),
                 keywords: ["pro", "upgrade", "subscription", "billing", "plan", "pricing", "cloud", "purchase", "buy"],
                 when: { context in

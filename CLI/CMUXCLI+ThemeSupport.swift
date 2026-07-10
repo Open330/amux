@@ -101,11 +101,13 @@ extension CMUXCLI {
         appendIfExisting(URL(fileURLWithPath: "/Applications/Ghostty.app/Contents/Resources/ghostty/themes", isDirectory: true))
         appendIfExisting(homeExpandedURL("~/.config/ghostty/themes", isDirectory: true))
         for appSupportDirectory in CmuxApplicationSupportDirectories(environment: processEnv).userDirectories {
-            appendIfExisting(
-                appSupportDirectory
-                    .appendingPathComponent(Self.cmuxThemeOverrideBundleIdentifier, isDirectory: true)
-                    .appendingPathComponent("themes", isDirectory: true)
-            )
+            for bundleIdentifier in CmuxGhosttyConfigPathResolver.compatibleReleaseBundleIdentifiers {
+                appendIfExisting(
+                    appSupportDirectory
+                        .appendingPathComponent(bundleIdentifier, isDirectory: true)
+                        .appendingPathComponent("themes", isDirectory: true)
+                )
+            }
         }
         appendIfExisting(
             homeExpandedURL("~/Library/Application Support/com.mitchellh.ghostty/themes", isDirectory: true)
@@ -125,7 +127,7 @@ extension CMUXCLI {
         if availableThemes.isEmpty {
             return trimmed
         }
-        throw CLIError(message: "Unknown theme '\(trimmed)'. Run 'cmux themes' to list available themes.")
+        throw CLIError(message: "Unknown theme '\(trimmed)'. Run 'amux themes' to list available themes.")
     }
 
     func themeConfigSearchURLs(targetBundleIdentifier: String) -> [URL] {
@@ -350,11 +352,11 @@ extension CMUXCLI {
         case "cmux.sock":
             return Self.cmuxThemeOverrideBundleIdentifier
         case "cmux-debug.sock":
-            return "com.cmuxterm.app.debug"
+            return "com.open330.amux.debug"
         case "cmux-nightly.sock":
-            return "com.cmuxterm.app.nightly"
+            return "com.open330.amux.nightly"
         case "cmux-staging.sock":
-            return "com.cmuxterm.app.staging"
+            return "com.open330.amux.staging"
         default:
             break
         }
@@ -364,13 +366,13 @@ extension CMUXCLI {
         }
 
         if let slug = themeReloadSocketSlug(name, prefix: "cmux-debug-", suffix: ".sock") {
-            return "com.cmuxterm.app.debug.\(slug)"
+            return "com.open330.amux.debug.\(slug)"
         }
         if let slug = themeReloadSocketSlug(name, prefix: "cmux-nightly-", suffix: ".sock") {
-            return "com.cmuxterm.app.nightly.\(slug)"
+            return "com.open330.amux.nightly.\(slug)"
         }
         if let slug = themeReloadSocketSlug(name, prefix: "cmux-staging-", suffix: ".sock") {
-            return "com.cmuxterm.app.staging.\(slug)"
+            return "com.open330.amux.staging.\(slug)"
         }
         return nil
     }

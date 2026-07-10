@@ -216,8 +216,9 @@ cmux_socket_available() {
 
     local self_dir cmux_bin
     self_dir="$(cd "$(dirname "$0")" && pwd)"
-    cmux_bin="$self_dir/cmux"
-    [[ -x "$cmux_bin" ]] || cmux_bin="$(command -v cmux || true)"
+    cmux_bin="$self_dir/amux"
+    [[ -x "$cmux_bin" ]] || cmux_bin="$self_dir/cmux"
+    [[ -x "$cmux_bin" ]] || cmux_bin="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
     [[ -n "$cmux_bin" ]] || return 1
 
     # Keep stale/hung socket checks bounded so claude startup does not block
@@ -235,19 +236,25 @@ resolve_hook_cmux_bin() {
     fi
 
     self_dir="$(cd "$(dirname "$0")" && pwd)"
+    bundled_cli="$self_dir/amux"
+    if [[ -x "$bundled_cli" ]]; then
+        printf '%s' "$bundled_cli"
+        return 0
+    fi
+
     bundled_cli="$self_dir/cmux"
     if [[ -x "$bundled_cli" ]]; then
         printf '%s' "$bundled_cli"
         return 0
     fi
 
-    bundled_cli="$(command -v cmux || true)"
+    bundled_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
     if [[ -n "$bundled_cli" ]]; then
         printf '%s' "$bundled_cli"
         return 0
     fi
 
-    printf '%s' "cmux"
+    printf '%s' "amux"
 }
 
 CLAUDE_AUTH_SELECTION_ENV_KEYS=(

@@ -27,7 +27,7 @@ public final class UpdateController {
     private let fileManager: FileManager
     private let hostBundle: Bundle
     private let backgroundProbeInterval: TimeInterval
-    /// Whether the running build is a cmux DEV/staging build that must never be compared against
+    /// Whether the running build is an amux DEV/staging build that must never be compared against
     /// the public release appcast. See ``isDevLikeBundleIdentifier(_:)``.
     private let isDevLikeBundle: Bool
 
@@ -125,7 +125,7 @@ public final class UpdateController {
         self.isDevLikeBundle = isDevLikeBundle
         settings.apply(to: defaults)
         if isDevLikeBundle {
-            // DEV (`com.cmuxterm.app.debug[.<tag>]`) and staging (`com.cmuxterm.app.staging[.<tag>]`)
+            // DEV (`com.open330.amux.debug[.<tag>]`) and staging (`com.open330.amux.staging[.<tag>]`)
             // builds are produced from local source and are not on the public release train, so
             // they must never query the public appcast. Turning off Sparkle's automatic checks
             // stops the passive vectors: Sparkle never schedules its own background checks, and
@@ -477,8 +477,8 @@ public final class UpdateController {
 }
 
 extension UpdateController {
-    /// Whether `bundleIdentifier` is a cmux DEV (`com.cmuxterm.app.debug[.<tag>]`) or staging
-    /// (`com.cmuxterm.app.staging[.<tag>]`) build.
+    /// Whether `bundleIdentifier` is an amux DEV (`com.open330.amux.debug[.<tag>]`) or staging
+    /// (`com.open330.amux.staging[.<tag>]`) build.
     ///
     /// Such builds are produced from local source and are not on the public release train, so
     /// they must never be compared against the public Sparkle appcast (#6292).
@@ -489,9 +489,9 @@ extension UpdateController {
     /// dependency edge for a small string check.
     static func isDevLikeBundleIdentifier(_ bundleIdentifier: String?) -> Bool {
         guard let bundleIdentifier else { return false }
-        return bundleIdentifier == "com.cmuxterm.app.debug"
-            || bundleIdentifier.hasPrefix("com.cmuxterm.app.debug.")
-            || bundleIdentifier == "com.cmuxterm.app.staging"
-            || bundleIdentifier.hasPrefix("com.cmuxterm.app.staging.")
+        return bundleIdentifier == "com.open330.amux.debug"
+            || bundleIdentifier.hasPrefix("com.open330.amux.debug.")
+            || bundleIdentifier == "com.open330.amux.staging"
+            || bundleIdentifier.hasPrefix("com.open330.amux.staging.")
     }
 }

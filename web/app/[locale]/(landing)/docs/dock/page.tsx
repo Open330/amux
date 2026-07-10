@@ -61,7 +61,7 @@ export default function DockPage() {
     {
       "id": "feed",
       "title": "Feed",
-      "command": "cmux feed tui --opentui",
+      "command": "amux feed tui --opentui",
       "height": 320
     }
   ]

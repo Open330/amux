@@ -11,7 +11,7 @@ import Testing
 struct AgentSessionWebRendererTests {
     @Test
     func testTrustedShellURLAcceptsOnlyMatchingFileURL() {
-        let resources = URL(fileURLWithPath: "/tmp/cmux DEV test.app/Contents/Resources", isDirectory: true)
+        let resources = URL(fileURLWithPath: "/tmp/amux DEV test.app/Contents/Resources", isDirectory: true)
         let expected = AgentSessionWebRendererCoordinator.shellURL(
             rendererKind: .react,
             resourceDirectoryURL: resources

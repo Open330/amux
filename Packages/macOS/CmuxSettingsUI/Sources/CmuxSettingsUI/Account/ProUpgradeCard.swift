@@ -18,7 +18,7 @@ struct ProUpgradeCard: View {
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(String(localized: "settings.account.pro.title", defaultValue: "cmux Pro"))
+                Text(String(localized: "settings.account.pro.title", defaultValue: "amux Pro"))
                     .cmuxFont(size: 13, weight: .medium)
                 Text(subtitleText)
                     .cmuxFont(size: 11)
@@ -61,7 +61,7 @@ struct ProUpgradeCard: View {
         }
         return String(
             localized: "settings.account.pro.subtitle",
-            defaultValue: "Cloud dev boxes, the iOS app, and cmux AI. $30/month, or $240/year."
+            defaultValue: "Cloud dev boxes, the iOS app, and amux AI. $30/month, or $240/year."
         )
     }
 

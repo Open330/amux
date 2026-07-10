@@ -16,10 +16,16 @@ if rg -q '454ecd03-1db2-4050-845e-4ce5b0cd9895|pck_xb63160bwe9699vtxfzfj6emmxpaf
   fail "inherited Stack credentials remain in shipped source or tooling"
 fi
 
+if rg -q 'https://presence\.cmux\.dev|https://cmux-presence-dev\.debussy\.workers\.dev|@manaflow\.ai' \
+  Sources CLI Resources Packages/macOS Packages/Shared Packages/iOS \
+  --glob '!**/Tests/**' --glob '!**/.build/**'; then
+  fail "inherited hosted endpoints or privileged domains remain in shipped code"
+fi
+
 rg -q '\["auth", "login", "logout", "vm", "cloud", "remotes", "remote", "ai-accounts", "mobile"\]' CLI/cmux.swift \
   || fail "the canonical CLI does not reject the inherited mobile command"
 
-rg -q 'inheritedHostedServicePrefixes = \["auth\\.", "vm\\.", "remotes\\.", "aiAccounts\\.", "mobile\\.", "dogfood\\."\]' Sources/TerminalController.swift \
+rg -q 'inheritedHostedServicePrefixes = \["auth\.", "vm\.", "remotes\.", "aiAccounts\.", "mobile\.", "dogfood\."\]' Sources/TerminalController.swift \
   || fail "the socket dispatcher does not share the full hosted-service denylist"
 
 rg -q 'methods\.removeAll\(where: Self\.isInheritedHostedV2Method\)' Sources/TerminalController.swift \

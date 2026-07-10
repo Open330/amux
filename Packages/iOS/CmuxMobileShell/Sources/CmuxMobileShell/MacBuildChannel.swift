@@ -24,15 +24,12 @@ public struct MacBuildChannel: Sendable {
         }
 
         // The channel is the component RIGHT AFTER the base bundle id; a tagged
-        // build appends a further `.slug` (e.g. `com.cmuxterm.app.nightly.my-tag`,
-        // `com.cmuxterm.app.rc`), so match the component, not the suffix. Mirrors
-        // the canonical `SocketPathMarkerFiles.variant` on macOS — kept in sync as
-        // channels are added (Stable/Nightly/Staging/RC). RC may not exist yet (a
-        // future release-candidate desktop build), but is handled ahead of time.
+        // build appends a further `.slug`. Accept the canonical amux base first
+        // and the legacy cmux base so older paired hosts remain identifiable.
         let bundle = (bundleID ?? "").lowercased()
-        let base = "com.cmuxterm.app"
-        if bundle == base { return "Stable" }
-        if bundle.hasPrefix(base + ".") {
+        for base in ["com.open330.amux", "com.cmuxterm.app"] {
+            if bundle == base { return "Stable" }
+            guard bundle.hasPrefix(base + ".") else { continue }
             let rest = bundle.dropFirst(base.count + 1)
             let channel = rest.split(separator: ".", maxSplits: 1).first.map(String.init) ?? ""
             switch channel {

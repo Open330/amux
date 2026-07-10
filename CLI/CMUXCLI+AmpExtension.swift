@@ -8,7 +8,7 @@ extension CMUXCLI {
 // Bridges Amp session lifecycle events into cmux's restorable session store
 // AND reports live agent status (idle/thinking/tool calls/done/error) into
 // the cmux tab status bar.
-// Installed by `cmux hooks amp install` or `cmux hooks setup`.
+// Installed by `amux hooks amp install` or `amux hooks setup`.
 // DO NOT EDIT MANUALLY. cmux upgrades this file in place.
 // @i-know-the-amp-plugin-api-is-wip-and-very-experimental-right-now
 
@@ -145,7 +145,7 @@ function threadIdFrom(event: { thread?: { id?: string } } | undefined, ctx?: Amp
 }
 
 // ─── Live status reporting ────────────────────────────────────────────────
-// Fires `cmux set-status` / `cmux clear-status` / `cmux log` so the tab
+// Fires `amux set-status` / `amux clear-status` / `amux log` so the tab
 // status bar reflects what Amp is doing (idle, thinking, running cmd,
 // reading file X, etc.). All calls are fire-and-forget; failures never
 // disturb the agent.
@@ -247,7 +247,7 @@ function workspaceArgs(): string[] {
 
 // Sanitized environment for fire-and-forget cmux status subprocesses.
 // Strips Amp-provided secrets (`AMP_API_KEY`) so we never propagate them to
-// every spawned `cmux set-status` / `cmux log` / `cmux clear-status` child.
+// every spawned `amux set-status` / `amux log` / `amux clear-status` child.
 // Mirrors the secret-stripping done in `hookEnvironment` without the launch-
 // metadata fields, which are only meaningful for lifecycle hook calls.
 function statusEnvironment(): NodeJS.ProcessEnv {
@@ -479,7 +479,7 @@ export default function (amp: PluginAPI) {
             return
         }
         if !existing.isEmpty, !existing.contains(Self.ampExtensionMarker) {
-            throw CLIError(message: "\(extensionURL.path) exists and is not a cmux plugin; leaving it alone")
+            throw CLIError(message: "\(extensionURL.path) exists and is not an amux plugin; leaving it alone")
         }
         if !skipConfirm {
             Self.printInstallPreview(
@@ -506,15 +506,15 @@ export default function (amp: PluginAPI) {
         let extensionURL = ampExtensionURL(for: def)
         let fm = FileManager.default
         guard fm.fileExists(atPath: extensionURL.path) else {
-            print("No Amp cmux plugin found at \(extensionURL.path)")
+            print("No Amp amux plugin found at \(extensionURL.path)")
             return
         }
         let existing = (try? String(contentsOf: extensionURL, encoding: .utf8)) ?? ""
         guard existing.contains(Self.ampExtensionMarker) else {
-            print("Refusing to remove \(extensionURL.path): missing cmux marker")
+            print("Refusing to remove \(extensionURL.path): missing amux compatibility marker")
             return
         }
         try fm.removeItem(at: extensionURL)
-        print("Removed Amp cmux plugin from \(extensionURL.path)")
+        print("Removed Amp amux plugin from \(extensionURL.path)")
     }
 }

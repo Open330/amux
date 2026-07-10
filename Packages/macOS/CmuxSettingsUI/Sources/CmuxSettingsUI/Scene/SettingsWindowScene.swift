@@ -87,12 +87,17 @@ public struct SettingsWindowRoot: View {
     private var catalog: SettingCatalog { runtime.catalog }
     private var hostActions: SettingsHostActions { runtime.hostActions }
     private var accountFlow: AccountFlow? { runtime.accountFlow }
+    private var exposesHostedServiceSections: Bool { runtime.exposesHostedServiceSections }
 
     /// Resolves the selected section pane from the persisted raw value,
     /// defaulting to ``SettingsSectionID/account`` when the stored value
     /// is unrecognized (e.g., after dropping a case).
     private var selectedSection: SettingsSectionID {
-        SettingsSectionID(rawValue: selectedSectionRaw) ?? .account
+        let decoded = SettingsSectionID(rawValue: selectedSectionRaw)
+        if !exposesHostedServiceSections, decoded == .account || decoded == .mobile {
+            return .app
+        }
+        return decoded ?? .app
     }
 
     /// Whether the user currently has a non-empty search query. When
@@ -159,6 +164,7 @@ public struct SettingsWindowRoot: View {
             let rawValue = notification.userInfo?["target"] as? String,
             let target = SettingsSectionID(rawValue: rawValue)
         else { return }
+        if !exposesHostedServiceSections, target == .account || target == .mobile { return }
         // Legacy preserves the highlighted search hit when an external
         // navigation request resolves to the same section the currently
         // selected sidebar entry already lives in. Without this, typing
@@ -429,12 +435,14 @@ public struct SettingsWindowRoot: View {
         // Account, App, Terminal, TextBox, Mobile, Sidebar, Beta Features,
         // Automation, Browser (with embedded Import), Global Hotkey,
         // Keyboard Shortcuts, Workspace Colors, cmux.json, Reset.
-        AccountSection(
-            defaultsStore: defaultsStore,
-            catalog: catalog,
-            accountFlow: accountFlow
-        )
-        .id(anchorID(for: .account))
+        if exposesHostedServiceSections {
+            AccountSection(
+                defaultsStore: defaultsStore,
+                catalog: catalog,
+                accountFlow: accountFlow
+            )
+            .id(anchorID(for: .account))
+        }
 
         AppSection(
             defaultsStore: defaultsStore,
@@ -457,8 +465,10 @@ public struct SettingsWindowRoot: View {
         SleepyModeSection(hostActions: hostActions, store: hostActions.sleepyModeStore())
             .id(anchorID(for: .sleepyMode))
 
-        MobileSection(defaultsStore: defaultsStore, catalog: catalog, hostActions: hostActions)
-            .id(anchorID(for: .mobile))
+        if exposesHostedServiceSections {
+            MobileSection(defaultsStore: defaultsStore, catalog: catalog, hostActions: hostActions)
+                .id(anchorID(for: .mobile))
+        }
 
         SidebarSection(defaultsStore: defaultsStore, catalog: catalog, hostActions: hostActions)
             .id(anchorID(for: .sidebarAppearance))

@@ -12,7 +12,6 @@ import {
   MobileDrawerToggle,
 } from "./mobile-drawer";
 import { BrandLogoLink } from "./brand-logo-link";
-import { ProUpgradeVisibility } from "./pro-upgrade-visibility";
 
 export function SiteHeader({
   section,
@@ -36,13 +35,13 @@ export function SiteHeader({
                 <BrandLogoLink className="flex items-center gap-2.5">
                   <img
                     src="/logo.png"
-                    alt="cmux"
+                    alt="amux"
                     width={24}
                     height={24}
                     className="rounded-md"
                   />
                   <span className="text-sm font-semibold tracking-tight">
-                    cmux
+                    amux
                   </span>
                 </BrandLogoLink>
                 {section && (
@@ -118,35 +117,12 @@ export function SiteHeader({
             {t("docs")}
           </Link>
           <Link
-            href="/blog"
-            onClick={close}
-            className="hover:text-foreground transition-colors py-1"
-          >
-            {t("blog")}
-          </Link>
-          <Link
             href="/docs/changelog"
             onClick={close}
             className="hover:text-foreground transition-colors py-1"
           >
             {t("changelog")}
           </Link>
-          <Link
-            href="/community"
-            onClick={close}
-            className="hover:text-foreground transition-colors py-1"
-          >
-            {t("community")}
-          </Link>
-          <ProUpgradeVisibility>
-            <Link
-              href="/pricing"
-              onClick={close}
-              className="hover:text-foreground transition-colors py-1"
-            >
-              {t("pricing")}
-            </Link>
-          </ProUpgradeVisibility>
           <GitHubStarsBadge location="mobile_drawer" />
           <div className="pt-2">
             <DownloadButton size="sm" location="mobile_drawer" />

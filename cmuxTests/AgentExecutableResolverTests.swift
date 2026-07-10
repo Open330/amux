@@ -146,7 +146,7 @@ struct AgentExecutableResolverTests {
             .appendingPathComponent(
                 "AgentExecutableResolverTests-\(UUID().uuidString)", isDirectory: true)
         let oldCmuxBin = root
-            .appendingPathComponent("cmux DEV old.app/Contents/Resources/bin", isDirectory: true)
+            .appendingPathComponent("amux DEV old.app/Contents/Resources/bin", isDirectory: true)
         let userBin = root.appendingPathComponent("user-bin", isDirectory: true)
         let cmuxResources = root
             .appendingPathComponent("cmux.app/Contents/Resources", isDirectory: true)

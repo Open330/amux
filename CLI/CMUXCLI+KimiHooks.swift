@@ -33,7 +33,7 @@ extension CMUXCLI {
         let configDirectoryFileError = String.localizedStringWithFormat(
             String(
                 localized: "cli.hooks.error.configDirectoryIsFile",
-                defaultValue: "cmux could not create the hooks directory: a file exists at %@; remove or rename the conflicting file and re-run `cmux hooks setup`"
+                defaultValue: "amux could not create the hooks directory: a file exists at %@; remove or rename the conflicting file and re-run `amux hooks setup`"
             ),
             configDir
         )
@@ -115,7 +115,7 @@ extension CMUXCLI {
             print(String.localizedStringWithFormat(
                 String(
                     localized: "cli.hooks.kimi.removedZero",
-                    defaultValue: "Removed 0 cmux hook(s) from %@"
+                    defaultValue: "Removed 0 amux hook(s) from %@"
                 ),
                 filePath
             ))
@@ -125,7 +125,7 @@ extension CMUXCLI {
         print(String.localizedStringWithFormat(
             String(
                 localized: "cli.hooks.kimi.removed",
-                defaultValue: "Removed Kimi Code cmux hooks from %@"
+                defaultValue: "Removed Kimi Code amux hooks from %@"
             ),
             filePath
         ))

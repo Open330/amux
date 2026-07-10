@@ -15,10 +15,8 @@ extension MobileShellComposite {
     /// Mac's `dogfood.feedback.submit` sink so the existing watcher under
     /// `~/.cache/cmux-dogfood-feedback/` catches it.
     ///
-    /// This is the privileged path of the Send Feedback feature: it is offered
-    /// only to `@manaflow.ai` users on an active mobile-host connection (see
-    /// ``MobileFeedbackRoute/resolve(email:hasActiveMacConnection:hostSupportsAgentSink:)``), and is NOT
-    /// `#if DEBUG`-gated, so it works on Release (beta/prod) builds for the team.
+    /// amux retains this compatibility implementation but its route resolver
+    /// never selects it because no hosted privileged domain is configured.
     ///
     /// The structured log is exported here (the store owns ``diagnosticLog``);
     /// the string snapshots are gathered by the caller on the UI layer, where the

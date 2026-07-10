@@ -2,7 +2,7 @@ import AppKit
 import CmuxSettings
 import CmuxSettingsUI
 
-/// Shared, cross-tag default for which display new cmux DEV windows open on.
+/// Shared, cross-tag default for which display new amux DEV windows open on.
 ///
 /// The value is a display's `localizedName` (e.g. `"LG HDR 4K"`), persisted in
 /// the shared `cmux.json` under `app.devWindowDisplay` through ``CmuxSettings``.

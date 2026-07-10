@@ -1,7 +1,15 @@
-# cmux web
+# amux web
 
-Next.js app deployed as the existing Vercel `manaflow/cmux` project. The app serves the website,
-Stack Auth handlers, feedback endpoint, and Cloud VM backend routes.
+Next.js source for the amux website. Public product pages use the Open330/amux
+identity and local macOS distribution only. The inherited Stack Auth, billing,
+iOS, Vault, and Cloud VM routes remain in the tree for upstream compatibility
+and development reference, but the amux middleware does not expose them. Their
+credentials are optional and unset unless Open330 later owns the infrastructure.
+
+Set `NEXT_PUBLIC_AMUX_SITE_URL` to an Open330-owned origin for canonical URLs,
+localized alternates, robots metadata, and the sitemap. Without it, canonical
+discovery points to the GitHub repository, sitemap publication is disabled, and
+robots metadata disallows indexing.
 
 ## Development
 

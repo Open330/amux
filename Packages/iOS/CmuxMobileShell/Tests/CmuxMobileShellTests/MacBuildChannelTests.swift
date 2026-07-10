@@ -5,7 +5,7 @@ struct MacBuildChannelTests {
     @Test func devTagWinsAndIsShown() {
         // A tagged reload.sh build sets CMUX_TAG; any non-"default" tag is a DEV
         // build and the tag is what's worth showing — regardless of bundle id.
-        #expect(MacBuildChannel().label(bundleID: "com.cmuxterm.app.debug.teams", tag: "teams") == "DEV · teams")
+        #expect(MacBuildChannel().label(bundleID: "com.open330.amux.debug.teams", tag: "teams") == "DEV · teams")
         #expect(MacBuildChannel().label(bundleID: "com.cmuxterm.app", tag: "my-tag") == "DEV · my-tag")
     }
 
@@ -14,8 +14,8 @@ struct MacBuildChannelTests {
         #expect(MacBuildChannel().label(bundleID: "com.cmuxterm.app.nightly", tag: "default") == "Nightly")
         // Tagged channel builds append a further .slug — match the COMPONENT, not a suffix.
         #expect(MacBuildChannel().label(bundleID: "com.cmuxterm.app.nightly.my-feature", tag: "default") == "Nightly")
-        #expect(MacBuildChannel().label(bundleID: "com.cmuxterm.app.staging.feat", tag: nil) == "Staging")
-        #expect(MacBuildChannel().label(bundleID: "com.cmuxterm.app.debug", tag: "default") == "DEV")
+        #expect(MacBuildChannel().label(bundleID: "com.open330.amux.staging.feat", tag: nil) == "Staging")
+        #expect(MacBuildChannel().label(bundleID: "com.open330.amux.debug", tag: "default") == "DEV")
     }
 
     @Test func handlesFutureReleaseCandidateChannel() {

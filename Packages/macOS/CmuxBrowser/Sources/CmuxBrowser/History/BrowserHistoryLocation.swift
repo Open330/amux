@@ -25,11 +25,11 @@ public struct BrowserHistoryLocation: Sendable {
     /// so every dev build of the same lane reuses one history file, while
     /// production identifiers pass through unchanged.
     public static func normalizedNamespace(bundleIdentifier: String) -> String {
-        if bundleIdentifier.hasPrefix("com.cmuxterm.app.debug.") {
-            return "com.cmuxterm.app.debug"
+        if bundleIdentifier.hasPrefix("com.open330.amux.debug.") {
+            return "com.open330.amux.debug"
         }
-        if bundleIdentifier.hasPrefix("com.cmuxterm.app.staging.") {
-            return "com.cmuxterm.app.staging"
+        if bundleIdentifier.hasPrefix("com.open330.amux.staging.") {
+            return "com.open330.amux.staging"
         }
         return bundleIdentifier
     }
@@ -52,5 +52,50 @@ public struct BrowserHistoryLocation: Sendable {
         guard namespace != bundleIdentifier else { return nil }
         let dir = applicationSupportDirectory.appendingPathComponent(bundleIdentifier, isDirectory: true)
         return dir.appendingPathComponent("browser_history.json", isDirectory: false)
+    }
+
+    /// Ordered migration sources for builds that previously stored browser
+    /// history under the inherited cmux bundle identifiers.
+    public var legacyHistoryFileURLs: [URL] {
+        var urls: [URL] = []
+        if let legacyTaggedHistoryFileURL {
+            urls.append(legacyTaggedHistoryFileURL)
+        }
+        if let legacyIdentifier = Self.legacyProductBundleIdentifier(for: bundleIdentifier) {
+            let legacyNamespace = Self.normalizedLegacyNamespace(bundleIdentifier: legacyIdentifier)
+            urls.append(historyFileURL(namespace: legacyNamespace))
+            if legacyIdentifier != legacyNamespace {
+                urls.append(historyFileURL(namespace: legacyIdentifier))
+            }
+        }
+        var seen: Set<String> = []
+        return urls.filter { url in
+            url != historyFileURL && seen.insert(url.path).inserted
+        }
+    }
+
+    private func historyFileURL(namespace: String) -> URL {
+        applicationSupportDirectory
+            .appendingPathComponent(namespace, isDirectory: true)
+            .appendingPathComponent("browser_history.json", isDirectory: false)
+    }
+
+    private static func legacyProductBundleIdentifier(for bundleIdentifier: String) -> String? {
+        let canonicalPrefix = "com.open330.amux"
+        let legacyPrefix = "com.cmuxterm.app"
+        guard bundleIdentifier == canonicalPrefix || bundleIdentifier.hasPrefix("\(canonicalPrefix).") else {
+            return nil
+        }
+        return legacyPrefix + bundleIdentifier.dropFirst(canonicalPrefix.count)
+    }
+
+    private static func normalizedLegacyNamespace(bundleIdentifier: String) -> String {
+        for lane in ["debug", "staging"] {
+            let lanePrefix = "com.cmuxterm.app.\(lane)"
+            if bundleIdentifier == lanePrefix || bundleIdentifier.hasPrefix("\(lanePrefix).") {
+                return lanePrefix
+            }
+        }
+        return bundleIdentifier
     }
 }

@@ -1,18 +1,16 @@
 public import Foundation
 
 /// Configuration value for the feedback composer: the persisted-email defaults
-/// key, the upload endpoint (env-overridable), size limits, and the founders
-/// fallback address. Defaults are byte-identical to the originals lifted from
-/// the app's `ContentView`; construct with the defaults or override a field for
-/// testing.
+/// key, the upload endpoint (env-overridable), size limits, and a compatibility
+/// fallback-address field. amux leaves network submission unconfigured by default.
 public struct FeedbackComposerSettings: Sendable, Equatable {
     /// `UserDefaults` key the composer persists the submitter's email under.
     public let storedEmailKey: String
     /// Environment variable name that overrides the upload endpoint.
     public let endpointEnvironmentKey: String
-    /// Production feedback upload endpoint used when no override is set.
+    /// Feedback upload endpoint used when no override is set.
     public let defaultEndpoint: String
-    /// Fallback contact address surfaced when uploads are unavailable.
+    /// Compatibility field for integrations that provide a fallback address.
     public let foundersEmail: String
     /// Maximum accepted message length, in characters.
     public let maxMessageLength: Int
@@ -23,13 +21,12 @@ public struct FeedbackComposerSettings: Sendable, Equatable {
     /// Target total attachment payload after optimization, in bytes.
     public let targetTotalAttachmentUploadBytes: Int
 
-    /// Creates the feedback settings, defaulting every field to the production
-    /// value lifted verbatim from `ContentView`.
+    /// Creates feedback settings with network submission disabled by default.
     public init(
         storedEmailKey: String = "sidebarHelpFeedbackEmail",
         endpointEnvironmentKey: String = "CMUX_FEEDBACK_API_URL",
-        defaultEndpoint: String = "https://cmux.com/api/feedback",
-        foundersEmail: String = "founders@manaflow.com",
+        defaultEndpoint: String = "",
+        foundersEmail: String = "",
         maxMessageLength: Int = 4_000,
         maxAttachmentCount: Int = 10,
         maxTotalAttachmentBytes: Int = 4 * 1_024 * 1_024,
@@ -54,6 +51,8 @@ public struct FeedbackComposerSettings: Sendable, Equatable {
            !override.isEmpty {
             return URL(string: override)
         }
-        return URL(string: defaultEndpoint)
+        let fallback = defaultEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fallback.isEmpty else { return nil }
+        return URL(string: fallback)
     }
 }

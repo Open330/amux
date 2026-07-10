@@ -6,7 +6,7 @@ public enum CmuxSidebarExtensionPoint {
     /// Base extension point identifier third-party sidebar extensions register against.
     ///
     /// Production builds use this value verbatim. Dev/dogfood builds may scope the point
-    /// per build tag (e.g. `com.cmuxterm.app.debug.my-tag.cmux.sidebar`) so that concurrent debug
+    /// per build tag (e.g. `com.open330.amux.debug.my-tag.cmux.sidebar`) so that concurrent debug
     /// builds and their bundled sample extensions don't share one extension point. The
     /// per-tag value is injected at build time (see ``identifierInfoPlistKey``) and never
     /// committed to source.

@@ -176,7 +176,7 @@ public final class UpdateStateModel {
             retry: { [weak self] in self?.setOverrideState(nil) },
             dismiss: { [weak self] in self?.setOverrideState(nil) },
             technicalDetails: "debug scenario: \(scenario.rawValue)",
-            feedURLString: "https://github.com/manaflow-ai/cmux/releases/latest/download/appcast.xml"
+            feedURLString: "https://github.com/Open330/amux/releases/latest/download/appcast.xml"
         )))
     }
     #endif
@@ -464,7 +464,7 @@ public enum DebugUpdateErrorScenario: String, CaseIterable, Hashable, Sendable {
             return NSError(domain: UpdateStateModel.updateErrorDomain, code: UpdateStateModel.installDidNotStartCode, userInfo: [
                 NSLocalizedDescriptionKey: String(
                     localized: "update.error.didNotStart.message",
-                    defaultValue: "cmux couldn’t start the update. Check your internet connection and try again."
+                    defaultValue: "amux couldn’t start the update. Check your internet connection and try again."
                 ),
             ])
         case .updaterNotReady:

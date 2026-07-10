@@ -74,10 +74,12 @@ extension ControlCommandCoordinator {
         }
     }
 
-    /// The shared "cmux window is not available" message (legacy
+    /// The shared "amux window is not available" message (legacy
     /// `Self.v2WindowUnavailableMessage`).
-    static let surfaceWindowUnavailableMessage =
-        "cmux window is not available. Reopen the window and try again."
+    static let surfaceWindowUnavailableMessage = String(
+        localized: "socket.error.windowUnavailable",
+        defaultValue: "amux window is not available. Reopen the window and try again."
+    )
 
     // MARK: - list
 

@@ -5,7 +5,7 @@ import Darwin
 final class AutomationSocketUITests: XCTestCase {
     private var socketPath = ""
     private var diagnosticsPath = ""
-    private let defaultsDomain = "com.cmuxterm.app.debug"
+    private let defaultsDomain = "com.open330.amux.debug"
     private let modeKey = "socketControlMode"
     private let legacyKey = "socketControlEnabled"
     private var launchTag = ""

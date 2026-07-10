@@ -42,7 +42,7 @@ export default async function TaskManagerDocsPage({
 
       <DocsHeading level={2} id="open">{t("openTitle")}</DocsHeading>
       <p>{t("openDesc")}</p>
-      <CodeBlock lang="bash">{`cmux top`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux top`}</CodeBlock>
       <p>{t("paletteDesc")}</p>
 
       <DocsHeading level={2} id="what-it-shows">{t("showsTitle")}</DocsHeading>

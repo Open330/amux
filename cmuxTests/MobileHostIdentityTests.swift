@@ -68,7 +68,7 @@ struct MobileHostIdentityTests {
             defaults: taggedDefaults,
             sharedIDURL: sharedIDURL,
             stableDefaults: stableDefaults,
-            bundleIdentifier: "com.cmuxterm.app.debug.mpick"
+            bundleIdentifier: "com.open330.amux.debug.mpick"
         ) == stableID)
         #expect(taggedDefaults.string(forKey: "mobileHost.deviceID") == stableID)
         #expect(try String(contentsOf: sharedIDURL, encoding: .utf8) == stableID)

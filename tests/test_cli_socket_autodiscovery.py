@@ -396,7 +396,7 @@ def python_client_default_socket_path(extra_env: dict[str, str]) -> str:
 
 
 def test_python_client_ignores_unknown_bundle_env() -> bool:
-    expected_tagged_debug = "com.cmuxterm.app.debug.variant.test.tag"
+    expected_tagged_debug = "com.open330.amux.debug.variant.test.tag"
     actual = python_client_default_bundle_id({
         "CMUX_BUNDLE_ID": "com.example.stale.bundle",
         "CMUX_TAG": "variant-test-tag",
@@ -494,8 +494,8 @@ def test_variant_last_socket_markers(cli_path: str) -> bool:
         dev_agent_cli = bundled_cli_for_variant(
             cli_path,
             apps,
-            "cmux DEV agent",
-            "com.cmuxterm.app.debug.agent",
+            "amux DEV agent",
+            "com.open330.amux.debug.agent",
         )
 
         write_marker(home, "last-socket-path", stable_socket)
@@ -594,8 +594,8 @@ def test_base_debug_cli_discovers_cmux_tag(cli_path: str) -> bool:
             debug_cli = bundled_cli_for_variant(
                 cli_path,
                 apps,
-                "cmux DEV issue3542",
-                "com.cmuxterm.app.debug",
+                "amux DEV issue3542",
+                "com.open330.amux.debug",
             )
             proc = subprocess.run(
                 [debug_cli, "ping"],

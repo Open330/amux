@@ -3,29 +3,32 @@
 # Reuses scripts/build-signed-dmg.sh (proven end-to-end producing the
 # v0.1.0-alpha notarized release): it fetches the Developer ID cert + the
 # App Store Connect API key from Vaultwarden at runtime into a temporary
-# keychain (deleted on exit), builds Release universal unsigned, applies
-# Developer ID with resolved entitlements via a --deep pass, bundles the
-# pinned runtime (tmux 3.7b + muxad/muxa), creates the dmg, notarizes, and
-# staples.
+# keychain (deleted on exit), builds the Apple Silicon Release unsigned, applies
+# Developer ID with amux direct-distribution entitlements using the shared
+# inside-out signer, bundles the pinned runtime (tmux 3.7b + muxad/muxa),
+# creates the dmg, notarizes, verifies, and staples.
 #
 # RUNNER REQUIREMENTS (org infra):
 #   - macOS runner with Xcode + an unlocked Bitwarden CLI session at
 #     ~/.bw_session (see ~/.agents/VAULT.md). The Vault items are:
 #     "Developer ID Application (Jiun Bae)" and
 #     "App Store Connect API Key - file-stack".
-#   - MUXA_REPO checked out (for cargo-built muxad/muxa), or the script
-#     stages a dev tmux placeholder — pass MUXA_REPO to build the real one.
+#   - MUXA_REPO checked out for the pinned muxad/muxa release binaries.
+#   - AMUX_SPARKLE_PUBLIC_KEY, AMUX_SPARKLE_PRIVATE_KEY,
+#     AMUX_GITHUB_TOKEN, and AMUX_HOMEBREW_GITHUB_TOKEN configured as
+#     repository secrets.
 name: amux-release
 
 on:
   push:
-    tags: ["v*", "amux-*"]
+    tags: ["v*"]
 
 jobs:
   build-sign-notarize:
     runs-on: [self-hosted, macos]
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      MUXA_REPO: ${{ vars.MUXA_REPO }}
     steps:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
@@ -35,28 +38,30 @@ jobs:
       - name: Setup (submodules + GhosttyKit)
         run: ./scripts/setup.sh
 
-      - name: Build signed + notarized dmg
-        run: MUXA_REPO="${MUXA_REPO:-$HOME/personal/muxa}" ./scripts/build-signed-dmg.sh --notarize
-
-      - name: Generate Sparkle appcast
+      - name: Validate release secrets
+        env:
+          SPARKLE_PUBLIC_KEY: ${{ secrets.AMUX_SPARKLE_PUBLIC_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.AMUX_SPARKLE_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.AMUX_GITHUB_TOKEN }}
+          HOMEBREW_GITHUB_TOKEN: ${{ secrets.AMUX_HOMEBREW_GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # Needs amux's OWN EdDSA private key (see R03 runbook §5). Store it
-          # in Vault and fetch here into $SPARKLE_PRIVATE_KEY, then:
-          #   GEN="$(find build-signed -name generate_appcast -type f | head -1)"
-          #   mkdir -p appcast-out && cp amux-macos.dmg appcast-out/
-          #   echo "$SPARKLE_PRIVATE_KEY" > /tmp/ed_priv
-          #   "$GEN" --ed-key-file /tmp/ed_priv appcast-out/ \
-          #     --download-url-prefix "https://github.com/Open330/amux/releases/download/${{ github.ref_name }}/"
-          #   rm -f /tmp/ed_priv
-          echo "TODO: wire the amux Sparkle key (runbook §5) to sign the appcast" >&2
+          : "${SPARKLE_PUBLIC_KEY:?AMUX_SPARKLE_PUBLIC_KEY secret is required}"
+          : "${SPARKLE_PRIVATE_KEY:?AMUX_SPARKLE_PRIVATE_KEY secret is required}"
+          : "${GH_TOKEN:?AMUX_GITHUB_TOKEN secret is required}"
+          : "${HOMEBREW_GITHUB_TOKEN:?AMUX_HOMEBREW_GITHUB_TOKEN secret is required}"
+          if [[ -z "${MUXA_REPO:-}" ]]; then
+            export MUXA_REPO="$HOME/personal/muxa"
+          fi
+          [[ -d "$MUXA_REPO" ]] || { echo "MUXA_REPO not found: $MUXA_REPO" >&2; exit 1; }
 
-      - name: Publish release assets + bump cask
+      - name: Build, sign, notarize, and publish amux
+        env:
+          SPARKLE_PUBLIC_KEY: ${{ secrets.AMUX_SPARKLE_PUBLIC_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.AMUX_SPARKLE_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.AMUX_GITHUB_TOKEN }}
+          HOMEBREW_GITHUB_TOKEN: ${{ secrets.AMUX_HOMEBREW_GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          SHA="$(shasum -a 256 amux-macos.dmg | awk '{print $1}')"
-          echo "dmg sha256: $SHA"
-          # Attach amux-macos.dmg (+ appcast.xml once §5 lands) to the release
-          # for ${{ github.ref_name }}, then bump packaging/homebrew/amux.rb
-          # (version + sha256) on the open330/homebrew-amux tap.
-          echo "TODO: upload amux-macos.dmg to the release and bump the cask (sha256 above)" >&2
+          export MUXA_REPO="${MUXA_REPO:-$HOME/personal/muxa}"
+          ./scripts/build-sign-upload.sh "${{ github.ref_name }}"

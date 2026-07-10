@@ -158,7 +158,7 @@ extension CMUXCLI {
     ///
     /// The opt-in decision is made here, once, by an exact argv check, and recorded
     /// in `CMUX_CLAUDE_TEAMS_SANDBOXED` so teammate respawns (which run as a separate
-    /// `cmux __tmux-compat` process and cannot see this argv) re-apply the same
+    /// `amux __tmux-compat` process and cannot see this argv) re-apply the same
     /// decision without re-deriving it from untrusted command text — see
     /// `tmuxClaudeTeamsRespawnEnvironment()`.
     func claudeTeamsExtraEnvVars(commandArgs: [String]) -> [(key: String, value: String)] {
@@ -188,20 +188,20 @@ extension CMUXCLI {
         }
     }
 
-    /// The whole point of `cmux claude-teams` is "just start a team." Claude Code's
+    /// The whole point of `amux claude-teams` is "just start a team." Claude Code's
     /// Task tool only opens a teammate in its own split pane when it is called with
     /// a `name`; without a name it runs an in-process subagent (no pane). Left to a
     /// bare prompt the lead tends to use the nameless form — or stops to ask "demo
-    /// *what*?" — so a plain `cmux claude-teams "make a demo team with 5 subagents"`
+    /// *what*?" — so a plain `amux claude-teams "make a demo team with 5 subagents"`
     /// produced no panes. Append a small system-prompt nudge that steers the lead to
     /// named, split-pane teammates for team/parallel requests so no elaborate prompt
     /// is needed. Kept out of `claudeTeamsLaunchArguments` (and thus the exported
-    /// restore command) so that stays canonical; restore re-invokes `cmux
+    /// restore command) so that stays canonical; restore re-invokes `amux
     /// claude-teams`, which re-applies the nudge. Skipped when the user supplies
     /// their own system prompt.
     var claudeTeamsTeamSpawnGuidance: String {
         """
-        You are Claude Code running inside cmux, started with `cmux claude-teams`. \
+        You are Claude Code running inside amux, started with `amux claude-teams`. \
         Agent teams are enabled and every NAMED teammate opens in its own split \
         pane. When the user asks you to start a team, demo teams, or run several \
         subagents/teammates in parallel, spawn them as named teammates: make one \

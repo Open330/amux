@@ -46,14 +46,12 @@ struct PresenceServiceURLResolutionTests {
         #expect(url == "https://cmux-presence-dev-alice.acct.workers.dev")
     }
 
-    @Test func fallsBackToBuildDefault() {
-        // Debug -> dev worker; Release -> production worker (so a stable iOS app
-        // subscribes to the same presence service stable Macs heartbeat to).
+    @Test func defaultsToDisabledWithoutOwnedEndpoint() {
         #expect(PresenceClient.resolvedServiceBaseURL(
             environment: [:], defaults: emptyDefaults(), infoPlistValue: nil, isDebugBuild: true
-        ) == PresenceClient.debugDefaultServiceURL)
+        ) == nil)
         #expect(PresenceClient.resolvedServiceBaseURL(
             environment: [:], defaults: emptyDefaults(), infoPlistValue: nil, isDebugBuild: false
-        ) == PresenceClient.productionServiceURL)
+        ) == nil)
     }
 }

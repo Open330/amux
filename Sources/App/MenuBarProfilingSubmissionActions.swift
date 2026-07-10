@@ -12,6 +12,14 @@ extension MenuBarProfilingProgressWindowController {
 
     @objc func sendEmail() {
         guard let outputURL else { return }
+        guard MenuBarProfilingProfilePreview.isSubmissionConfigured else {
+            statusLabel.stringValue = String(
+                localized: "statusMenu.profiling.submissionNotConfigured",
+                defaultValue: "Profile submission is not configured."
+            )
+            NSSound.beep()
+            return
+        }
         let email = trimmedEmailText()
         guard isValidEmail(email) else {
             updateSubmitState()

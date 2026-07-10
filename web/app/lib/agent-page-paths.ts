@@ -25,38 +25,38 @@ type AgentReadablePage = {
 
 const llmsCompareDescriptions = {
   "best-terminal-for-ai-coding-agents":
-    "compares cmux, Conductor, Superset, Cursor, Devin, VS Code, Zed, Warp, Ghostty, iTerm2, tmux, Kitty, Alacritty, WezTerm, OpenCode, Herdr, and other tools for agent-heavy workflows.",
-  "cmux-vs-alacritty":
+    "compares amux, Conductor, Superset, Cursor, Devin, VS Code, Zed, Warp, Ghostty, iTerm2, tmux, Kitty, Alacritty, WezTerm, OpenCode, Herdr, and other tools for agent-heavy workflows.",
+  "amux-vs-alacritty":
     "native macOS agent supervision versus a fast cross-platform OpenGL terminal emulator.",
-  "cmux-vs-conductor":
+  "amux-vs-conductor":
     "native terminal/browser supervision versus a Mac app for running Claude Code, Codex, Cursor, and OpenCode in isolated workspaces.",
-  "cmux-vs-cursor":
+  "amux-vs-cursor":
     "terminal agent supervision beside any editor versus an AI editor and hosted agent platform.",
-  "cmux-vs-devin":
+  "amux-vs-devin":
     "local terminal supervision for your CLI agents versus a cloud AI software engineer and team agent platform.",
-  "cmux-vs-ghostty":
-    "cmux as a libghostty-based agent workflow app versus Ghostty as a general-purpose terminal.",
-  "cmux-vs-herdr":
+  "amux-vs-ghostty":
+    "amux as a libghostty-based agent workflow app versus Ghostty as a general-purpose terminal.",
+  "amux-vs-herdr":
     "native Mac agent workspace with browser panes versus a terminal-native agent multiplexer with SSH attach.",
-  "cmux-vs-iterm2":
+  "amux-vs-iterm2":
     "agent-aware native terminal workspace versus a mature general-purpose macOS terminal.",
-  "cmux-vs-kitty":
+  "amux-vs-kitty":
     "agent-aware macOS workspace versus a fast, feature-rich, GPU-based terminal emulator.",
-  "cmux-vs-opencode":
+  "amux-vs-opencode":
     "terminal workspace and supervision layer versus an open source coding agent that can run in terminal, desktop, or IDE surfaces.",
-  "cmux-vs-superset":
+  "amux-vs-superset":
     "native terminal/browser supervision versus an Electron agent orchestration workspace.",
-  "cmux-vs-tmux":
+  "amux-vs-tmux":
     "native macOS agent supervision versus a portable terminal multiplexer.",
-  "cmux-vs-vscode":
+  "amux-vs-vscode":
     "terminal agent supervision beside a general-purpose editor and extension platform.",
-  "cmux-vs-warp":
+  "amux-vs-warp":
     "agent supervision terminal versus an AI-enhanced terminal product.",
-  "cmux-vs-wezterm":
+  "amux-vs-wezterm":
     "agent notification workspace versus a cross-platform terminal emulator and multiplexer.",
-  "cmux-vs-windsurf":
+  "amux-vs-windsurf":
     "terminal agent supervision beside any editor versus the Devin Desktop IDE lineage.",
-  "cmux-vs-zed":
+  "amux-vs-zed":
     "terminal agent supervision beside a fast collaborative code editor.",
   "multiple-claude-code-agents-parallel":
     "explains parallel Claude Code, Codex, OpenCode, and other CLI agents with visible workspaces, notification rings, and jump-to-latest-unread review flow.",
@@ -79,22 +79,22 @@ const englishOnlyPages = [
 
 const comparePageTitles = {
   bestTerminalForAgents: "Best terminals and agent workspaces for AI coding agents",
-  cmuxVsAlacritty: "cmux vs Alacritty",
-  cmuxVsConductor: "cmux vs Conductor",
-  cmuxVsCursor: "cmux vs Cursor",
-  cmuxVsDevin: "cmux vs Devin",
-  cmuxVsGhostty: "cmux vs Ghostty",
-  cmuxVsHerdr: "cmux vs Herdr",
-  cmuxVsIterm2: "cmux vs iTerm2",
-  cmuxVsKitty: "cmux vs Kitty",
-  cmuxVsOpencode: "cmux vs OpenCode",
-  cmuxVsSuperset: "cmux vs Superset",
-  cmuxVsTmux: "cmux vs tmux",
-  cmuxVsVscode: "cmux vs VS Code",
-  cmuxVsWarp: "cmux vs Warp",
-  cmuxVsWezterm: "cmux vs WezTerm",
-  cmuxVsWindsurf: "cmux vs Windsurf",
-  cmuxVsZed: "cmux vs Zed",
+  cmuxVsAlacritty: "amux vs Alacritty",
+  cmuxVsConductor: "amux vs Conductor",
+  cmuxVsCursor: "amux vs Cursor",
+  cmuxVsDevin: "amux vs Devin",
+  cmuxVsGhostty: "amux vs Ghostty",
+  cmuxVsHerdr: "amux vs Herdr",
+  cmuxVsIterm2: "amux vs iTerm2",
+  cmuxVsKitty: "amux vs Kitty",
+  cmuxVsOpencode: "amux vs OpenCode",
+  cmuxVsSuperset: "amux vs Superset",
+  cmuxVsTmux: "amux vs tmux",
+  cmuxVsVscode: "amux vs VS Code",
+  cmuxVsWarp: "amux vs Warp",
+  cmuxVsWezterm: "amux vs WezTerm",
+  cmuxVsWindsurf: "amux vs Windsurf",
+  cmuxVsZed: "amux vs Zed",
   multipleClaudeAgents: "How to run multiple Claude Code agents in parallel",
 } satisfies Record<ComparePageKey, string>;
 
@@ -103,9 +103,24 @@ const agentReadableComparePages = comparePages.map((page) => ({
   title: comparePageTitles[page.key],
 }));
 
-export const agentReadablePages = [
+const inheritedServicePrefixes = [
+  "/blog",
+  "/community",
+  "/docs/ios",
+  "/docs/vault",
+  "/enterprise",
+  "/eula",
+  "/ios",
+  "/nightly",
+  "/pricing",
+  "/privacy-policy",
+  "/terms-of-service",
+  "/wall-of-love",
+];
+
+const candidateAgentReadablePages = [
   { path: "/", title: "Home" },
-  { path: "/ios", title: "cmux iOS" },
+  { path: "/ios", title: "amux iOS" },
   { path: "/pricing", title: "Pricing" },
   { path: "/enterprise", title: "Enterprise" },
   { path: "/blog", title: "Blog" },
@@ -113,29 +128,29 @@ export const agentReadablePages = [
     path: "/blog/claude-code-best-worktree-manager",
     title: "Claude Code Is The Best Worktree Manager",
   },
-  { path: "/blog/cmux-home", title: "cmux home" },
-  { path: "/blog/cmux-history", title: "cmux history" },
-  { path: "/blog/cmux-finder", title: "Introducing cmux Finder" },
-  { path: "/blog/cmux-vault", title: "cmux Vault" },
-  { path: "/blog/passkey-auth", title: "Passkey auth in the cmux browser" },
-  { path: "/blog/task-manager", title: "Task Manager in cmux" },
-  { path: "/blog/markdown-viewer", title: "A better markdown viewer in cmux" },
-  { path: "/blog/unread-shortcuts", title: "Unread workspace shortcuts in cmux" },
-  { path: "/blog/session-restore", title: "Session restore in cmux" },
-  { path: "/blog/cmux-ssh", title: "cmux SSH" },
+  { path: "/blog/cmux-home", title: "amux home" },
+  { path: "/blog/cmux-history", title: "amux history" },
+  { path: "/blog/cmux-finder", title: "Introducing amux Finder" },
+  { path: "/blog/cmux-vault", title: "amux Vault" },
+  { path: "/blog/passkey-auth", title: "Passkey auth in the amux browser" },
+  { path: "/blog/task-manager", title: "Task Manager in amux" },
+  { path: "/blog/markdown-viewer", title: "A better markdown viewer in amux" },
+  { path: "/blog/unread-shortcuts", title: "Unread workspace shortcuts in amux" },
+  { path: "/blog/session-restore", title: "Session restore in amux" },
+  { path: "/blog/cmux-ssh", title: "amux SSH" },
   {
     path: "/blog/cmux-claude-teams",
-    title: "Claude Code teammate agents as native cmux panes",
+    title: "Claude Code teammate agents as native amux panes",
   },
   {
     path: "/blog/cmux-omo",
-    title: "oh-my-openagent subagents as native cmux panes",
+    title: "oh-my-openagent subagents as native amux panes",
   },
-  { path: "/blog/gpl", title: "cmux is now GPL" },
+  { path: "/blog/gpl", title: "amux is now GPL" },
   { path: "/blog/cmd-shift-u", title: "Cmd+Shift+U" },
-  { path: "/blog/zen-of-cmux", title: "The Zen of cmux" },
-  { path: "/blog/show-hn-launch", title: "Launching cmux on Show HN" },
-  { path: "/blog/introducing-cmux", title: "Introducing cmux" },
+  { path: "/blog/zen-of-cmux", title: "The Zen of amux" },
+  { path: "/blog/show-hn-launch", title: "Launching amux on Show HN" },
+  { path: "/blog/introducing-cmux", title: "Introducing amux" },
   { path: "/docs", title: "Docs" },
   { path: "/docs/getting-started", title: "Getting Started" },
   { path: "/docs/concepts", title: "Concepts" },
@@ -176,7 +191,7 @@ export const agentReadablePages = [
   { path: "/nightly", title: "Nightly" },
   { path: "/assets", title: "Brand Assets" },
   { path: "/guides", title: "Guides" },
-  { path: "/compare", title: "Compare cmux" },
+  { path: "/compare", title: "Compare amux" },
   ...agentReadableComparePages,
   { path: "/best-terminal-for-mac", title: "Best terminal for Mac" },
   { path: "/built-on-ghostty", title: "Built on Ghostty" },
@@ -192,6 +207,14 @@ export const agentReadablePages = [
   { path: "/terms-of-service", title: "Terms of Service" },
   { path: "/eula", title: "EULA" },
 ] as const satisfies readonly AgentReadablePage[];
+
+export const agentReadablePages: readonly AgentReadablePage[] =
+  candidateAgentReadablePages.filter(
+    ({ path }) =>
+      !inheritedServicePrefixes.some(
+        (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+      ),
+  );
 
 export function resolveAgentPageVariant(
   rawPath: string | null,
@@ -251,11 +274,11 @@ export function variantPathForPage(
 
 export function buildLlmsText(origin: string): string {
   const lines = [
-    "# cmux",
+    "# amux",
     "",
-    "> cmux is a free and open source (GPL), fully scriptable native macOS terminal built on libghostty, purpose-built for running AI coding agents. Every action is available through a CLI and a Unix socket API, so agents can drive the terminal itself. It works with the CLI agents you already use (Claude Code, Codex, OpenCode, Gemini CLI, Aider, and any CLI tool) and adds workspace organization, agent notification rings, and vertical tabs on top of a GPU-accelerated terminal.",
+    "> amux is a free and open source (GPL), fully scriptable native macOS terminal built on libghostty, purpose-built for running AI coding agents. Every action is available through a CLI and a Unix socket API, so agents can drive the terminal itself. It works with the CLI agents you already use (Claude Code, Codex, OpenCode, Gemini CLI, Aider, and any CLI tool) and adds workspace organization, agent notification rings, and vertical tabs on top of a GPU-accelerated terminal.",
     "",
-    "## What cmux is",
+    "## What amux is",
     "",
     "- Native macOS app: written in Swift and AppKit with no Electron, built on libghostty (the Ghostty engine) for GPU-accelerated rendering.",
     "- Agent-first: run many AI coding agents in parallel, each in its own workspace, instead of juggling one terminal.",
@@ -268,11 +291,11 @@ export function buildLlmsText(origin: string): string {
     "",
     "## Programmable",
     "",
-    "cmux is designed to be driven by scripts and agents, not just used by hand. Every command is available through both a `cmux` CLI and a Unix socket, so anything an agent has in its PATH can control the running app:",
+    "amux is designed to be driven by scripts and agents, not just used by hand. Every command is available through both the `amux` CLI and a Unix socket, so anything an agent has in its PATH can control the running app:",
     "",
     "- Control the app: create and switch workspaces, open split panes and surfaces, send input to a terminal, read screen contents, and capture screenshots over the socket API.",
     "- Browser automation: open an in-app browser surface and drive it programmatically (navigate, snapshot the DOM, click, type, fill, wait, evaluate JavaScript, inspect console and network, manage cookies and storage), so agents can verify web changes in the same terminal.",
-    "- Hooks: run your own commands on cmux events to wire it into other tools and notification pipelines.",
+    "- Hooks: run your own commands on amux events to wire it into other tools and notification pipelines.",
     "- Skills and custom commands: package reusable agent workflows and bind them to commands.",
     "- Sidebar metadata and notifications are scriptable, so external processes can update workspace status and ring panes.",
     "",
@@ -282,9 +305,9 @@ export function buildLlmsText(origin: string): string {
     "- License: GPL, free to download",
     "- Built on: libghostty (the Ghostty terminal engine)",
     "- Works with: Claude Code, Codex, OpenCode, Gemini CLI, Aider, and any CLI tool",
-    "- Automation: `cmux` CLI and Unix socket API, browser automation, hooks, skills, and custom commands",
+    "- Automation: `amux` CLI and Unix socket API, browser automation, hooks, skills, and custom commands",
     `- Download: ${origin}/docs/getting-started`,
-    "- Source: https://github.com/manaflow-ai/cmux",
+    "- Source: https://github.com/Open330/amux",
     "",
     "## Comparisons and buying guides",
     "",

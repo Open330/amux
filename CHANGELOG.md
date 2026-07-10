@@ -1,6 +1,26 @@
 # Changelog
 
-All notable changes to cmux are documented here.
+All notable amux changes are documented here. The historical entries below the
+amux section are retained from the upstream cmux fork point.
+
+## [0.2.0] - Unreleased
+
+### Added
+- tmux-native local and SSH workspaces with stable session targeting, detach lifecycle handling, and progressive multi-host session discovery.
+- muxa-backed agent state, attention-first navigation, prompt actions, and durable orchestration messages, tasks, gates, and heartbeats.
+- Canonical `amux` CLI help, release assets, app identity, Sparkle feed, Homebrew cask source, and Open330 documentation links.
+
+### Changed
+- Renamed Debug and Staging application channels to `amux DEV` and `amux STAGING` with `com.open330.amux.*` bundle identifiers.
+- Preserved `CMUX_*`, `cmux.json`, `.cmux/`, `cmux.*` action IDs, and the `cmux` executable as explicit compatibility contracts.
+- Disabled inherited hosted auth, telemetry, feedback submission, billing, Cloud VM, and mobile-pairing entrypoints until Open330-owned services are configured.
+- Removed inherited Presence defaults and web-service credentials; unavailable website APIs and account routes now fail closed.
+- Rebranded active website metadata, downloads, navigation, documentation, and 20 locale catalogs around Open330/amux.
+- Made release packaging fail closed when Sparkle keys, signed runtimes, remote-daemon assets, notarization, final DMG verification, or Homebrew reconciliation fail.
+
+### Fixed
+- Refresh Ghostty keyboard mappings on both AppKit and TIS input-source notifications to prevent Korean composition regressions after language switching.
+- Keep background tmux attach operations from stealing workspace or window focus.
 
 ## [0.64.17] - 2026-06-23
 

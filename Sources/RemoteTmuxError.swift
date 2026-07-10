@@ -68,7 +68,7 @@ extension RemoteTmuxError {
         case let .unsupportedTmux(detected):
             let format = String(
                 localized: "remoteTmux.error.unsupportedVersion",
-                defaultValue: "remote session server is too old (found %@; cmux needs version %@ or newer)"
+                defaultValue: "remote session server is too old (found %@; amux needs version %@ or newer)"
             )
             return String(
                 format: format,
@@ -78,7 +78,7 @@ extension RemoteTmuxError {
         case let .tmuxNotFound(destination):
             let format = String(
                 localized: "remoteTmux.error.tmuxNotFound",
-                defaultValue: "tmux was not found on %@. cmux ssh-tmux mirrors a remote tmux server (tmux %@ or newer required).\nInstall it on the host: brew install tmux (macOS), apt install tmux (Debian/Ubuntu), dnf install tmux (Fedora)."
+                defaultValue: "tmux was not found on %@. amux ssh-tmux mirrors a remote tmux server (tmux %@ or newer required).\nInstall it on the host: brew install tmux (macOS), apt install tmux (Debian/Ubuntu), dnf install tmux (Fedora)."
             )
             return String(
                 format: format,

@@ -46,19 +46,19 @@ export default async function SessionRestorePage({
 
       <h2>{t("agentResumeTitle")}</h2>
       <p>{t("agentResumeDesc")}</p>
-      <CodeBlock lang="bash">{`cmux hooks setup
-cmux hooks setup codex
-cmux hooks setup grok
-cmux hooks setup antigravity
-cmux hooks setup omp
-cmux hooks setup --agent opencode`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux hooks setup
+amux hooks setup codex
+amux hooks setup grok
+amux hooks setup antigravity
+amux hooks setup omp
+amux hooks setup --agent opencode`}</CodeBlock>
       <p>{t("setupBehavior")}</p>
 
       <h2>{t("surfaceBindingsTitle")}</h2>
       <p>{t("surfaceBindingsDesc")}</p>
-      <CodeBlock lang="bash">{`cmux surface resume set --kind tmux --checkpoint work --shell "tmux attach -t work"
-cmux surface resume show --json
-cmux surface resume clear --checkpoint work`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux surface resume set --kind tmux --checkpoint work --shell "tmux attach -t work"
+amux surface resume show --json
+amux surface resume clear --checkpoint work`}</CodeBlock>
       <p>{t("surfaceBindingsNote")}</p>
 
       <h2>{t("supportedTitle")}</h2>
@@ -177,7 +177,7 @@ cmux surface resume clear --checkpoint work`}</CodeBlock>
       <ul>
         <li>{t("manualItemMenu")}</li>
         <li><code>⌘ ⇧ O</code></li>
-        <li><code>cmux restore-session</code></li>
+        <li><code>amux restore-session</code></li>
       </ul>
 
       <h2>{t("disableTitle")}</h2>

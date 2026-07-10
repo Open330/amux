@@ -1288,9 +1288,8 @@ public final class MobileShellComposite: MobileTerminalOutputSinking {
 
     /// Where a Send Feedback submission should be delivered right now.
     ///
-    /// Pure decision over the current email + connection state; the privileged
-    /// direct-to-agent route is offered only to `@manaflow.ai` users on an
-    /// active connection, everyone else routes to the email inbox.
+    /// amux routes every submission to email because no hosted privileged agent
+    /// sink is configured.
     public var currentFeedbackRoute: MobileFeedbackRoute {
         MobileFeedbackRoute.resolve(
             email: signedInUserEmail,

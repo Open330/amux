@@ -47,7 +47,6 @@ export const navItems: NavEntry[] = [
   { titleKey: "configuration", href: "/docs/configuration" },
   { titleKey: "textBox", href: "/docs/textbox" },
   { titleKey: "sessionRestore", href: "/docs/session-restore" },
-  { titleKey: "vault", href: "/docs/vault", locales: featureWorkflowContentLocales },
   { titleKey: "taskManager", href: "/docs/task-manager", locales: featureWorkflowContentLocales },
   { titleKey: "customCommands", href: "/docs/custom-commands" },
   { titleKey: "dock", href: "/docs/dock" },
@@ -57,7 +56,6 @@ export const navItems: NavEntry[] = [
   { titleKey: "skills", href: "/docs/skills" },
   { titleKey: "notifications", href: "/docs/notifications" },
   { titleKey: "ssh", href: "/docs/ssh" },
-  { titleKey: "ios", href: "/docs/ios" },
   { titleKey: "remoteTmux", href: "/docs/remote-tmux", locales: remoteTmuxDocsLocales },
   {
     sectionKey: "agentIntegrations",

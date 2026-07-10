@@ -12,9 +12,7 @@ public protocol MobileIdentityProviding: Sendable {
     /// The current signed-in user's primary email, or `nil` when signed out or
     /// when no email is set on the account.
     ///
-    /// The Send Feedback router reads this to decide whether the privileged
-    /// direct-to-agent path applies (`@manaflow.ai`); it is also the default
-    /// reply-to address when emailing the feedback inbox.
+    /// The Send Feedback composer uses this as the default reply-to address.
     @MainActor var currentUserEmail: String? { get }
 
     /// Whether ``currentUserID`` is minted by cmux's development auth

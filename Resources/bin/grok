@@ -31,13 +31,19 @@ resolve_cmux_bin() {
     fi
 
     self_dir="$(cd "$(dirname "$0")" && pwd)"
+    bundled_cli="$self_dir/amux"
+    if [[ -x "$bundled_cli" ]]; then
+        printf '%s' "$bundled_cli"
+        return 0
+    fi
+
     bundled_cli="$self_dir/cmux"
     if [[ -x "$bundled_cli" ]]; then
         printf '%s' "$bundled_cli"
         return 0
     fi
 
-    bundled_cli="$(command -v cmux || true)"
+    bundled_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
     if [[ -n "$bundled_cli" ]]; then
         printf '%s' "$bundled_cli"
         return 0

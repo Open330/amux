@@ -52,7 +52,7 @@ final class CLISocketSentryTelemetry {
 #if canImport(Sentry)
     private static let startupLock = NSLock()
     private static var started = false
-    private static let dsn = "https://ecba1ec90ecaee02a102fba931b6d2b3@o4507547940749312.ingest.us.sentry.io/4510796264636416"
+    private static let dsn = ""
 
     private static func currentSentryReleaseName() -> String? {
         guard let bundleIdentifier = currentSentryBundleIdentifier(),
@@ -180,7 +180,8 @@ final class CLISocketSentryTelemetry {
     }
 
     private var shouldEmit: Bool {
-        !disabledByEnv
+        // amux does not send CLI diagnostics to the inherited cmux Sentry project.
+        false
     }
 
 #if DEBUG

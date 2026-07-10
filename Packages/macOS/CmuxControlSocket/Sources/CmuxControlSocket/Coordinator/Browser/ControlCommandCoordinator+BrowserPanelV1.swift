@@ -50,7 +50,7 @@ extension ControlCommandCoordinator {
         if let rawURL, url == nil {
             return "ERROR: Invalid URL \(rawURL)"
         }
-        guard let url else { return "ERROR: cmux browser is disabled" }
+        guard let url else { return "ERROR: amux browser is disabled" }
         let opened = browserPanelContext?.controlBrowserPanelOpenURLExternally(url) ?? false
         return opened ? "OK external_browser_disabled \(url.absoluteString)" : "ERROR: Failed to open URL externally"
     }

@@ -1,5 +1,4 @@
 import AppKit
-import CmuxFeedback
 import SwiftUI
 
 extension cmuxApp {
@@ -22,9 +21,8 @@ extension cmuxApp {
             Divider()
 
             helpResourceButton(.githubIssues)
-            helpResourceButton(.discord)
             if CmuxFeatureFlags.shared.isProUpgradeUIEnabled {
-                Button(String(localized: "menu.help.upgradeToPro", defaultValue: "Upgrade to cmux Pro…")) {
+                Button(String(localized: "menu.help.upgradeToPro", defaultValue: "Upgrade to amux Pro…")) {
                     ProUpgradePresenter.present()
                 }
                 #if DEBUG
@@ -95,13 +93,7 @@ extension cmuxApp {
     }
 
     private func presentFeedbackFromHelpMenu() {
-        if let targetWindow = NSApp.keyWindow ?? NSApp.mainWindow {
-            FeedbackComposerBridge().openComposer(in: targetWindow)
-            return
-        }
-
-        if let targetWindow = AppDelegate.shared?.showMainWindowFromMenuBar() {
-            FeedbackComposerBridge().openComposer(in: targetWindow)
-        }
+        guard let url = URL(string: "https://github.com/Open330/amux/issues/new") else { return }
+        NSWorkspace.shared.open(url)
     }
 }

@@ -324,7 +324,10 @@ extension RemoteCLIRelayServer {
             }
             guard connectResult == 0 else {
                 throw NSError(domain: "cmux.remote.relay", code: 3, userInfo: [
-                    NSLocalizedDescriptionKey: "failed to connect to local cmux socket",
+                    NSLocalizedDescriptionKey: String(
+                        localized: "remoteRelay.error.connectLocalSocket",
+                        defaultValue: "failed to connect to local amux socket"
+                    ),
                 ])
             }
 
@@ -362,11 +365,17 @@ extension RemoteCLIRelayServer {
                         break
                     }
                     throw NSError(domain: "cmux.remote.relay", code: 5, userInfo: [
-                        NSLocalizedDescriptionKey: "timed out waiting for local cmux response",
+                        NSLocalizedDescriptionKey: String(
+                            localized: "remoteRelay.error.responseTimeout",
+                            defaultValue: "timed out waiting for local amux response"
+                        ),
                     ])
                 }
                 throw NSError(domain: "cmux.remote.relay", code: 6, userInfo: [
-                    NSLocalizedDescriptionKey: "failed to read local cmux response",
+                    NSLocalizedDescriptionKey: String(
+                        localized: "remoteRelay.error.readLocalResponse",
+                        defaultValue: "failed to read local amux response"
+                    ),
                 ])
             }
             return response

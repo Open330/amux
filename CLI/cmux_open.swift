@@ -417,7 +417,7 @@ extension CMUXCLI {
 
     /// Persisted, per-group session descriptor for the branch base picker. The
     /// `/__cmux_diff_viewer_branch` regenerate endpoint runs in the separate
-    /// server process, which has none of the original `cmux diff` invocation's
+    /// server process, which has none of the original `amux diff` invocation's
     /// in-memory context. This record carries everything needed to regenerate a
     /// single branch page for an arbitrary base: the mapper token + groupID that
     /// key the output files into the secure dir, the repo allow-list the request
@@ -815,7 +815,7 @@ extension CMUXCLI {
         let parsedArgs = try parseOpenArguments(commandArgs)
 
         guard !parsedArgs.targets.isEmpty else {
-            throw CLIError(message: "open requires at least one path or URL. Usage: cmux open <path-or-url>...")
+            throw CLIError(message: "open requires at least one path or URL. Usage: amux open <path-or-url>...")
         }
 
         let explicitFocus: Bool?
@@ -916,7 +916,7 @@ extension CMUXCLI {
     ) throws {
         let parsedArgs = try parseDiffArguments(commandArgs)
         guard parsedArgs.inputs.count <= 1 else {
-            throw CLIError(message: "diff accepts at most one patch file. Usage: cmux diff [patch-file|-] [options]")
+            throw CLIError(message: "diff accepts at most one patch file. Usage: amux diff [patch-file|-] [options]")
         }
         if parsedArgs.source != nil, !parsedArgs.inputs.isEmpty {
             throw CLIError(message: "diff accepts either a patch file or a git source, not both")
@@ -1098,7 +1098,7 @@ extension CMUXCLI {
             ?? NSHomeDirectory()
         let binURL = URL(fileURLWithPath: homePath, isDirectory: true)
             .appendingPathComponent("Library/Developer/Xcode/DerivedData/cmux-\(tag)", isDirectory: true)
-            .appendingPathComponent("Build/Products/Debug/cmux DEV \(tag).app", isDirectory: true)
+            .appendingPathComponent("Build/Products/Debug/amux DEV \(tag).app", isDirectory: true)
             .appendingPathComponent("Contents/Resources/bin", isDirectory: true)
 
         for name in ["amux", "cmux"] {
@@ -1280,7 +1280,7 @@ extension CMUXCLI {
                     continue
                 default:
                     if arg.hasPrefix("-") {
-                        throw CLIError(message: "open: unknown flag '\(arg)'. Usage: cmux open <path-or-url>... [--workspace <id|ref|index>] [--surface <id|ref|index>] [--pane <id|ref|index>] [--window <id|ref|index>] [--focus true|false] [--no-focus]")
+                        throw CLIError(message: "open: unknown flag '\(arg)'. Usage: amux open <path-or-url>... [--workspace <id|ref|index>] [--surface <id|ref|index>] [--pane <id|ref|index>] [--window <id|ref|index>] [--focus true|false] [--no-focus]")
                     }
                 }
             }
@@ -1377,7 +1377,7 @@ extension CMUXCLI {
                     continue
                 default:
                     if arg.hasPrefix("-"), arg != "-" {
-                        throw CLIError(message: "diff: unknown flag '\(arg)'. Usage: cmux diff [patch-file|-] [--source <unstaged|staged|branch|last-turn>] [--workspace <id|ref|index>] [--surface <id|ref|index>] [--window <id|ref|index>] [--session <id>] [--cwd <path>] [--base <ref>] [--focus true|false] [--no-focus] [--title <text>] [--layout split|unified] [--font-size <points>]")
+                        throw CLIError(message: "diff: unknown flag '\(arg)'. Usage: amux diff [patch-file|-] [--source <unstaged|staged|branch|last-turn>] [--workspace <id|ref|index>] [--surface <id|ref|index>] [--window <id|ref|index>] [--session <id>] [--cwd <path>] [--base <ref>] [--focus true|false] [--no-focus] [--title <text>] [--layout split|unified] [--font-size <points>]")
                     }
                 }
             }
@@ -1497,13 +1497,13 @@ extension CMUXCLI {
 
         guard let rawInput, rawInput != "-" else {
             guard isatty(STDIN_FILENO) == 0 else {
-                throw CLIError(message: "diff requires a patch file, piped stdin, or a git source. Usage: cmux diff <patch-file>|-|--unstaged|--staged|--branch|--last-turn")
+                throw CLIError(message: "diff requires a patch file, piped stdin, or a git source. Usage: amux diff <patch-file>|-|--unstaged|--staged|--branch|--last-turn")
             }
             let data = FileHandle.standardInput.readDataToEndOfFile()
             return DiffInput(
                 patch: try decodeDiffData(data, sourceDescription: "stdin"),
                 sourceLabel: "stdin",
-                defaultTitle: "cmux diff",
+                defaultTitle: "amux diff",
                 emptyMessage: nil,
                 externalURL: nil
             )
@@ -1570,7 +1570,7 @@ extension CMUXCLI {
         return DiffInput(
             patch: try decodeDiffData(data, sourceDescription: resolved),
             sourceLabel: resolved,
-            defaultTitle: filename.isEmpty ? "cmux diff" : filename,
+            defaultTitle: filename.isEmpty ? "amux diff" : filename,
             emptyMessage: nil,
             externalURL: nil
         )
@@ -1602,7 +1602,7 @@ extension CMUXCLI {
         case .lastTurn:
             guard let workspaceId = normalizedDiffSourceValue(context.workspaceId),
                   let surfaceId = normalizedDiffSourceValue(context.surfaceId) else {
-                throw CLIError(message: "cmux diff --last-turn requires a workspace and surface context. Run it from a cmux terminal or pass --workspace and --surface.")
+                throw CLIError(message: "amux diff --last-turn requires a workspace and surface context. Run it from an amux terminal or pass --workspace and --surface.")
             }
             let sessionId = normalizedDiffSourceValue(context.sessionId)
             let env = ProcessInfo.processInfo.environment
@@ -1798,7 +1798,7 @@ extension CMUXCLI {
         if !last.isEmpty {
             return last
         }
-        return url.host ?? "cmux diff"
+        return url.host ?? "amux diff"
     }
 
     private func decodeDiffData(_ data: Data, sourceDescription: String) throws -> String {
@@ -1827,7 +1827,7 @@ extension CMUXCLI {
         do {
             return try standardizedDiffSourcePath(gitSingleLine(["rev-parse", "--show-toplevel"], in: directory))
         } catch {
-            throw CLIError(message: "cmux diff git sources require a git repository")
+            throw CLIError(message: "amux diff git sources require a git repository")
         }
     }
 
@@ -5266,7 +5266,7 @@ extension CMUXCLI {
 
     // MARK: - Headless picker commands (for the in-app custom-scheme handler)
 
-    /// `cmux __diff-viewer-refs --repo <root> [--base <ref>]` -> grouped refs JSON
+    /// `amux __diff-viewer-refs --repo <root> [--base <ref>]` -> grouped refs JSON
     /// on stdout. Validates `repo` against the persisted session allow-list so it
     /// cannot enumerate refs of an arbitrary repository. Used by the in-app
     /// custom-scheme handler to mirror the HTTP `/__cmux_diff_viewer_refs` route.
@@ -5316,7 +5316,7 @@ extension CMUXCLI {
         cliWriteStdout(Data("\n".utf8))
     }
 
-    /// `cmux __diff-viewer-branch --group <g> --repo <root> --base <ref>` ->
+    /// `amux __diff-viewer-branch --group <g> --repo <root> --base <ref>` ->
     /// regenerate the branch page into the secure dir and print the new viewer URL
     /// (custom-scheme form) on stdout. Used by the in-app custom-scheme handler to
     /// mirror the HTTP `/__cmux_diff_viewer_branch` route after an app restart,
@@ -5812,7 +5812,7 @@ extension CMUXCLI {
 
     private func startDiffViewerHTTPServer(rootDirectory: URL, runtime: URL? = nil) throws -> URL {
         guard let executableURL = diffViewerExecutableURL(for: runtime) else {
-            throw CLIError(message: "Failed to resolve cmux executable for diff viewer server")
+            throw CLIError(message: "Failed to resolve amux executable for diff viewer server")
         }
 
         let process = Process()
@@ -7623,7 +7623,7 @@ extension CMUXCLI {
 
         let appAssetPaths = try diffViewerBundledAssetRelativePaths(in: appAssets.sourceDirectory)
         guard appAssetPaths.contains("main.mjs") else {
-            throw CLIError(message: "Bundled cmux diff viewer app entry asset not found")
+            throw CLIError(message: "Bundled amux diff viewer app entry asset not found")
         }
         for assetPath in appAssetPaths {
             try copyDiffViewerAsset(relativePath: assetPath, from: appAssets.sourceDirectory, to: targetAppDirectory)
@@ -7657,7 +7657,7 @@ extension CMUXCLI {
             if FileManager.default.fileExists(atPath: appDirectory.path, isDirectory: &isDirectory),
                isDirectory.boolValue,
                FileManager.default.fileExists(atPath: entry.path) {
-                // The shared /tmp asset cache is written by every running cmux
+                // The shared /tmp asset cache is written by every running amux
                 // build (stable, nightly, each tagged dev app). Content-key the
                 // directory so builds with different webview bundles coexist
                 // instead of clobbering each other's chunks, which broke pages
@@ -7666,7 +7666,7 @@ extension CMUXCLI {
                 return (sourceDirectory: appDirectory, targetDirectoryName: targetName)
             }
         }
-        throw CLIError(message: "Bundled cmux diff viewer app assets not found")
+        throw CLIError(message: "Bundled amux diff viewer app assets not found")
     }
 
     private func diffViewerAppAssetContentKey(directory: URL) throws -> String {
@@ -7931,9 +7931,9 @@ extension CMUXCLI {
 
     func openSubcommandUsage() -> String {
         """
-        Usage: cmux open <path-or-url>... [options]
+        Usage: amux open <path-or-url>... [options]
 
-        Open files, directories, or URLs in cmux.
+        Open files, directories, or URLs in amux.
         HTML files open in browser splits without focusing by default.
         Markdown files open in markdown preview tabs; other files open in file preview tabs.
         Multiple files open as tabs in the same target pane.
@@ -7947,19 +7947,19 @@ extension CMUXCLI {
           --no-focus                   Do not focus opened file previews
 
         Examples:
-          cmux open report.pdf
-          cmux open image-a.png image-b.jpg
-          cmux open ~/Downloads/movie.mov --pane pane:1
-          cmux open https://example.com
+          amux open report.pdf
+          amux open image-a.png image-b.jpg
+          amux open ~/Downloads/movie.mov --pane pane:1
+          amux open https://example.com
         """
     }
 
     func diffSubcommandUsage() -> String {
         """
-        Usage: cmux diff [patch-file|-] [options]
+        Usage: amux diff [patch-file|-] [options]
 
-        Render a unified diff or patch in a cmux browser split.
-        With no patch file or source, cmux diff reads piped stdin.
+        Render a unified diff or patch in an amux browser split.
+        With no patch file or source, amux diff reads piped stdin.
 
         Options:
           --source <name>              Diff source: unstaged, staged, branch, last-turn
@@ -7980,14 +7980,14 @@ extension CMUXCLI {
           --font-size <points>         Set diff font size (default: 10)
 
         Examples:
-          cmux diff changes.patch
-          git diff | cmux diff
-          cmux diff --unstaged
-          cmux diff --staged
-          cmux diff --branch
-          cmux diff --branch --base upstream/main --repo ../repo
-          cmux diff --last-turn
-          cmux diff pr.patch --layout unified --font-size 15 --focus true
+          amux diff changes.patch
+          git diff | amux diff
+          amux diff --unstaged
+          amux diff --staged
+          amux diff --branch
+          amux diff --branch --base upstream/main --repo ../repo
+          amux diff --last-turn
+          amux diff pr.patch --layout unified --font-size 15 --focus true
         """
     }
 

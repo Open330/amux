@@ -15,7 +15,7 @@ final class UpdateDriver: NSObject, @preconcurrency SPUUserDriver {
     let log: any UpdateLogging
     private let clock: any UpdateClock
     let infoFeedURLProvider: () -> String?
-    /// Whether the running build is a cmux DEV/staging build that is not on the public release
+    /// Whether the running build is an amux DEV/staging build that is not on the public release
     /// train. When `true`, the driver must never surface the public appcast's update pill (see
     /// ``UpdateController/isDevLikeBundleIdentifier(_:)``).
     let isDevLikeBundle: Bool

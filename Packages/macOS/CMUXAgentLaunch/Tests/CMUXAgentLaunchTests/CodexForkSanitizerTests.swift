@@ -101,7 +101,7 @@ struct CodexForkSanitizerTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "codex-teams",
                     "--model",
                     "gpt-5.4",
@@ -117,7 +117,7 @@ struct CodexForkSanitizerTests {
                 launcher: "codexTeams",
                 fallbackKind: "codex"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "codex-teams",
                 "--model",
                 "gpt-5.4",

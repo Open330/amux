@@ -37,9 +37,9 @@ export default function ClaudeCodeTeamsPage() {
       />
 
       <DocsHeading level={2} id="usage">{t("usage")}</DocsHeading>
-      <CodeBlock lang="bash">{`cmux claude-teams
-cmux claude-teams --continue
-cmux claude-teams --model sonnet`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux claude-teams
+amux claude-teams --continue
+amux claude-teams --model sonnet`}</CodeBlock>
       <p>{t("usageDesc")}</p>
 
       <DocsHeading level={2} id="how-it-works">{t("howItWorks")}</DocsHeading>

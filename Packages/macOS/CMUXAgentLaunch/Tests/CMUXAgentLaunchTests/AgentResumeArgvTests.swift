@@ -282,9 +282,9 @@ struct AgentResumeArgvTests {
         // already-portable quoted words stay unwrapped.
         #expect(
             AgentResumeArgv.renderedPortableClaudeResumeShellCommand(
-                parts: ["/Applications/cmux.app/Contents/Resources/bin/cmux", "claude-teams", "--resume", "SID"],
+                parts: ["/Applications/amux.app/Contents/Resources/bin/cmux", "claude-teams", "--resume", "SID"],
                 quote: quote
-            ) == "'/Applications/cmux.app/Contents/Resources/bin/cmux' 'claude-teams' '--resume' 'SID'"
+            ) == "'/Applications/amux.app/Contents/Resources/bin/cmux' 'claude-teams' '--resume' 'SID'"
         )
     }
 
@@ -318,9 +318,9 @@ struct AgentResumeArgvTests {
         // No bare `codex` executable: already-portable words stay unwrapped.
         #expect(
             AgentResumeArgv.renderedPortableCodexResumeShellCommand(
-                parts: ["/Applications/cmux.app/Contents/Resources/bin/cmux", "codex-teams", "resume", "SID"],
+                parts: ["/Applications/amux.app/Contents/Resources/bin/cmux", "codex-teams", "resume", "SID"],
                 quote: quote
-            ) == "'/Applications/cmux.app/Contents/Resources/bin/cmux' 'codex-teams' 'resume' 'SID'"
+            ) == "'/Applications/amux.app/Contents/Resources/bin/cmux' 'codex-teams' 'resume' 'SID'"
         )
     }
 }

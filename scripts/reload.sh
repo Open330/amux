@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="cmux DEV"
-BUNDLE_ID="com.cmuxterm.app.debug"
-BASE_APP_NAME="cmux DEV"
+APP_NAME="amux DEV"
+BUNDLE_ID="com.open330.amux.debug"
+BASE_APP_NAME="amux DEV"
 DERIVED_DATA=""
 NAME_SET=0
 BUNDLE_SET=0
@@ -76,7 +76,7 @@ if [[ -n "\$SOCKET_ARG" ]]; then
     TAG="\${SOCKET_NAME#cmux-debug-}"
     TAG="\${TAG%.sock}"
     if [[ "\$TAG" =~ ^[A-Za-z0-9_-]+$ ]]; then
-      TAG_APP="\$HOME/Library/Developer/Xcode/DerivedData/cmux-\$TAG/Build/Products/Debug/cmux DEV \$TAG.app"
+      TAG_APP="\$HOME/Library/Developer/Xcode/DerivedData/cmux-\$TAG/Build/Products/Debug/amux DEV \$TAG.app"
       TAG_CLI="\$TAG_APP/Contents/Resources/bin/amux"
       if [[ ! -x "\$TAG_CLI" ]]; then
         TAG_CLI="\$TAG_APP/Contents/Resources/bin/cmux"
@@ -113,7 +113,7 @@ EOF
 
 select_cli_shim_target() {
   local command_name="$1"
-  local app_cli_dir="/Applications/cmux.app/Contents/Resources/bin"
+  local app_cli_dir="/Applications/amux.app/Contents/Resources/bin"
   local marker_regex="(amux|cmux) dev shim \\(managed by scripts/reload.sh\\)"
   local target=""
   local path_entry=""
@@ -186,17 +186,17 @@ publish_reload_cli_path() {
 
   # Stable shim that always follows the last reload-selected dev CLI.
   DEV_CLI_SHIM="$HOME/.local/bin/amux-dev"
-  write_dev_cli_shim "$DEV_CLI_SHIM" "/Applications/cmux.app/Contents/Resources/bin/amux"
+  write_dev_cli_shim "$DEV_CLI_SHIM" "/Applications/amux.app/Contents/Resources/bin/amux"
   COMPAT_DEV_CLI_SHIM="$HOME/.local/bin/cmux-dev"
-  write_dev_cli_shim "$COMPAT_DEV_CLI_SHIM" "/Applications/cmux.app/Contents/Resources/bin/amux"
+  write_dev_cli_shim "$COMPAT_DEV_CLI_SHIM" "/Applications/amux.app/Contents/Resources/bin/amux"
 
   AMUX_SHIM_TARGET="$(select_amux_shim_target || true)"
   if [[ -n "${AMUX_SHIM_TARGET:-}" ]]; then
-    write_dev_cli_shim "$AMUX_SHIM_TARGET" "/Applications/cmux.app/Contents/Resources/bin/amux"
+    write_dev_cli_shim "$AMUX_SHIM_TARGET" "/Applications/amux.app/Contents/Resources/bin/amux"
   fi
   CMUX_SHIM_TARGET="$(select_cmux_shim_target || true)"
   if [[ -n "${CMUX_SHIM_TARGET:-}" ]]; then
-    write_dev_cli_shim "$CMUX_SHIM_TARGET" "/Applications/cmux.app/Contents/Resources/bin/amux"
+    write_dev_cli_shim "$CMUX_SHIM_TARGET" "/Applications/amux.app/Contents/Resources/bin/amux"
   fi
 }
 
@@ -226,12 +226,12 @@ write_last_socket_path() {
         tmp_marker="/tmp/cmux-nightly-last-socket-path"
       fi
       ;;
-    com.cmuxterm.app.staging)
+    com.open330.amux.staging)
       marker_name="staging-last-socket-path"
       tmp_marker="/tmp/cmux-staging-last-socket-path"
       ;;
-    com.cmuxterm.app.staging.*)
-      slug="$(sanitize_path "${bundle_id#com.cmuxterm.app.staging.}")"
+    com.open330.amux.staging.*)
+      slug="$(sanitize_path "${bundle_id#com.open330.amux.staging.}")"
       if [[ -n "$slug" ]]; then
         marker_name="staging-${slug}-last-socket-path"
         tmp_marker="/tmp/cmux-staging-${slug}-last-socket-path"
@@ -240,15 +240,15 @@ write_last_socket_path() {
         tmp_marker="/tmp/cmux-staging-last-socket-path"
       fi
       ;;
-    com.cmuxterm.app.debug)
+    com.open330.amux.debug)
       slug="${TAG_SLUG:-}"
       if [[ -n "$slug" ]]; then
         marker_name="dev-${slug}-last-socket-path"
         tmp_marker="/tmp/cmux-dev-${slug}-last-socket-path"
       fi
       ;;
-    com.cmuxterm.app.debug.*)
-      slug="$(sanitize_path "${bundle_id#com.cmuxterm.app.debug.}")"
+    com.open330.amux.debug.*)
+      slug="$(sanitize_path "${bundle_id#com.open330.amux.debug.}")"
       if [[ -n "$slug" ]]; then
         marker_name="dev-${slug}-last-socket-path"
         tmp_marker="/tmp/cmux-dev-${slug}-last-socket-path"
@@ -474,14 +474,14 @@ print_tag_cleanup_reminder() {
     done
     echo "Cleanup stale tags only:"
     for tag in "${stale_tags[@]}"; do
-      echo "  pkill -f \"cmux DEV ${tag}.app/Contents/MacOS/cmux DEV\""
+      echo "  pkill -f \"amux DEV ${tag}.app/Contents/MacOS/amux DEV\""
       echo "  rm -rf \"$(tagged_derived_data_path "$tag")\" \"/tmp/cmux-${tag}\" \"/tmp/cmux-debug-${tag}.sock\""
       echo "  rm -f \"/tmp/cmux-debug-${tag}.log\""
       echo "  rm -f \"$HOME/Library/Application Support/cmux/cmuxd-dev-${tag}.sock\""
     done
   fi
   echo "After you verify current tag, cleanup command:"
-  echo "  pkill -f \"cmux DEV ${current_slug}.app/Contents/MacOS/cmux DEV\""
+  echo "  pkill -f \"amux DEV ${current_slug}.app/Contents/MacOS/amux DEV\""
   echo "  rm -rf \"$(tagged_derived_data_path "$current_slug")\" \"/tmp/cmux-${current_slug}\" \"/tmp/cmux-debug-${current_slug}.sock\""
   echo "  rm -f \"/tmp/cmux-debug-${current_slug}.log\""
   echo "  rm -f \"$HOME/Library/Application Support/cmux/cmuxd-dev-${current_slug}.sock\""
@@ -566,10 +566,10 @@ if [[ -n "$TAG" ]]; then
     exit 1
   fi
   if [[ "$NAME_SET" -eq 0 ]]; then
-    APP_NAME="cmux DEV ${TAG_SLUG}"
+    APP_NAME="amux DEV ${TAG_SLUG}"
   fi
   if [[ "$BUNDLE_SET" -eq 0 ]]; then
-    BUNDLE_ID="com.cmuxterm.app.debug.${TAG_ID}"
+    BUNDLE_ID="com.open330.amux.debug.${TAG_ID}"
   fi
   if [[ "$DERIVED_SET" -eq 0 ]]; then
     DERIVED_DATA="$(tagged_derived_data_path "$TAG_SLUG")"
@@ -644,7 +644,7 @@ reload_finalize() {
     echo "  $CMUX_DEV_ORIGIN"
     if [[ -n "${TAG_SLUG:-}" ]]; then
       echo "Dev web command:"
-      echo "  cd web && CMUX_PORT=$CMUX_DEV_PORT CMUX_PORT_RANGE=$CMUX_DEV_PORT_RANGE CMUX_PORT_END=$CMUX_DEV_PORT_END CMUX_AUTH_CALLBACK_SCHEME=cmux-dev-$TAG_SLUG bun dev"
+      echo "  cd web && CMUX_PORT=$CMUX_DEV_PORT CMUX_PORT_RANGE=$CMUX_DEV_PORT_RANGE CMUX_PORT_END=$CMUX_DEV_PORT_END CMUX_AUTH_CALLBACK_SCHEME=amux-dev-$TAG_SLUG bun dev"
     fi
   fi
   if [[ -x "${CLI_PATH:-}" ]]; then
@@ -972,7 +972,7 @@ if [[ -n "$TAG" && "$APP_NAME" != "$SEARCH_APP_NAME" ]]; then
       CMUXD_SOCKET="${APP_SUPPORT_DIR}/cmuxd-dev-${TAG_SLUG}.sock"
       CMUX_SOCKET_PATH_VALUE="/tmp/cmux-debug-${TAG_SLUG}.sock"
       CMUX_DEBUG_LOG="/tmp/cmux-debug-${TAG_SLUG}.log"
-      CMUX_AUTH_CALLBACK_SCHEME_VALUE="cmux-dev-${TAG_SLUG}"
+      CMUX_AUTH_CALLBACK_SCHEME_VALUE="amux-dev-${TAG_SLUG}"
       write_last_socket_path "$CMUX_SOCKET_PATH_VALUE"
       echo "$CMUX_DEBUG_LOG" > /tmp/cmux-last-debug-log-path || true
       /usr/libexec/PlistBuddy -c "Add :LSEnvironment dict" "$INFO_PLIST" 2>/dev/null || true
@@ -1142,9 +1142,9 @@ if [[ "$LAUNCH" -eq 1 ]]; then
   # password into the long-lived GUI process environment would leak it to every
   # child terminal/CLI it spawns, for zero added coverage, so we deliberately do
   # not set CMUX_UITEST_STACK_* here.
-  LAUNCH_AUTH_CALLBACK_SCHEME="cmux-dev"
+  LAUNCH_AUTH_CALLBACK_SCHEME="amux-dev"
   if [[ -n "${TAG_SLUG:-}" ]]; then
-    LAUNCH_AUTH_CALLBACK_SCHEME="cmux-dev-${TAG_SLUG}"
+    LAUNCH_AUTH_CALLBACK_SCHEME="amux-dev-${TAG_SLUG}"
   fi
   TAG_LAUNCH_ENV=(
     CMUX_TAG="${TAG_SLUG:-}"

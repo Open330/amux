@@ -5,11 +5,11 @@
 public struct RemoteDaemonStrings: Sendable, Equatable {
     /// `remoteDaemon.error.missingPersistentPTYCapability` —
     /// "remote daemon does not support persistent SSH PTY sessions; reconnect
-    /// the remote workspace to update cmux".
+    /// the remote workspace to update amux".
     public let missingPersistentPTYCapability: String
     /// `remoteDaemon.error.missingRequiredFunctionality` —
     /// "remote daemon is missing required functionality; reconnect the remote
-    /// workspace to update cmux".
+    /// workspace to update amux".
     public let missingRequiredFunctionality: String
 
     /// Creates the strings bundle from pre-resolved localized strings.

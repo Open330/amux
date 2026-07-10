@@ -13,8 +13,8 @@ final class AppearanceSettingsTests: XCTestCase {
     func testBundleIconPersistenceAllowsStableReleaseBundle() {
         XCTAssertTrue(
             AppBundleIconPersistencePolicy.shouldPersist(
-                bundleIdentifier: "com.cmuxterm.app",
-                appBundleLastPathComponent: "cmux.app",
+                bundleIdentifier: "com.open330.amux",
+                appBundleLastPathComponent: "amux.app",
                 persistenceDisabled: false
             )
         )
@@ -40,7 +40,7 @@ final class AppearanceSettingsTests: XCTestCase {
     func testBundleIconPersistenceRejectsMismatchedStableIdentifierAndPath() {
         XCTAssertFalse(
             AppBundleIconPersistencePolicy.shouldPersist(
-                bundleIdentifier: "com.cmuxterm.app",
+                bundleIdentifier: "com.open330.amux",
                 appBundleLastPathComponent: "cmux NIGHTLY.app",
                 persistenceDisabled: false
             )
@@ -50,15 +50,15 @@ final class AppearanceSettingsTests: XCTestCase {
     func testBundleIconPersistenceSkipsDebugBundles() {
         XCTAssertFalse(
             AppBundleIconPersistencePolicy.shouldPersist(
-                bundleIdentifier: "com.cmuxterm.app.debug",
-                appBundleLastPathComponent: "cmux DEV.app",
+                bundleIdentifier: "com.open330.amux.debug",
+                appBundleLastPathComponent: "amux DEV.app",
                 persistenceDisabled: false
             )
         )
         XCTAssertFalse(
             AppBundleIconPersistencePolicy.shouldPersist(
-                bundleIdentifier: "com.cmuxterm.app.debug.issue-4350",
-                appBundleLastPathComponent: "cmux DEV issue-4350.app",
+                bundleIdentifier: "com.open330.amux.debug.issue-4350",
+                appBundleLastPathComponent: "amux DEV issue-4350.app",
                 persistenceDisabled: false
             )
         )
@@ -67,8 +67,8 @@ final class AppearanceSettingsTests: XCTestCase {
     func testBundleIconPersistenceHonorsDisableDefault() {
         XCTAssertFalse(
             AppBundleIconPersistencePolicy.shouldPersist(
-                bundleIdentifier: "com.cmuxterm.app",
-                appBundleLastPathComponent: "cmux.app",
+                bundleIdentifier: "com.open330.amux",
+                appBundleLastPathComponent: "amux.app",
                 persistenceDisabled: true
             )
         )

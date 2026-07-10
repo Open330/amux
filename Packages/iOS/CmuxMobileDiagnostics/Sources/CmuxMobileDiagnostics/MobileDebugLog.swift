@@ -41,7 +41,7 @@ public struct MobileDebugLog: Sendable {
     }
 
     /// Identifies the running build so a pasted log proves which reload it came
-    /// from: the bundle name (carries the `--tag`, e.g. "cmux DEV grid") plus
+    /// from: the bundle name (carries the `--tag`, e.g. "amux DEV grid") plus
     /// the executable's build timestamp (changes on every rebuild). All dev
     /// builds share `CFBundleVersion = 1`, so the exec mtime is the only signal
     /// that distinguishes one reload from the next.

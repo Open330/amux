@@ -14,6 +14,7 @@ import { DevPanel } from "./components/spacing-control";
 import { ThemeBootstrapScript } from "./theme-bootstrap-script";
 import { darkThemeColor, lightThemeColor } from "./theme-colors";
 import { DOWNLOAD_URL } from "../lib/download";
+import { GITHUB_REPOSITORY_URL, PRODUCT_NAME, PUBLIC_SITE_URL } from "../lib/product";
 import "../globals.css";
 
 type MessageTree = Record<string, unknown>;
@@ -92,7 +93,7 @@ export async function generateMetadata({
       title: t("title"),
       description: t("ogDescription"),
       url: alternates.canonical,
-      siteName: "cmux",
+      siteName: PRODUCT_NAME,
       type: "website",
     },
     twitter: {
@@ -101,7 +102,7 @@ export async function generateMetadata({
       description: t("ogDescription"),
     },
     alternates,
-    metadataBase: new URL("https://cmux.com"),
+    metadataBase: new URL(PUBLIC_SITE_URL),
   };
 }
 
@@ -131,17 +132,17 @@ export default async function LocaleLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "cmux",
+    name: PRODUCT_NAME,
     operatingSystem: "macOS",
     applicationCategory: "DeveloperApplication",
-    url: "https://cmux.com",
+    url: PUBLIC_SITE_URL,
     downloadUrl: DOWNLOAD_URL,
     description:
       "Free and open source native macOS terminal built on Ghostty. Works with Claude Code, Codex, OpenCode, Gemini CLI, Kiro, Aider, and any CLI tool. Vertical tabs, notification rings, split panes, and a socket API.",
     keywords:
       "terminal, macOS, open source terminal, Claude Code, Codex, OpenCode, Gemini CLI, Kiro, Aider, AI coding agents, Ghostty",
     isAccessibleForFree: true,
-    license: "https://github.com/manaflow-ai/cmux/blob/main/LICENSE",
+    license: `${GITHUB_REPOSITORY_URL}/blob/main/LICENSE`,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
   const jsonLdScript = JSON.stringify(jsonLd).replace(/</g, "\\u003c");

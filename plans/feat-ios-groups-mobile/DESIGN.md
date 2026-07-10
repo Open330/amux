@@ -63,4 +63,4 @@ New strings via L10n.string/String(localized:) keys in
 
 ## Verify
 Build-only on iOS simulator with tagged derivedDataPath. No xcodebuild test
-locally. No stray cmux DEV launch.
+locally. No stray amux DEV launch.

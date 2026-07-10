@@ -26,6 +26,9 @@ public struct SettingsRuntime: @unchecked Sendable {
     public let errorLog: SettingsErrorLog
     /// Optional host-owned account flow actions.
     public let accountFlow: AccountFlow?
+    /// Whether account and mobile pairing sections backed by the host's
+    /// external services are visible.
+    public let exposesHostedServiceSections: Bool
     /// Host callbacks for actions the package cannot perform itself.
     public let hostActions: SettingsHostActions
 
@@ -49,16 +52,22 @@ public struct SettingsRuntime: @unchecked Sendable {
         secretStore: SecretFileStore,
         errorLog: SettingsErrorLog,
         accountFlow: AccountFlow? = nil,
+        exposesHostedServiceSections: Bool = true,
         hostActions: SettingsHostActions = NoopSettingsHostActions(),
         searchIndex: SettingsSearchIndex? = nil
     ) {
         self.catalog = catalog
-        self.searchIndex = searchIndex ?? SettingsSearchIndex(catalog: catalog)
+        let hostedSections: Set<SettingsSectionID> = [.account, .mobile]
+        self.searchIndex = searchIndex ?? SettingsSearchIndex(
+            catalog: catalog,
+            excludedSections: exposesHostedServiceSections ? [] : hostedSections
+        )
         self.userDefaultsStore = userDefaultsStore
         self.jsonStore = jsonStore
         self.secretStore = secretStore
         self.errorLog = errorLog
         self.accountFlow = accountFlow
+        self.exposesHostedServiceSections = exposesHostedServiceSections
         self.hostActions = hostActions
     }
 }

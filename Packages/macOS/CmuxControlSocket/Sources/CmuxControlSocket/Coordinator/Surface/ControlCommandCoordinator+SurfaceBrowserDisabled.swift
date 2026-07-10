@@ -8,7 +8,7 @@ extension ControlCommandCoordinator {
         case .invalidURL(let rawURL):
             return .err(code: "invalid_params", message: "Invalid URL", data: .object(["url": .string(rawURL)]))
         case .noURL:
-            return .err(code: "browser_disabled", message: "cmux browser is disabled", data: nil)
+            return .err(code: "browser_disabled", message: "amux browser is disabled", data: nil)
         case .externalOpenFailed(let url):
             return .err(
                 code: "external_open_failed",

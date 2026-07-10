@@ -298,25 +298,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Feedback is unavailable right now. Email founders@manaflow.com instead."
+            "value": "Feedback submission is unavailable. Open an issue at github.com/Open330/amux/issues."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在フィードバックを送信できません。代わりに founders@manaflow.com までメールしてください。"
+            "value": "フィードバックを送信できません。github.com/Open330/amux/issues で Issue を作成してください。"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Відгуки зараз недоступні. Напишіть на founders@manaflow.com."
+            "value": "Надсилання відгуків недоступне. Створіть issue на github.com/Open330/amux/issues."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "현재 피드백을 사용할 수 없습니다. 대신 founders@manaflow.com으로 이메일을 보내주세요."
+            "value": "피드백을 제출할 수 없습니다. github.com/Open330/amux/issues에 이슈를 등록해 주세요."
           }
         }
       }
@@ -501,25 +501,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You can also reach us at founders@manaflow.com."
+            "value": "You can also open an issue at github.com/Open330/amux/issues."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "founders@manaflow.com 宛てに直接ご連絡いただくこともできます。"
+            "value": "github.com/Open330/amux/issues で Issue を作成することもできます。"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ви також можете написати нам на founders@manaflow.com."
+            "value": "Ви також можете створити issue на github.com/Open330/amux/issues."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "founders@manaflow.com으로도 연락하실 수 있습니다."
+            "value": "github.com/Open330/amux/issues에 이슈를 등록할 수도 있습니다."
           }
         }
       }
@@ -617,25 +617,25 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You can also reach us at founders@manaflow.com."
+            "value": "You can also open an issue at github.com/Open330/amux/issues."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "founders@manaflow.com 宛てに直接ご連絡いただくこともできます。"
+            "value": "github.com/Open330/amux/issues で Issue を作成することもできます。"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ви також можете написати нам на founders@manaflow.com."
+            "value": "Ви також можете створити issue на github.com/Open330/amux/issues."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "founders@manaflow.com으로도 연락하실 수 있습니다."
+            "value": "github.com/Open330/amux/issues에 이슈를 등록할 수도 있습니다."
           }
         }
       }

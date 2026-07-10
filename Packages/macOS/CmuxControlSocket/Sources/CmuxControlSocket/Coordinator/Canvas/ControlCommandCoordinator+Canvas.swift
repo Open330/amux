@@ -289,7 +289,7 @@ extension ControlCommandCoordinator {
                 "surface_ref": ref(.surface, surfaceID),
             ]))
         case .tabManagerUnavailable:
-            return .err(code: "unavailable", message: "No active cmux window", data: nil)
+            return .err(code: "unavailable", message: "No active amux window", data: nil)
         case .workspaceNotFound:
             return .err(code: "not_found", message: "Workspace not found", data: nil)
         case .notCanvasMode:

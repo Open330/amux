@@ -30,13 +30,13 @@ struct FishShellIntegrationTests {
         var protectedKeys: Set<String> = []
 
         TerminalSurface.applyManagedFishStartupEnvironment(
-            integrationDir: "/Applications/cmux.app/Contents/Resources/shell-integration",
+            integrationDir: "/Applications/amux.app/Contents/Resources/shell-integration",
             to: &environment,
             protectedKeys: &protectedKeys
         )
 
         expectEqual(environment["XDG_CONFIG_HOME"], "/Users/example/.config")
-        expectEqual(environment["CMUX_FISH_INTEGRATION_FILE"], "/Applications/cmux.app/Contents/Resources/shell-integration/fish/config.fish")
+        expectEqual(environment["CMUX_FISH_INTEGRATION_FILE"], "/Applications/amux.app/Contents/Resources/shell-integration/fish/config.fish")
         expectEqual(environment["CMUX_FISH_USER_CONFIG_ALREADY_LOADED"], "1")
         expectFalse(protectedKeys.contains("XDG_CONFIG_HOME"))
         expectTrue(protectedKeys.contains("CMUX_FISH_INTEGRATION_FILE"))
@@ -45,17 +45,17 @@ struct FishShellIntegrationTests {
 
     @Test
     func testApplyManagedFishStartupEnvironmentAvoidsRecursiveConfigHome() {
-        var environment = ["XDG_CONFIG_HOME": "/Applications/cmux.app/Contents/Resources/shell-integration/"]
+        var environment = ["XDG_CONFIG_HOME": "/Applications/amux.app/Contents/Resources/shell-integration/"]
         var protectedKeys: Set<String> = []
 
         TerminalSurface.applyManagedFishStartupEnvironment(
-            integrationDir: "/Applications/cmux.app/Contents/Resources/shell-integration",
+            integrationDir: "/Applications/amux.app/Contents/Resources/shell-integration",
             to: &environment,
             protectedKeys: &protectedKeys
         )
 
-        expectEqual(environment["XDG_CONFIG_HOME"], "/Applications/cmux.app/Contents/Resources/shell-integration/")
-        expectEqual(environment["CMUX_FISH_INTEGRATION_FILE"], "/Applications/cmux.app/Contents/Resources/shell-integration/fish/config.fish")
+        expectEqual(environment["XDG_CONFIG_HOME"], "/Applications/amux.app/Contents/Resources/shell-integration/")
+        expectEqual(environment["CMUX_FISH_INTEGRATION_FILE"], "/Applications/amux.app/Contents/Resources/shell-integration/fish/config.fish")
         expectEqual(environment["CMUX_FISH_USER_CONFIG_ALREADY_LOADED"], "1")
         expectFalse(protectedKeys.contains("XDG_CONFIG_HOME"))
         expectTrue(protectedKeys.contains("CMUX_FISH_INTEGRATION_FILE"))
@@ -64,9 +64,9 @@ struct FishShellIntegrationTests {
 
     @Test
     func testManagedFishShellCommandLetsGhosttyApplyLoginExecWrapper() {
-        let command = TerminalSurface.managedFishShellCommand(shell: "/Applications/cmux DEV fishsh.app/fish")
+        let command = TerminalSurface.managedFishShellCommand(shell: "/Applications/amux DEV fishsh.app/fish")
 
-        expectEqual(command, "'/Applications/cmux DEV fishsh.app/fish' -il --init-command 'source \"$CMUX_FISH_INTEGRATION_FILE\"'")
+        expectEqual(command, "'/Applications/amux DEV fishsh.app/fish' -il --init-command 'source \"$CMUX_FISH_INTEGRATION_FILE\"'")
         expectFalse(command.hasPrefix("exec "))
     }
 

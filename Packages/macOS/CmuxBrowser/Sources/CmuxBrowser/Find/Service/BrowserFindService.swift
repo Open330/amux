@@ -12,7 +12,7 @@ internal import os
 @MainActor
 public final class BrowserFindService {
     private let evaluator: any BrowserFindScriptEvaluating
-    private let log = Logger(subsystem: "com.cmux.browser", category: "find")
+    private let log = Logger(subsystem: "com.open330.amux", category: "find")
 
     /// Creates a find service bound to a script evaluator.
     /// - Parameter evaluator: The seam that evaluates find scripts in the page.

@@ -1,11 +1,15 @@
 import Foundation
 
 enum MenuBarProfilingProfilePreview {
-    static let recipient = "founders@manaflow.com"
+    static let recipient = ProcessInfo.processInfo.environment["CMUX_PROFILE_FEEDBACK_EMAIL"]?
+        .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+    static var isSubmissionConfigured: Bool {
+        !recipient.isEmpty
+    }
 
     static func text(outputURL: URL, email: String, summary: String) -> String {
-        [
-            String(format: String(localized: "statusMenu.profiling.previewRecipient", defaultValue: "Recipient: %@"), recipient),
+        var lines = [
             String(format: String(localized: "statusMenu.profiling.previewEmailFormat", defaultValue: "Your email: %@"), email),
             String(format: String(localized: "statusMenu.profiling.previewAttachmentFormat", defaultValue: "Attachment: %@"), outputURL.lastPathComponent + ".zip"),
             String(localized: "statusMenu.profiling.previewArchiveNote", defaultValue: "The email includes a zip with traces, logs, summary.md, and system-info.txt."),
@@ -14,7 +18,14 @@ enum MenuBarProfilingProfilePreview {
             "",
             String(localized: "statusMenu.profiling.previewSummaryHeader", defaultValue: "summary.md preview:"),
             summary,
-        ].joined(separator: "\n")
+        ]
+        if isSubmissionConfigured {
+            lines.insert(
+                String(format: String(localized: "statusMenu.profiling.previewRecipient", defaultValue: "Recipient: %@"), recipient),
+                at: 0
+            )
+        }
+        return lines.joined(separator: "\n")
     }
 
     static func summaryText(for outputURL: URL) -> String {

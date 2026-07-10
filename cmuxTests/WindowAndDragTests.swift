@@ -3350,7 +3350,7 @@ final class FilePreviewPanelTextSavingTests: XCTestCase {
 
     func testExternalOpenApplicationResolverFallsBackWhenDefaultAppIsFiltered() {
         let fileURL = URL(fileURLWithPath: "/tmp/cmux-sample.pdf")
-        let cmuxURL = URL(fileURLWithPath: "/Applications/cmux.app")
+        let cmuxURL = URL(fileURLWithPath: "/Applications/amux.app")
         let previewURL = URL(fileURLWithPath: "/System/Applications/Preview.app")
         let resolver = FileExternalOpenApplicationResolver(
             defaultApplicationURL: { _ in cmuxURL },

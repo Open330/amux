@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup EXIT
 
 FAKE_HOME="$TMP_DIR/home"
-FAKE_CLI_DIR="$FAKE_HOME/Library/Developer/Xcode/DerivedData/cmux-${TAG_SLUG}/Build/Products/Debug/cmux DEV ${TAG_SLUG}.app/Contents/Resources/bin"
+FAKE_CLI_DIR="$FAKE_HOME/Library/Developer/Xcode/DerivedData/cmux-${TAG_SLUG}/Build/Products/Debug/amux DEV ${TAG_SLUG}.app/Contents/Resources/bin"
 FAKE_CLI="$FAKE_CLI_DIR/cmux"
 mkdir -p "$FAKE_CLI_DIR"
 cat > "$FAKE_CLI" <<'EOF'
@@ -76,7 +76,7 @@ OUTPUT="$(
   CMUX_SOCKET_PATH="/tmp/main-cmux.sock" \
   CMUX_SOCKET_PASSWORD="main-secret" \
   CMUX_BUNDLE_ID="com.cmuxterm.app" \
-  CMUX_BUNDLED_CLI_PATH="/Applications/cmux.app/Contents/Resources/bin/cmux" \
+  CMUX_BUNDLED_CLI_PATH="/Applications/amux.app/Contents/Resources/bin/cmux" \
   CMUX_WORKSPACE_ID="main-workspace" \
   CMUX_TAB_ID="main-tab" \
   CMUX_SURFACE_ID="main-surface" \
@@ -106,7 +106,7 @@ reject_prefix() {
 
 require_line "CMUX_SOCKET_PATH=$SOCKET_PATH"
 require_line "CMUX_TAG=$TAG_SLUG"
-require_line "CMUX_BUNDLE_ID=com.cmuxterm.app.debug.${TAG_BUNDLE_ID}"
+require_line "CMUX_BUNDLE_ID=com.open330.amux.debug.${TAG_BUNDLE_ID}"
 require_line "CMUX_BUNDLED_CLI_PATH=$FAKE_CLI"
 
 reject_prefix "CMUX_SOCKET"

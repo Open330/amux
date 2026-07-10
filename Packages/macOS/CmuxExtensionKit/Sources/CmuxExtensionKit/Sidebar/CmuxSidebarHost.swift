@@ -136,7 +136,7 @@ public struct CmuxSidebarHost {
     private func send(_ action: CmuxSidebarAction) async throws {
         let result = await perform(action)
         guard result.accepted else {
-            let message = result.message ?? "cmux did not allow that action"
+            let message = result.message ?? CmuxSidebarConnectionStrings.actionRejected
             if result.rejectionReason == .cancelled {
                 throw CmuxSidebarActionError.cancelled
             }

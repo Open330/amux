@@ -8,7 +8,7 @@ struct ClaudeTeamsPolicyIsolationTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux=classic",
                     "--remote-control-session-name-prefix",
@@ -20,7 +20,7 @@ struct ClaudeTeamsPolicyIsolationTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control-session-name-prefix",
                 "cmux-team",
@@ -36,7 +36,7 @@ struct ClaudeTeamsPolicyIsolationTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "classic",
@@ -50,7 +50,7 @@ struct ClaudeTeamsPolicyIsolationTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--worktree",
                 "/tmp/team",
@@ -67,7 +67,7 @@ struct ClaudeTeamsPolicyIsolationTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux=fix",
                     "--permission-mode",
@@ -76,7 +76,7 @@ struct ClaudeTeamsPolicyIsolationTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )

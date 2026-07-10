@@ -33,9 +33,9 @@ const typedSettingsSchema = settingsSchema as SchemaDocument;
 const schemaProperties = typedSettingsSchema.properties ?? {};
 const schemaUrl =
   typedSettingsSchema.$id ??
-  "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json";
+  "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json";
 const schemaSourceUrl =
-  "https://github.com/manaflow-ai/cmux/blob/main/web/data/cmux.schema.json";
+  "https://github.com/Open330/amux/blob/main/web/data/cmux.schema.json";
 const sectionOrder = [
   "app",
   "terminal",
@@ -66,7 +66,7 @@ function buildSettingsFileExample(t: ConfigurationTranslation) {
   //   "appearance": "dark",
   //   "menuBarOnly": false,
   //   "newWorkspacePlacement": "afterCurrent",
-  //   "windowTitleTemplate": "[cmux:{windowToken}] {activeWorkspace}",
+  //   "windowTitleTemplate": "[amux:{windowToken}] {activeWorkspace}",
   //   "confirmQuit": "always",
   //   "openSupportedFilesInCmux": true,
   //   "workspaceInheritWorkingDirectory": true,
@@ -320,12 +320,12 @@ working-directory = ~/code`}</CodeBlock>
 
       <DocsHeading level={2} id="cmux-json" className="scroll-mt-24">cmux.json</DocsHeading>
       <p>
-        cmux keeps app-owned settings, shortcuts, actions, custom commands, and workspace layouts in{" "}
+        amux keeps app-owned settings, shortcuts, actions, custom commands, and workspace layouts in{" "}
         <code>~/.config/cmux/cmux.json</code>. Terminal rendering still lives in Ghostty config.
-        On launch, if the file is missing, cmux writes a commented template there.
+        On launch, if the file is missing, amux writes a commented template there.
       </p>
       <p>
-        Open cmux Settings, then use the <code>cmux.json</code> section to open the canonical file
+        Open amux Settings, then use the <code>cmux.json</code> section to open the canonical file
         in your preferred text editor.
       </p>
       <ol>
@@ -345,11 +345,11 @@ working-directory = ~/code`}</CodeBlock>
       </Callout>
       <Callout type="info">
         <strong>Reload:</strong> edit the file, then use <code>Cmd+Shift+,</code> or{" "}
-        <code>cmux reload-config</code> to re-read it without restarting the app.
+        <code>amux reload-config</code> to re-read it without restarting the app.
       </Callout>
       <Callout type="warn">
         <strong>Migrations:</strong> keep <code>schemaVersion</code> at <code>1</code> for now.
-        Future cmux versions will use that field for upgrades. If cmux sees a newer schema version,
+        Future amux versions will use that field for upgrades. If amux sees a newer schema version,
         it logs a warning and parses known keys only.
       </Callout>
       <p>
@@ -364,7 +364,7 @@ working-directory = ~/code`}</CodeBlock>
       <DocsHeading level={2} id="schema-reference">Schema reference</DocsHeading>
       <p>
         This reference covers every supported global settings key in <code>cmux.json</code>. The embedded
-        browser, terminal, sidebar, notifications, automation, and cmux-owned keyboard shortcuts
+        browser, terminal, sidebar, notifications, automation, and amux-owned keyboard shortcuts
         all live here. Actions and workspace commands are documented on the{" "}
         <Link href="/docs/custom-commands">custom commands page</Link>.
       </p>
@@ -430,7 +430,7 @@ working-directory = ~/code`}</CodeBlock>
         <code>9</code>.
       </p>
       <p>
-        The defaults below are the same cmux-owned actions listed on the{" "}
+        The defaults below are the same amux-owned actions listed on the{" "}
         <Link href="/docs/keyboard-shortcuts">keyboard shortcuts page</Link>.
       </p>
       {shortcutCategories.map((category) => (

@@ -35,7 +35,7 @@ export const shortcutCategories: ShortcutCategory[] = [
       {
         id: "showHideAllWindows",
         combos: [["⌃", "⌥", "⌘", "."]],
-        description: { en: "Show/hide all cmux windows", ja: "すべてのcmuxウインドウを表示/非表示" },
+        description: { en: "Show/hide all amux windows", ja: "すべてのamuxウインドウを表示/非表示" },
         note: { en: "system-wide hotkey", ja: "システム全体のホットキー" },
       },
       {
@@ -83,7 +83,7 @@ export const shortcutCategories: ShortcutCategory[] = [
         combos: [["⌘", "⇧", "O"]],
         description: { en: "Reopen previous session", ja: "前回のセッションを再度開く" },
       },
-      { id: "quit", combos: [["⌘", "Q"]], description: { en: "Quit cmux", ja: "cmuxを終了" } },
+      { id: "quit", combos: [["⌘", "Q"]], description: { en: "Quit amux", ja: "amuxを終了" } },
     ],
   },
   {
@@ -118,8 +118,8 @@ export const shortcutCategories: ShortcutCategory[] = [
         combos: [["⌘", "["]],
         description: { en: "Focus back", ja: "フォーカスを戻す" },
         note: {
-          en: "cmux uses Cmd+[ and Cmd+] for focus history by default. Unbind Focus Back/Forward in Settings to let browser or terminal shortcuts handle those keys.",
-          ja: "cmux は標準で Cmd+[ と Cmd+] をフォーカス履歴に使います。ブラウザまたはターミナル側で使うには、設定で Focus Back/Forward の割り当てを解除します。",
+          en: "amux uses Cmd+[ and Cmd+] for focus history by default. Unbind Focus Back/Forward in Settings to let browser or terminal shortcuts handle those keys.",
+          ja: "amux は標準で Cmd+[ と Cmd+] をフォーカス履歴に使います。ブラウザまたはターミナル側で使うには、設定で Focus Back/Forward の割り当てを解除します。",
         },
       },
       {
@@ -127,8 +127,8 @@ export const shortcutCategories: ShortcutCategory[] = [
         combos: [["⌘", "]"]],
         description: { en: "Focus forward", ja: "フォーカスを進める" },
         note: {
-          en: "cmux uses Cmd+[ and Cmd+] for focus history by default. Unbind Focus Back/Forward in Settings to let browser or terminal shortcuts handle those keys.",
-          ja: "cmux は標準で Cmd+[ と Cmd+] をフォーカス履歴に使います。ブラウザまたはターミナル側で使うには、設定で Focus Back/Forward の割り当てを解除します。",
+          en: "amux uses Cmd+[ and Cmd+] for focus history by default. Unbind Focus Back/Forward in Settings to let browser or terminal shortcuts handle those keys.",
+          ja: "amux は標準で Cmd+[ と Cmd+] をフォーカス履歴に使います。ブラウザまたはターミナル側で使うには、設定で Focus Back/Forward の割り当てを解除します。",
         },
       },
       { id: "selectWorkspaceByNumber", combos: [["⌘", "1…9"]], description: { en: "Select workspace 1…9", ja: "ワークスペース1…9を選択" } },

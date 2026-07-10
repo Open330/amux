@@ -101,17 +101,15 @@ final class CmuxConfigContextMenuTests: XCTestCase {
     }
 
     @MainActor
-    func testDefaultNewWorkspaceContextMenuIncludesCloudVM() throws {
+    func testDefaultNewWorkspaceContextMenuContainsOnlyLocalWorkspace() throws {
         let store = try loadStore()
 
-        XCTAssertEqual(store.newWorkspaceContextMenuItems.count, 2)
-        guard store.newWorkspaceContextMenuItems.count == 2 else { return }
-        guard case .action(let first) = store.newWorkspaceContextMenuItems[0],
-              case .action(let second) = store.newWorkspaceContextMenuItems[1] else {
+        XCTAssertEqual(store.newWorkspaceContextMenuItems.count, 1)
+        guard store.newWorkspaceContextMenuItems.count == 1 else { return }
+        guard case .action(let first) = store.newWorkspaceContextMenuItems[0] else {
             return XCTFail("Expected default context menu actions.")
         }
         XCTAssertEqual(first.action.id, CmuxSurfaceTabBarBuiltInAction.newWorkspace.configID)
-        XCTAssertEqual(second.action.id, CmuxSurfaceTabBarBuiltInAction.cloudVM.configID)
         XCTAssertTrue(store.configurationIssues.isEmpty)
     }
 
@@ -177,7 +175,7 @@ final class CmuxConfigContextMenuTests: XCTestCase {
     }
 
     @MainActor
-    func testDefaultCloudVMMenuActionCanBeOverriddenByAlias() throws {
+    func testCloudVMActionOverrideDoesNotRestoreHiddenHostedMenuItem() throws {
         let store = try loadStore(localJSON: """
         {
           "actions": {
@@ -191,15 +189,11 @@ final class CmuxConfigContextMenuTests: XCTestCase {
         }
         """)
 
-        XCTAssertEqual(store.newWorkspaceContextMenuItems.count, 2)
-        guard store.newWorkspaceContextMenuItems.count == 2 else { return }
-        guard case .action(let item) = store.newWorkspaceContextMenuItems[1] else {
-            return XCTFail("Expected Cloud VM context-menu action.")
+        XCTAssertEqual(store.newWorkspaceContextMenuItems.count, 1)
+        guard case .action(let item) = store.newWorkspaceContextMenuItems[0] else {
+            return XCTFail("Expected local workspace context-menu action.")
         }
-        XCTAssertEqual(item.action.id, CmuxSurfaceTabBarBuiltInAction.cloudVM.configID)
-        XCTAssertEqual(item.title, "Cloud Override")
-        XCTAssertEqual(item.icon, .symbol("bolt"))
-        XCTAssertEqual(item.action.terminalCommand, "echo cloud")
+        XCTAssertEqual(item.action.id, CmuxSurfaceTabBarBuiltInAction.newWorkspace.configID)
         XCTAssertTrue(store.configurationIssues.isEmpty)
     }
 

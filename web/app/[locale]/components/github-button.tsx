@@ -1,16 +1,16 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import posthog from "posthog-js";
+import { GITHUB_REPOSITORY_URL } from "../../lib/product";
 
 export function GitHubButton({ location = "hero" }: { location?: string }) {
   const t = useTranslations("common");
   return (
     <a
-      href="https://github.com/manaflow-ai/cmux"
+      href={GITHUB_REPOSITORY_URL}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => posthog.capture("cmuxterm_github_clicked", { location })}
+      data-location={location}
       className="inline-flex items-center whitespace-nowrap gap-2 rounded-full border border-border px-5 py-2.5 text-[15px] font-medium text-foreground hover:bg-code-bg transition-colors"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

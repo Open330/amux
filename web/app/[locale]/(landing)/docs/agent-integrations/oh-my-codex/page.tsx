@@ -26,9 +26,9 @@ export default function OhMyCodexPage() {
       <p>{t("intro")}</p>
 
       <DocsHeading level={2} id="usage">{t("usage")}</DocsHeading>
-      <CodeBlock lang="bash">{`cmux omx
-cmux omx --madmax --high
-cmux omx team`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux omx
+amux omx --madmax --high
+amux omx team`}</CodeBlock>
       <p>{t("usageDesc")}</p>
 
       <DocsHeading level={2} id="what-you-get">{t("whatYouGet")}</DocsHeading>

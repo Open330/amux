@@ -4,6 +4,7 @@ import { buildAlternates } from "@/i18n/seo";
 import { Link } from "@/i18n/navigation";
 import { SiteHeader } from "@/app/[locale]/components/site-header";
 import { DOWNLOAD_CONFIRMATION_HREF } from "@/app/lib/download";
+import { buildNativeDeeplink } from "@/app/lib/native-deeplink";
 
 type SearchValue = string | string[] | undefined;
 type SearchParams = Record<string, SearchValue>;
@@ -250,8 +251,7 @@ function nativeHref(kind: LinkKind, params: SearchParams) {
       }
     }
   }
-  const queryString = query.toString().replace(/\+/g, "%20");
-  return `cmux://${kind}${queryString ? `?${queryString}` : ""}`;
+  return buildNativeDeeplink(kind, query);
 }
 
 export function generateStaticParams() {

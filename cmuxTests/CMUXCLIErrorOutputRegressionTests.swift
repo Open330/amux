@@ -25,7 +25,7 @@ import Testing
 
         XCTAssertFalse(result.timedOut, result.stdout)
         XCTAssertEqual(result.status, 1, result.stdout)
-        XCTAssertTrue(result.stdout.contains("Usage:"), result.stdout)
+        XCTAssertTrue(result.stdout.isEmpty, result.stdout)
     }
 
     @Test func testAgentTeamsHelpDoesNotLaunchExternalAgentCLI() throws {
@@ -47,7 +47,7 @@ import Testing
 
             XCTAssertFalse(result.timedOut, result.stdout)
             XCTAssertEqual(result.status, 0, result.stdout)
-            XCTAssertTrue(result.stdout.contains("Usage: cmux \(command)"), result.stdout)
+            XCTAssertTrue(result.stdout.contains("Usage: amux \(command)"), result.stdout)
             XCTAssertFalse(result.stdout.contains("Failed to launch"), result.stdout)
         }
     }
@@ -575,7 +575,7 @@ import Testing
         let socketPath = "/tmp/cmux-theme-\(UUID().uuidString.prefix(8)).sock"
         let responder = try UnixSocketResponder(path: socketPath, response: "OK")
         defer { responder.stop() }
-        let bundleIdentifier = "com.cmuxterm.app.debug.issue-4355-test"
+        let bundleIdentifier = "com.open330.amux.debug.issue-4355-test"
         let reloadExpectation = expectation(description: "cmux themes set posts final reload notifications")
         reloadExpectation.expectedFulfillmentCount = 3
         let notificationQueue = OperationQueue()
@@ -658,8 +658,8 @@ import Testing
         try writeTheme(named: "Theme A", background: "#101010", to: themesURL)
 
         let socketPath = "/tmp/cmux-debug-active-theme-\(UUID().uuidString).sock"
-        let staleBundleIdentifier = "com.cmuxterm.app.debug.stale.theme"
-        let targetBundleIdentifier = "com.cmuxterm.app.debug.active.theme"
+        let staleBundleIdentifier = "com.open330.amux.debug.stale.theme"
+        let targetBundleIdentifier = "com.open330.amux.debug.active.theme"
         let reloadExpectation = expectation(description: "cmux themes set targets the resolved socket bundle")
         let notificationQueue = OperationQueue()
         notificationQueue.maxConcurrentOperationCount = 1
@@ -819,7 +819,7 @@ import Testing
         let socketPath = "/tmp/cmux-theme-picker-\(UUID().uuidString.prefix(8)).sock"
         let responder = try UnixSocketResponder(path: socketPath, response: "OK")
         defer { responder.stop() }
-        let bundleIdentifier = "com.cmuxterm.app.debug.theme-picker.\(UUID().uuidString.lowercased())"
+        let bundleIdentifier = "com.open330.amux.debug.theme-picker.\(UUID().uuidString.lowercased())"
         let reloadExpectation = expectation(description: "bare cmux themes posts final reload notification")
         let notificationQueue = OperationQueue()
         notificationQueue.maxConcurrentOperationCount = 1
@@ -1330,7 +1330,7 @@ import Testing
     ) throws -> String {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("cmux-cli-socket-\(UUID().uuidString)", isDirectory: true)
-        let appURL = root.appendingPathComponent("cmux DEV \(tagSlug).app", isDirectory: true)
+        let appURL = root.appendingPathComponent("amux DEV \(tagSlug).app", isDirectory: true)
         let contentsURL = appURL.appendingPathComponent("Contents", isDirectory: true)
         let binURL: URL
         if nestedIdentifierlessApp {
@@ -1356,8 +1356,8 @@ import Testing
         try FileManager.default.createDirectory(at: binURL, withIntermediateDirectories: true)
 
         let info: [String: Any] = [
-            "CFBundleIdentifier": bundleIdentifier ?? "com.cmuxterm.app.debug.\(tagSlug.replacingOccurrences(of: "-", with: "."))",
-            "CFBundleName": bundleName ?? "cmux DEV \(tagSlug)",
+            "CFBundleIdentifier": bundleIdentifier ?? "com.open330.amux.debug.\(tagSlug.replacingOccurrences(of: "-", with: "."))",
+            "CFBundleName": bundleName ?? "amux DEV \(tagSlug)",
             "CFBundlePackageType": "APPL"
         ]
         let infoData = try PropertyListSerialization.data(

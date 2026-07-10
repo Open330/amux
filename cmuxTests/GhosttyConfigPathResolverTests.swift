@@ -20,7 +20,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             XCTAssertEqual(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.debug",
+                    currentBundleIdentifier: "com.open330.amux.debug",
                     appSupportDirectory: appSupportDirectory
                 ),
                 [releaseConfigURL]
@@ -45,7 +45,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             XCTAssertEqual(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.debug.issue-3478",
+                    currentBundleIdentifier: "com.open330.amux.debug.issue-3478",
                     appSupportDirectory: appSupportDirectory
                 ),
                 [preferredConfigURL]
@@ -63,14 +63,14 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
             )
             let currentConfigURL = try writeAppSupportConfig(
                 appSupportDirectory: appSupportDirectory,
-                bundleIdentifier: "com.cmuxterm.app.debug.issue-829",
+                bundleIdentifier: "com.open330.amux.debug.issue-829",
                 filename: "config.ghostty",
                 contents: "font-size = 14\n"
             )
 
             XCTAssertEqual(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.debug.issue-829",
+                    currentBundleIdentifier: "com.open330.amux.debug.issue-829",
                     appSupportDirectory: appSupportDirectory
                 ),
                 [currentConfigURL]
@@ -82,7 +82,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
         try withTemporaryAppSupportDirectory { appSupportDirectory in
             let fileManager = FileManager.default
             let bundleDirectory = appSupportDirectory
-                .appendingPathComponent("com.cmuxterm.app.debug.issue-3518", isDirectory: true)
+                .appendingPathComponent("com.open330.amux.debug.issue-3518", isDirectory: true)
             try fileManager.createDirectory(at: bundleDirectory, withIntermediateDirectories: true)
 
             let dotfilesDirectory = appSupportDirectory
@@ -100,7 +100,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             XCTAssertEqual(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.debug.issue-3518",
+                    currentBundleIdentifier: "com.open330.amux.debug.issue-3518",
                     appSupportDirectory: appSupportDirectory
                 ),
                 [symlinkedConfigURL]
@@ -115,7 +115,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
                 .appendingPathComponent("Library", isDirectory: true)
                 .appendingPathComponent("Application Support", isDirectory: true)
             let bundleDirectory = appSupportDirectory
-                .appendingPathComponent("com.cmuxterm.app.debug.issue-3518", isDirectory: true)
+                .appendingPathComponent("com.open330.amux.debug.issue-3518", isDirectory: true)
             try fileManager.createDirectory(at: bundleDirectory, withIntermediateDirectories: true)
 
             let dotfilesDirectory = homeDirectory
@@ -133,7 +133,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             let environment = ConfigSourceEnvironment(
                 homeDirectoryURL: homeDirectory,
-                currentBundleIdentifier: "com.cmuxterm.app.debug.issue-3518"
+                currentBundleIdentifier: "com.open330.amux.debug.issue-3518"
             )
             try environment.writeCmuxConfigContents("theme = light:Andromeda,dark:3024 Day\n")
 
@@ -156,7 +156,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
                 .appendingPathComponent("Library", isDirectory: true)
                 .appendingPathComponent("Application Support", isDirectory: true)
             let bundleDirectory = appSupportDirectory
-                .appendingPathComponent("com.cmuxterm.app.debug.issue-3518", isDirectory: true)
+                .appendingPathComponent("com.open330.amux.debug.issue-3518", isDirectory: true)
             let configGhosttyURL = bundleDirectory.appendingPathComponent("config.ghostty", isDirectory: false)
             let legacyConfigURL = bundleDirectory.appendingPathComponent("config", isDirectory: false)
 
@@ -168,7 +168,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             let environment = ConfigSourceEnvironment(
                 homeDirectoryURL: homeDirectory,
-                currentBundleIdentifier: "com.cmuxterm.app.debug.issue-3518",
+                currentBundleIdentifier: "com.open330.amux.debug.issue-3518",
                 fileManager: fileManager
             )
 
@@ -277,14 +277,14 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
             )
             let stagingConfigURL = try writeAppSupportConfig(
                 appSupportDirectory: appSupportDirectory,
-                bundleIdentifier: "com.cmuxterm.app.staging",
+                bundleIdentifier: "com.open330.amux.staging",
                 filename: "config.ghostty",
                 contents: "font-size = 15\n"
             )
 
             XCTAssertEqual(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.staging",
+                    currentBundleIdentifier: "com.open330.amux.staging",
                     appSupportDirectory: appSupportDirectory
                 ),
                 [stagingConfigURL]
@@ -303,7 +303,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             XCTAssertEqual(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.staging",
+                    currentBundleIdentifier: "com.open330.amux.staging",
                     appSupportDirectory: appSupportDirectory
                 ),
                 [releaseConfigURL]
@@ -327,7 +327,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
             )
 
             let paths = GhosttyApp.loadedGhosttyConfigScanPaths(
-                currentBundleIdentifier: "com.cmuxterm.app.debug.issue-3478",
+                currentBundleIdentifier: "com.open330.amux.debug.issue-3478",
                 appSupportDirectory: appSupportDirectory
             )
 
@@ -382,12 +382,12 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
     func testCmuxConfigPathResolverTargetsCurrentConfigGhosttyWhenNoActiveConfigExists() throws {
         try withTemporaryAppSupportDirectory { appSupportDirectory in
             let expectedURL = appSupportDirectory
-                .appendingPathComponent("com.cmuxterm.app.debug.issue-3518", isDirectory: true)
+                .appendingPathComponent("com.open330.amux.debug.issue-3518", isDirectory: true)
                 .appendingPathComponent("config.ghostty", isDirectory: false)
 
             XCTAssertEqual(
                 CmuxGhosttyConfigPathResolver().activeOrEditableConfigURL(
-                    currentBundleIdentifier: "com.cmuxterm.app.debug.issue-3518",
+                    currentBundleIdentifier: "com.open330.amux.debug.issue-3518",
                     appSupportDirectory: appSupportDirectory
                 ),
                 expectedURL
@@ -406,7 +406,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
 
             XCTAssertTrue(
                 GhosttyApp.cmuxAppSupportConfigURLs(
-                    currentBundleIdentifier: "com.cmuxterm.app.debug",
+                    currentBundleIdentifier: "com.open330.amux.debug",
                     appSupportDirectory: appSupportDirectory
                 ).isEmpty
             )
@@ -417,14 +417,14 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
         try withTemporaryHomeDirectory { homeDirectory in
             let environment = ConfigSourceEnvironment(
                 homeDirectoryURL: homeDirectory,
-                currentBundleIdentifier: "com.cmuxterm.app.debug.empty"
+                currentBundleIdentifier: "com.open330.amux.debug.empty"
             )
 
             let urls = try environment.materializedGhosttySettingsEditorURLs()
             let expectedConfigURL = homeDirectory
                 .appendingPathComponent("Library", isDirectory: true)
                 .appendingPathComponent("Application Support", isDirectory: true)
-                .appendingPathComponent("com.cmuxterm.app.debug.empty", isDirectory: true)
+                .appendingPathComponent("com.open330.amux.debug.empty", isDirectory: true)
                 .appendingPathComponent("config.ghostty", isDirectory: false)
             let expectedPreviewURL = expectedConfigURL
                 .deletingLastPathComponent()
@@ -443,7 +443,7 @@ final class GhosttyConfigPathResolverTests: XCTestCase {
                 .appendingPathComponent("Library", isDirectory: true)
                 .appendingPathComponent("Application Support", isDirectory: true)
 
-            let bundleIdentifier = "com.cmuxterm.app.debug.includes"
+            let bundleIdentifier = "com.open330.amux.debug.includes"
             let cmuxConfigURL = try writeAppSupportConfig(
                 appSupportDirectory: appSupportDirectory,
                 bundleIdentifier: bundleIdentifier,

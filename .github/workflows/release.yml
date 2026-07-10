@@ -1,0 +1,54 @@
+# Build and publish a signed, notarized amux release from reviewed version tags.
+name: amux-release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-sign-notarize:
+    runs-on: [self-hosted, macos]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      MUXA_REPO: ${{ vars.MUXA_REPO }}
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup (submodules + GhosttyKit)
+        run: ./scripts/setup.sh
+
+      - name: Validate release configuration
+        env:
+          SPARKLE_PUBLIC_KEY: ${{ secrets.AMUX_SPARKLE_PUBLIC_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.AMUX_SPARKLE_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.AMUX_GITHUB_TOKEN }}
+          HOMEBREW_GITHUB_TOKEN: ${{ secrets.AMUX_HOMEBREW_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          : "${SPARKLE_PUBLIC_KEY:?AMUX_SPARKLE_PUBLIC_KEY secret is required}"
+          : "${SPARKLE_PRIVATE_KEY:?AMUX_SPARKLE_PRIVATE_KEY secret is required}"
+          : "${GH_TOKEN:?AMUX_GITHUB_TOKEN secret is required}"
+          : "${HOMEBREW_GITHUB_TOKEN:?AMUX_HOMEBREW_GITHUB_TOKEN secret is required}"
+          export MUXA_REPO="${MUXA_REPO:-$HOME/personal/muxa}"
+          [[ -d "$MUXA_REPO" ]] || { echo "MUXA_REPO not found: $MUXA_REPO" >&2; exit 1; }
+          [[ -s "$HOME/.bw_session" ]] || { echo "Unlocked Vaultwarden session is required at ~/.bw_session" >&2; exit 1; }
+          for tool in bw create-dmg gh go jq node plutil python3 shasum swift xmllint; do
+            command -v "$tool" >/dev/null || { echo "Required release tool not found: $tool" >&2; exit 1; }
+          done
+
+      - name: Build, verify, and publish amux
+        env:
+          SPARKLE_PUBLIC_KEY: ${{ secrets.AMUX_SPARKLE_PUBLIC_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.AMUX_SPARKLE_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.AMUX_GITHUB_TOKEN }}
+          HOMEBREW_GITHUB_TOKEN: ${{ secrets.AMUX_HOMEBREW_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          export MUXA_REPO="${MUXA_REPO:-$HOME/personal/muxa}"
+          ./scripts/build-sign-upload.sh "${{ github.ref_name }}"

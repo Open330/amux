@@ -1,9 +1,8 @@
-# Homebrew cask for amux. Publish to a tap (e.g. open330/homebrew-amux) so
-# users can `brew install --cask open330/amux/amux`.
+# Homebrew cask for amux. Publish to Open330/homebrew-tap so users can
+# `brew install --cask open330/tap/amux`.
 #
-# `version` + `sha256` are updated by the release pipeline on each tag (the
-# release workflow can `brew bump-cask-pr` or sed these fields). Until the
-# first signed release exists, sha256 is :no_check.
+# `version` + `sha256` identify the most recent immutable published release.
+# Update both after the release workflow prints the new DMG checksum.
 cask "amux" do
   version "0.1.0-alpha"
   sha256 "58a18448b0cd0c1a0ba5209474d556e6e99b01d8d45b74303327b1a2b127fc33"

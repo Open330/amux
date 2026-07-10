@@ -1,9 +1,9 @@
 ---
 name: cmux-release
-description: "cmux release workflow, version bumping, changelog updates, pretag guard, release tags, and release asset expectations. Use when preparing or troubleshooting a cmux release."
+description: "amux release workflow, version bumping, changelog updates, pretag guard, release tags, and release asset expectations. Use when preparing or troubleshooting an amux release."
 ---
 
-# cmux Release
+# amux Release
 
 Use the `/release` command to prepare a new release. This will:
 
@@ -38,14 +38,15 @@ Manual release steps if not using the command:
 ./scripts/release-pretag-guard.sh
 git tag vX.Y.Z
 git push origin vX.Y.Z
-gh run watch --repo manaflow-ai/cmux
+gh run watch --repo Open330/amux
 ```
 
 ## Notes
 
+- Requires repository secrets: `AMUX_SPARKLE_PUBLIC_KEY`, `AMUX_SPARKLE_PRIVATE_KEY`, `AMUX_GITHUB_TOKEN`, and `AMUX_HOMEBREW_GITHUB_TOKEN`.
 - Requires GitHub secrets: `APPLE_CERTIFICATE_BASE64`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`.
-- The release asset is `cmux-macos.dmg` attached to the tag.
-- README download button points to `releases/latest/download/cmux-macos.dmg`.
+- The release asset is `amux-macos.dmg` attached to the tag.
+- README download button points to `releases/latest/download/amux-macos.dmg`.
 - Bump the minor version for updates unless explicitly asked otherwise.
 - Update `CHANGELOG.md`; docs changelog is rendered from it.
 

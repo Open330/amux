@@ -16,8 +16,8 @@ if [[ -z "${SPARKLE_PRIVATE_KEY:-}" ]]; then
 fi
 
 SPARKLE_VERSION="${SPARKLE_VERSION:-2.8.1}"
-DOWNLOAD_URL_PREFIX="${DOWNLOAD_URL_PREFIX:-https://github.com/manaflow-ai/cmux/releases/download/$TAG/}"
-RELEASE_NOTES_URL="${RELEASE_NOTES_URL:-https://github.com/manaflow-ai/cmux/releases/tag/$TAG}"
+DOWNLOAD_URL_PREFIX="${DOWNLOAD_URL_PREFIX:-https://github.com/Open330/amux/releases/download/$TAG/}"
+RELEASE_NOTES_URL="${RELEASE_NOTES_URL:-https://github.com/Open330/amux/releases/tag/$TAG}"
 
 work_dir="$(mktemp -d)"
 cleanup() {
@@ -37,24 +37,10 @@ xcodebuild \
   CODE_SIGNING_ALLOWED=NO \
   build >/dev/null
 
-echo "Building Sparkle sign_update tool..."
-xcodebuild \
-  -project "$work_dir/Sparkle/Sparkle.xcodeproj" \
-  -scheme sign_update \
-  -configuration Release \
-  -derivedDataPath "$work_dir/build" \
-  CODE_SIGNING_ALLOWED=NO \
-  build >/dev/null
-
 generate_appcast="$work_dir/build/Build/Products/Release/generate_appcast"
-sign_update="$work_dir/build/Build/Products/Release/sign_update"
 
 if [[ ! -x "$generate_appcast" ]]; then
   echo "generate_appcast binary not found at $generate_appcast" >&2
-  exit 1
-fi
-if [[ ! -x "$sign_update" ]]; then
-  echo "sign_update binary not found at $sign_update" >&2
   exit 1
 fi
 
@@ -69,6 +55,7 @@ while (( ${#padded_key} % 4 != 0 )); do
   padded_key="${padded_key}="
 done
 printf "%s" "$padded_key" > "$key_file"
+chmod 600 "$key_file"
 
 generated_appcast_path="$archives_dir/$(basename "$OUT_PATH")"
 
@@ -90,31 +77,9 @@ if [[ ! -f "$generated_appcast_path" ]]; then
   exit 1
 fi
 
-# Check if generate_appcast added the edSignature. If not, use sign_update
-# to sign the DMG and inject the signature. generate_appcast silently skips
-# signing when the public key derived from the private key doesn't match the
-# SUPublicEDKey in the app's Info.plist.
 if ! grep -q 'sparkle:edSignature' "$generated_appcast_path"; then
-  echo "Warning: generate_appcast did not add edSignature. Using sign_update fallback..."
-  SIGNATURE=$("$sign_update" -p --ed-key-file "$key_file" "$DMG_PATH")
-  DMG_LENGTH=$(stat -f%z "$DMG_PATH")
-  echo "  EdDSA signature: ${SIGNATURE:0:20}..."
-  echo "  DMG length: $DMG_LENGTH"
-
-  # Inject sparkle:edSignature and correct length into the enclosure element
-  python3 -c "
-import sys
-xml = open('$generated_appcast_path').read()
-sig = '$SIGNATURE'
-length = '$DMG_LENGTH'
-# Add edSignature to enclosure
-xml = xml.replace(
-    'type=\"application/octet-stream\"',
-    'sparkle:edSignature=\"' + sig + '\" length=\"' + length + '\" type=\"application/octet-stream\"'
-)
-open('$generated_appcast_path', 'w').write(xml)
-print('  Injected edSignature into appcast.xml')
-"
+  echo "ERROR: generate_appcast did not sign the update; refusing to synthesize an appcast signature" >&2
+  exit 1
 fi
 
 cp "$generated_appcast_path" "$OUT_PATH"
@@ -122,6 +87,7 @@ echo "Generated appcast at $OUT_PATH"
 
 # Verify the appcast has a signature
 if grep -q 'sparkle:edSignature' "$OUT_PATH"; then
+  xmllint --noout "$OUT_PATH"
   echo "Verified: appcast contains sparkle:edSignature"
 else
   echo "ERROR: appcast is missing sparkle:edSignature!" >&2

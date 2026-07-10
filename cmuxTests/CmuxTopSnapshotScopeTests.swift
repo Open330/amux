@@ -462,7 +462,7 @@ final class CmuxTopSnapshotScopeTests: XCTestCase {
 
         let scope = try XCTUnwrap(CmuxTopProcessSnapshot.cmuxScope(
             arguments: [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "hooks",
                 "codex",
                 "monitor",
@@ -482,7 +482,7 @@ final class CmuxTopSnapshotScopeTests: XCTestCase {
 
         let scope = CmuxTopProcessSnapshot.cmuxScope(
             arguments: [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "other",
                 "/tmp/hooks",
                 "/tmp/codex",
@@ -520,7 +520,7 @@ final class CmuxTopSnapshotScopeTests: XCTestCase {
         let monitorPID = 4242
         let bytes = kernProcArgs(
             arguments: [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "hooks",
                 "codex",
                 "monitor",
@@ -543,7 +543,7 @@ final class CmuxTopSnapshotScopeTests: XCTestCase {
                     pid: monitorPID,
                     parentPID: 1,
                     name: "cmux",
-                    path: "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    path: "/Applications/amux.app/Contents/Resources/bin/cmux",
                     ttyDevice: nil,
                     cmuxWorkspaceID: scope.workspaceID,
                     cmuxSurfaceID: scope.surfaceID,

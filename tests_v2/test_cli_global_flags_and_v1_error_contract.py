@@ -29,11 +29,14 @@ def _find_cli_binary() -> str:
     if env_cli and os.path.isfile(env_cli) and os.access(env_cli, os.X_OK):
         return env_cli
 
-    fixed = os.path.expanduser("~/Library/Developer/Xcode/DerivedData/cmux-tests-v2/Build/Products/Debug/cmux")
-    if os.path.isfile(fixed) and os.access(fixed, os.X_OK):
-        return fixed
+    fixed_root = os.path.expanduser("~/Library/Developer/Xcode/DerivedData/cmux-tests-v2/Build/Products/Debug")
+    for name in ("amux", "cmux"):
+        fixed = os.path.join(fixed_root, name)
+        if os.path.isfile(fixed) and os.access(fixed, os.X_OK):
+            return fixed
 
-    candidates = glob.glob(os.path.expanduser("~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug/cmux"), recursive=True)
+    candidates = glob.glob(os.path.expanduser("~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug/amux"), recursive=True)
+    candidates += glob.glob(os.path.expanduser("~/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug/cmux"), recursive=True)
     candidates += glob.glob("/tmp/cmux-*/Build/Products/Debug/cmux")
     candidates = [p for p in candidates if os.path.isfile(p) and os.access(p, os.X_OK)]
     if not candidates:
@@ -57,7 +60,7 @@ def main() -> int:
     version_proc = _run([cli, "--version"])
     version_out = _merged_output(version_proc).lower()
     _must(version_proc.returncode == 0, f"--version should succeed: {version_proc.returncode} {version_out!r}")
-    _must("cmux" in version_out, f"--version output should mention cmux: {version_out!r}")
+    _must("amux" in version_out, f"--version output should mention amux: {version_out!r}")
 
     legacy_socket_key = "CMUX_" + "SOCKET"
     conflict_env = dict(os.environ)
@@ -66,7 +69,7 @@ def main() -> int:
     conflict_version = _run([cli, "--version"], env=conflict_env)
     conflict_version_out = _merged_output(conflict_version).lower()
     _must(conflict_version.returncode == 0, f"--version should ignore socket env conflicts: {conflict_version_out!r}")
-    _must("cmux" in conflict_version_out, f"--version with socket env conflict should mention cmux: {conflict_version_out!r}")
+    _must("amux" in conflict_version_out, f"--version with socket env conflict should mention amux: {conflict_version_out!r}")
     conflict_help = _run([cli, "--help"], env=conflict_env)
     conflict_help_out = _merged_output(conflict_help).lower()
     _must(conflict_help.returncode == 0, f"--help should ignore socket env conflicts: {conflict_help_out!r}")
@@ -78,11 +81,11 @@ def main() -> int:
     conflict_help_command_help = _run([cli, "help", "--help"], env=conflict_env)
     conflict_help_command_help_out = _merged_output(conflict_help_command_help).lower()
     _must(conflict_help_command_help.returncode == 0, f"help --help should ignore socket env conflicts: {conflict_help_command_help_out!r}")
-    _must("usage: cmux help" in conflict_help_command_help_out, f"help --help should show help command usage: {conflict_help_command_help_out!r}")
+    _must("usage: amux help" in conflict_help_command_help_out, f"help --help should show help command usage: {conflict_help_command_help_out!r}")
     conflict_subcommand_help = _run([cli, "ping", "--help"], env=conflict_env)
     conflict_subcommand_help_out = _merged_output(conflict_subcommand_help).lower()
     _must(conflict_subcommand_help.returncode == 0, f"subcommand --help should ignore socket env conflicts: {conflict_subcommand_help_out!r}")
-    _must("usage: cmux ping" in conflict_subcommand_help_out, f"subcommand --help should show command usage: {conflict_subcommand_help_out!r}")
+    _must("usage: amux ping" in conflict_subcommand_help_out, f"subcommand --help should show command usage: {conflict_subcommand_help_out!r}")
     for docs_cmd, expected in [
         ([cli, "docs"], "topics:"),
         ([cli, "docs", "settings"], "config files:"),

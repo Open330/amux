@@ -38,7 +38,7 @@ import Testing
     }
 
     @Test func leavesSystemPathsUntouched() {
-        let input = "/usr/lib/foo /System/Library/bar /Applications/cmux.app"
+        let input = "/usr/lib/foo /System/Library/bar /Applications/amux.app"
         #expect(scrubber.scrub(input) == input)
     }
 

@@ -12,6 +12,7 @@ import type { ComparePageKey } from "../../../../lib/compare-pages";
 import { articleSchema, breadcrumbList, faqPage, JsonLd } from "../../../components/json-ld";
 import { CompareTable, LandingCTA } from "../../landing-ui";
 import { TrackedLink } from "../../tracked-link";
+import { PRODUCT_NAME } from "../../../../lib/product";
 
 type PageParams = { locale: string; slug: string };
 
@@ -48,7 +49,7 @@ export async function generateMetadata({
       title,
       description,
       url: alternates.canonical,
-      siteName: "cmux",
+      siteName: PRODUCT_NAME,
       type: "article",
     },
     twitter: {

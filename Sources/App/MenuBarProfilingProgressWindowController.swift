@@ -57,7 +57,7 @@ final class MenuBarProfilingProgressWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = String(localized: "statusMenu.profiling.title", defaultValue: "Profiling cmux")
+        window.title = String(localized: "statusMenu.profiling.title", defaultValue: "Profiling amux")
         window.isReleasedWhenClosed = false
         super.init(window: window)
         window.delegate = self
@@ -131,7 +131,7 @@ final class MenuBarProfilingProgressWindowController: NSWindowController {
     private func buildInterface() {
         guard let contentView = window?.contentView else { return }
 
-        titleLabel.stringValue = String(localized: "statusMenu.profiling.reviewTitle", defaultValue: "Send a cmux profile")
+        titleLabel.stringValue = String(localized: "statusMenu.profiling.reviewTitle", defaultValue: "Review an amux profile")
         titleLabel.font = .systemFont(ofSize: 20, weight: .semibold)
         titleLabel.lineBreakMode = .byTruncatingTail
 
@@ -143,7 +143,7 @@ final class MenuBarProfilingProgressWindowController: NSWindowController {
 
         permissionLabel.stringValue = String(
             localized: "statusMenu.profiling.permissionExplanation",
-            defaultValue: "macOS may ask for administrator permission because Instruments samples the running cmux process."
+            defaultValue: "macOS may ask for administrator permission because Instruments samples the running amux process."
         )
         permissionLabel.font = .systemFont(ofSize: 12)
         permissionLabel.textColor = .secondaryLabelColor
@@ -170,6 +170,7 @@ final class MenuBarProfilingProgressWindowController: NSWindowController {
         submitButton.title = String(localized: "statusMenu.profiling.sendEmail", defaultValue: "Send Email")
         submitButton.target = self
         submitButton.action = #selector(sendEmail)
+        submitButton.isHidden = !MenuBarProfilingProfilePreview.isSubmissionConfigured
 
         closeButton.title = String(localized: "statusMenu.profiling.close", defaultValue: "Close")
         closeButton.target = self
@@ -307,7 +308,7 @@ final class MenuBarProfilingProgressWindowController: NSWindowController {
 
     private func parseOutputURL(from text: String) {
         for line in text.components(separatedBy: .newlines) {
-            if let range = line.range(of: "cmux profiling capture written to ") {
+            if let range = line.range(of: "amux profiling capture written to ") {
                 let path = String(line[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
                 outputURL = URL(fileURLWithPath: path)
             } else if let range = line.range(of: "Output: ") {
@@ -439,7 +440,12 @@ final class MenuBarProfilingProgressWindowController: NSWindowController {
             ? ""
             : String(localized: "statusMenu.profiling.invalidEmail", defaultValue: "Enter a valid email address so we can follow up.")
         emailErrorLabel.isHidden = emailErrorLabel.stringValue.isEmpty
-        submitButton.isEnabled = captureComplete && outputURL != nil && validEmail && submitProcess == nil && !emailSent
+        submitButton.isEnabled = MenuBarProfilingProfilePreview.isSubmissionConfigured
+            && captureComplete
+            && outputURL != nil
+            && validEmail
+            && submitProcess == nil
+            && !emailSent
         updateAttachmentState()
     }
 

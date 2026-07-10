@@ -245,7 +245,10 @@ enum CLISocketPathResolver {
             return true
         case .dev(slug: .some):
             let bundleId = bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return bundleId == SocketPathMarkerFiles.defaultBaseDebugBundleIdentifier
+            return [
+                SocketPathMarkerFiles.defaultBaseDebugBundleIdentifier,
+                SocketPathMarkerFiles.legacyBaseDebugBundleIdentifier,
+            ].contains(bundleId)
                 && normalized(environment["CMUX_TAG"]) != nil
         case .stable, .nightly, .staging:
             return false
@@ -482,9 +485,9 @@ enum CLISocketPathResolver {
         }
 
 #if DEBUG
-        return "com.cmuxterm.app.debug"
+        return "com.open330.amux.debug"
 #else
-        return "com.cmuxterm.app"
+        return "com.open330.amux"
 #endif
     }
 

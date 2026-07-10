@@ -8,8 +8,8 @@
 # compares CFBundleVersion (CURRENT_PROJECT_VERSION) against <sparkle:version>
 # — the marketing string is informational only.
 #
-# If the published appcast cannot be fetched (e.g. offline CI runner), the
-# test soft-passes with a warning so it never blocks unrelated work.
+# A missing appcast is accepted only when the release API confirms that amux
+# has never published one. Network and parse failures otherwise fail closed.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -35,15 +35,59 @@ if [[ "$MISMATCHED" != "1" ]]; then
   exit 1
 fi
 
-PUBLISHED_BUILD=$(curl -fsSL --max-time 15 \
-  https://github.com/manaflow-ai/cmux/releases/latest/download/appcast.xml 2>/dev/null \
-  | sed -n 's#.*<sparkle:version>\([0-9][0-9]*\)</sparkle:version>.*#\1#p' \
-  | head -n1 || true)
+work_dir="$(mktemp -d)"
+trap 'rm -rf "$work_dir"' EXIT
+if command -v gh >/dev/null 2>&1 && gh release download \
+    --repo Open330/amux \
+    --pattern appcast.xml \
+    --dir "$work_dir" \
+    --clobber >/dev/null 2>&1; then
+  PUBLISHED_BUILD="$(sed -n 's#.*<sparkle:version>\([0-9][0-9]*\)</sparkle:version>.*#\1#p' "$work_dir/appcast.xml" | head -n1)"
+else
+  PUBLISHED_BUILD=$(curl -fsSL --max-time 15 \
+    https://github.com/Open330/amux/releases/latest/download/appcast.xml 2>/dev/null \
+    | sed -n 's#.*<sparkle:version>\([0-9][0-9]*\)</sparkle:version>.*#\1#p' \
+    | head -n1 || true)
+fi
 
 if ! [[ "$PUBLISHED_BUILD" =~ ^[0-9]+$ ]]; then
-  echo "WARN: could not fetch latest published Sparkle build; skipping monotonic check"
-  echo "PASS (soft): local CURRENT_PROJECT_VERSION=$LOCAL_BUILD"
-  exit 0
+  releases_json="$work_dir/releases.json"
+  api_available=0
+  if command -v gh >/dev/null 2>&1 && gh api \
+      'repos/Open330/amux/releases?per_page=100' >"$releases_json" 2>/dev/null; then
+    api_available=1
+  elif curl -fsSL --max-time 15 \
+      'https://api.github.com/repos/Open330/amux/releases?per_page=100' \
+      -o "$releases_json"; then
+    api_available=1
+  fi
+  if [[ "$api_available" == "1" ]]; then
+    if python3 - "$releases_json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    releases = json.load(handle)
+has_appcast = any(
+    asset.get("name") == "appcast.xml"
+    for release in releases
+    for asset in release.get("assets", [])
+)
+raise SystemExit(0 if has_appcast else 1)
+PY
+    then
+      echo "FAIL: a published appcast exists but the latest Sparkle build could not be parsed" >&2
+      exit 1
+    fi
+    echo "PASS: no prior amux appcast exists; local CURRENT_PROJECT_VERSION=$LOCAL_BUILD starts the Sparkle sequence"
+    exit 0
+  fi
+  if [[ "${AMUX_ALLOW_MISSING_PUBLISHED_APPCAST:-}" == "1" ]]; then
+    echo "WARN: release API unavailable; explicit AMUX_ALLOW_MISSING_PUBLISHED_APPCAST=1 override used"
+    exit 0
+  fi
+  echo "FAIL: could not verify the latest published Sparkle build or first-release state" >&2
+  exit 1
 fi
 
 if (( LOCAL_BUILD <= PUBLISHED_BUILD )); then

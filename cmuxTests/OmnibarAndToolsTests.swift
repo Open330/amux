@@ -64,8 +64,8 @@ final class FinderServicePathResolverTests: XCTestCase {
         let bundleURL = URL(fileURLWithPath: "/Applications/Tools/../cmux.app", isDirectory: true)
         let input: [URL] = [
             bundleURL,
-            URL(fileURLWithPath: "/Applications/cmux.app/Contents/MacOS/cmux", isDirectory: false),
-            URL(fileURLWithPath: "/Applications/cmux.app/Contents/Resources/bin/cmux", isDirectory: false),
+            URL(fileURLWithPath: "/Applications/amux.app/Contents/MacOS/cmux", isDirectory: false),
+            URL(fileURLWithPath: "/Applications/amux.app/Contents/Resources/bin/cmux", isDirectory: false),
             URL(fileURLWithPath: "/Users/tester/Projects/cmux", isDirectory: true),
             URL(fileURLWithPath: "/Users/tester/Projects/cmux/README.md", isDirectory: false),
         ]
@@ -84,10 +84,10 @@ final class FinderServicePathResolverTests: XCTestCase {
     }
 
     func testOrderedUniqueDirectoriesExclusionDoesNotFilterSiblingPaths() {
-        let bundleURL = URL(fileURLWithPath: "/Applications/cmux.app", isDirectory: true)
+        let bundleURL = URL(fileURLWithPath: "/Applications/amux.app", isDirectory: true)
         let input: [URL] = [
-            URL(fileURLWithPath: "/Applications/cmux.app backup/project", isDirectory: true),
-            URL(fileURLWithPath: "/Applications/cmux.app.beta/project/file.txt", isDirectory: false),
+            URL(fileURLWithPath: "/Applications/amux.app backup/project", isDirectory: true),
+            URL(fileURLWithPath: "/Applications/amux.app.beta/project/file.txt", isDirectory: false),
         ]
 
         let directories = FinderServicePathResolver.orderedUniqueDirectories(
@@ -98,8 +98,8 @@ final class FinderServicePathResolverTests: XCTestCase {
         XCTAssertEqual(
             directories,
             [
-                "/Applications/cmux.app backup/project",
-                "/Applications/cmux.app.beta/project",
+                "/Applications/amux.app backup/project",
+                "/Applications/amux.app.beta/project",
             ]
         )
     }

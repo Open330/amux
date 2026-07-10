@@ -1,7 +1,14 @@
-const BASE = "https://cmux.com";
+import {
+  HAS_CONFIGURED_PUBLIC_SITE,
+  PRODUCT_NAME,
+  PUBLIC_SITE_URL,
+} from "@/app/lib/product";
 
-/** Build an absolute cmux.com URL for a locale + path, matching i18n/seo.ts. */
+const BASE = PUBLIC_SITE_URL;
+
+/** Build an absolute public URL for a locale + path, matching i18n/seo.ts. */
 export function localizedUrl(locale: string, path: string) {
+  if (!HAS_CONFIGURED_PUBLIC_SITE) return BASE;
   return locale === "en" ? `${BASE}${path}` : `${BASE}/${locale}${path}`;
 }
 
@@ -49,7 +56,7 @@ export function faqPage(qas: { question: string; answer: string }[]) {
   };
 }
 
-/** Build a schema.org Article for a blog post. Author defaults to cmux. */
+/** Build a schema.org Article for a blog post. Author defaults to amux. */
 export function articleSchema(opts: {
   locale: string;
   path: string;
@@ -66,8 +73,8 @@ export function articleSchema(opts: {
     description: opts.description,
     datePublished: opts.datePublished,
     ...(opts.dateModified ? { dateModified: opts.dateModified } : {}),
-    author: { "@type": "Organization", name: opts.authorName ?? "cmux" },
-    publisher: { "@type": "Organization", name: "cmux", url: BASE },
+    author: { "@type": "Organization", name: opts.authorName ?? PRODUCT_NAME },
+    publisher: { "@type": "Organization", name: PRODUCT_NAME, url: BASE },
     mainEntityOfPage: localizedUrl(opts.locale, opts.path),
   };
 }

@@ -217,6 +217,11 @@ final class GhosttyConfigTests: XCTestCase {
 
         XCTAssertTrue(
             paths.contains(
+                "\(NSHomeDirectory())/Library/Application Support/com.open330.amux/themes/Zag Light"
+            )
+        )
+        XCTAssertTrue(
+            paths.contains(
                 "\(NSHomeDirectory())/Library/Application Support/com.cmuxterm.app/themes/Zag Light"
             )
         )
@@ -230,6 +235,11 @@ final class GhosttyConfigTests: XCTestCase {
             bundleResourceURL: nil
         )
 
+        XCTAssertTrue(
+            paths.contains(
+                "\(fixedHome)/Library/Application Support/com.open330.amux/themes/Zag Light"
+            )
+        )
         XCTAssertTrue(
             paths.contains(
                 "\(fixedHome)/Library/Application Support/com.cmuxterm.app/themes/Zag Light"
@@ -3210,7 +3220,7 @@ final class SocketControlSettingsTests: XCTestCase {
             environment: [
                 "CMUX_TAG": "my-tag",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug",
+            bundleIdentifier: "com.open330.amux.debug",
             isDebugBuild: true
         )
 
@@ -3223,7 +3233,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_TAG": "my-tag",
                 "CMUX_SOCKET_PATH": "/tmp/cmux-debug-forced.sock",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug",
+            bundleIdentifier: "com.open330.amux.debug",
             isDebugBuild: true
         )
 
@@ -3248,7 +3258,7 @@ final class SocketControlSettingsTests: XCTestCase {
             environment: [
                 "CMUX_SOCKET_PATH": "/tmp/cmux-debug-my-tag.sock",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.my-tag",
+            bundleIdentifier: "com.open330.amux.debug.my-tag",
             isDebugBuild: false
         )
 
@@ -3261,7 +3271,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_BUNDLE_ID": "com.cmuxterm.app.nightly",
                 "CMUX_SOCKET_PATH": "/tmp/cmux-nightly.sock",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.issue.4355.cmux.themes.set.state.dependent",
+            bundleIdentifier: "com.open330.amux.debug.issue.4355.cmux.themes.set.state.dependent",
             isDebugBuild: true
         )
 
@@ -3274,7 +3284,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_SOCKET_PATH": "/tmp/cmux-nightly.sock",
                 "CMUX_BUNDLE_ID": "com.cmuxterm.app.nightly",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.fix-grok-notifications",
+            bundleIdentifier: "com.open330.amux.debug.fix-grok-notifications",
             isDebugBuild: false
         )
 
@@ -3288,7 +3298,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_BUNDLE_ID": "com.cmuxterm.app.nightly",
                 "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.fix-grok-notifications",
+            bundleIdentifier: "com.open330.amux.debug.fix-grok-notifications",
             isDebugBuild: false
         )
 
@@ -3301,7 +3311,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_SOCKET_PATH": SocketControlSettings.stableDefaultSocketPath,
                 "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.sockguard",
+            bundleIdentifier: "com.open330.amux.debug.sockguard",
             isDebugBuild: false
         )
 
@@ -3321,7 +3331,7 @@ final class SocketControlSettingsTests: XCTestCase {
                     "CMUX_SOCKET_PATH": alias,
                     "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
                 ],
-                bundleIdentifier: "com.cmuxterm.app.debug.sockguard",
+                bundleIdentifier: "com.open330.amux.debug.sockguard",
                 isDebugBuild: false,
                 currentUserID: 501
             )
@@ -3336,7 +3346,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_SOCKET_PATH": "/private/tmp/cmux.sock",
                 "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.sockguard",
+            bundleIdentifier: "com.open330.amux.debug.sockguard",
             isDebugBuild: false
         )
 
@@ -3368,7 +3378,7 @@ final class SocketControlSettingsTests: XCTestCase {
                     "CMUX_SOCKET_PATH": alias,
                     "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
                 ],
-                bundleIdentifier: "com.cmuxterm.app.debug.sockguard",
+                bundleIdentifier: "com.open330.amux.debug.sockguard",
                 isDebugBuild: false,
                 currentUserID: 501
             )
@@ -3391,7 +3401,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_SOCKET_PATH": alias,
                 "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.sockguard",
+            bundleIdentifier: "com.open330.amux.debug.sockguard",
             isDebugBuild: false
         )
 
@@ -3426,7 +3436,7 @@ final class SocketControlSettingsTests: XCTestCase {
                 "CMUX_SOCKET_PATH": aliases[0],
                 "CMUX_ALLOW_SOCKET_OVERRIDE": "1",
             ],
-            bundleIdentifier: "com.cmuxterm.app.debug.sockguard",
+            bundleIdentifier: "com.open330.amux.debug.sockguard",
             isDebugBuild: false
         )
 
@@ -3438,7 +3448,7 @@ final class SocketControlSettingsTests: XCTestCase {
             environment: [
                 "CMUX_SOCKET_PATH": "/tmp/cmux-staging-my-tag.sock",
             ],
-            bundleIdentifier: "com.cmuxterm.app.staging.my-tag",
+            bundleIdentifier: "com.open330.amux.staging.my-tag",
             isDebugBuild: false
         )
 
@@ -3486,7 +3496,7 @@ final class SocketControlSettingsTests: XCTestCase {
         )
         XCTAssertEqual(
             SocketControlSettings.defaultSocketPath(
-                bundleIdentifier: "com.cmuxterm.app.debug.tag",
+                bundleIdentifier: "com.open330.amux.debug.tag",
                 isDebugBuild: false,
                 probeStableDefaultPathEntry: { _ in .missing }
             ),
@@ -3494,7 +3504,7 @@ final class SocketControlSettingsTests: XCTestCase {
         )
         XCTAssertEqual(
             SocketControlSettings.defaultSocketPath(
-                bundleIdentifier: "com.cmuxterm.app.staging.tag",
+                bundleIdentifier: "com.open330.amux.staging.tag",
                 isDebugBuild: false,
                 probeStableDefaultPathEntry: { _ in .missing }
             ),
@@ -3612,7 +3622,7 @@ final class SocketControlSettingsTests: XCTestCase {
         let debugPath = "/tmp/cmux-debug-tag.sock"
         let path = SocketControlSettings.initialSocketPathBeforeListenerStart(
             preferredPath: debugPath,
-            bundleIdentifier: "com.cmuxterm.app.debug.tag",
+            bundleIdentifier: "com.open330.amux.debug.tag",
             isDebugBuild: false,
             currentUserID: 501,
             probeStableDefaultPathEntry: { _ in
@@ -3639,7 +3649,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertTrue(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: [:],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: true
             )
         )
@@ -3649,7 +3659,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: ["CMUX_TAG": "tests-v1"],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: true
             )
         )
@@ -3659,7 +3669,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: [:],
-                bundleIdentifier: "com.cmuxterm.app.debug.tests-v1",
+                bundleIdentifier: "com.open330.amux.debug.tests-v1",
                 isDebugBuild: true
             )
         )
@@ -3669,7 +3679,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: [:],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: false
             )
         )
@@ -3679,7 +3689,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: ["XCTestConfigurationFilePath": "/tmp/fake.xctestconfiguration"],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: true
             )
         )
@@ -3689,7 +3699,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: ["XCInjectBundle": "/tmp/fake.xctest"],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: true
             )
         )
@@ -3699,7 +3709,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: ["DYLD_INSERT_LIBRARIES": "/usr/lib/libXCTestBundleInject.dylib"],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: true
             )
         )
@@ -3711,7 +3721,7 @@ final class SocketControlSettingsTests: XCTestCase {
         XCTAssertFalse(
             SocketControlSettings.shouldBlockUntaggedDebugLaunch(
                 environment: ["CMUX_UI_TEST_MODE": "1"],
-                bundleIdentifier: "com.cmuxterm.app.debug",
+                bundleIdentifier: "com.open330.amux.debug",
                 isDebugBuild: true
             )
         )

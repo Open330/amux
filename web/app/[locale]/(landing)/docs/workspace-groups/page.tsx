@@ -74,33 +74,33 @@ export default function WorkspaceGroupsPage() {
       <p>{t("cliDesc")}</p>
 
       <DocsHeading level={3} id="subcommands">{t("cliSubcommandsTitle")}</DocsHeading>
-      <CodeBlock lang="bash">{`cmux workspace-group list [--json]
-cmux workspace-group create --name "manaflow" [--cwd ~/projects/manaflow] [--from <id>,<id>]
-cmux workspace-group ungroup <group-id>
-cmux workspace-group delete  <group-id>
-cmux workspace-group rename <group-id> --name "new name"
-cmux workspace-group collapse <group-id>
-cmux workspace-group expand <group-id>
-cmux workspace-group pin <group-id>
-cmux workspace-group unpin <group-id>
-cmux workspace-group add --group <group-id> --workspace <workspace-id>
-cmux workspace-group remove --workspace <workspace-id>
-cmux workspace-group set-anchor --group <group-id> --workspace <workspace-id>
-cmux workspace-group new-workspace <group-id> [--placement afterCurrent|top|end]
-cmux workspace-group set-color <group-id> --hex "#7A4FD8"
-cmux workspace-group set-icon  <group-id> --symbol ladybug.fill
-cmux workspace-group move <group-id> (--to-index <n> | --before <group-id> | --after <group-id>)
-cmux workspace-group focus <group-id>`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux workspace-group list [--json]
+amux workspace-group create --name "manaflow" [--cwd ~/projects/manaflow] [--from <id>,<id>]
+amux workspace-group ungroup <group-id>
+amux workspace-group delete  <group-id>
+amux workspace-group rename <group-id> --name "new name"
+amux workspace-group collapse <group-id>
+amux workspace-group expand <group-id>
+amux workspace-group pin <group-id>
+amux workspace-group unpin <group-id>
+amux workspace-group add --group <group-id> --workspace <workspace-id>
+amux workspace-group remove --workspace <workspace-id>
+amux workspace-group set-anchor --group <group-id> --workspace <workspace-id>
+amux workspace-group new-workspace <group-id> [--placement afterCurrent|top|end]
+amux workspace-group set-color <group-id> --hex "#7A4FD8"
+amux workspace-group set-icon  <group-id> --symbol ladybug.fill
+amux workspace-group move <group-id> (--to-index <n> | --before <group-id> | --after <group-id>)
+amux workspace-group focus <group-id>`}</CodeBlock>
       <p>{t("cliCreateNote")}</p>
       <p>{t("cliFlagsNote")}</p>
 
       <DocsHeading level={3} id="examples">{t("cliExamplesTitle")}</DocsHeading>
       <p>{t("cliExampleGroup")}</p>
-      <CodeBlock lang="bash">{`cmux workspace-group create --name manaflow`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux workspace-group create --name manaflow`}</CodeBlock>
       <p>{t("cliExampleNew")}</p>
-      <CodeBlock lang="bash">{`cmux workspace-group new-workspace workspace_group:1`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux workspace-group new-workspace workspace_group:1`}</CodeBlock>
       <p>{t("cliExampleList")}</p>
-      <CodeBlock lang="bash">{`cmux workspace-group list`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux workspace-group list`}</CodeBlock>
 
       <DocsHeading level={2} id="configuration">{t("configTitle")}</DocsHeading>
       <p>{t("configNote")}</p>

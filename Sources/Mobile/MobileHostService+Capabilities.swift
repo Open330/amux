@@ -7,12 +7,9 @@ extension MobileHostService {
     /// full status) reads this so the lists cannot drift; iOS gates features
     /// like rename/pin/read-state/close on the entries present here.
     ///
-    /// This also advertises `dogfood.v1`, the agent feedback round-trip
-    /// (`dogfood.feedback.submit`). It is advertised on every build type so the
-    /// privileged Send Feedback path (offered only to `@manaflow.ai` users on an
-    /// active connection) works on Release (beta/prod) too; the sink itself is
-    /// still gated by the same-account Stack-auth check the rest of the mobile
-    /// data plane enforces.
+    /// Hosted dogfood feedback is intentionally not advertised by amux. The
+    /// inherited Stack-authenticated service is outside the distribution
+    /// boundary until Open330 provides its own endpoint and credentials.
     nonisolated static var mobileHostCapabilities: [String] {
         [
             "events.v1",
@@ -26,7 +23,6 @@ extension MobileHostService {
             "workspace.actions.v1",
             "workspace.read_state.v1",
             "workspace.close.v1",
-            "dogfood.v1",
             // The workspace list carries group sections (group_id per workspace +
             // a top-level groups array) and the host accepts
             // workspace.group.collapse/expand from mobile. iOS feature-detects

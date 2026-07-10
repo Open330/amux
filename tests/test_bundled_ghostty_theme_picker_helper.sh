@@ -21,7 +21,7 @@ if [ -n "$APP_PATH" ]; then
 else
   case "$CONFIGURATION" in
     Debug)
-      APP_NAME="cmux DEV.app"
+      APP_NAME="amux DEV.app"
       ;;
     Release)
       APP_NAME="cmux.app"

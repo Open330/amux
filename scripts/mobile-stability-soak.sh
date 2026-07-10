@@ -162,8 +162,8 @@ cleanup_tagged_soak_processes
 sleep 1
 cleanup_tagged_soak_processes
 
-app="$HOME/Library/Developer/Xcode/DerivedData/cmux-${tag}/Build/Products/Debug/cmux DEV ${tag}.app"
-if [[ ! -x "$app/Contents/MacOS/cmux DEV" ]]; then
+app="$HOME/Library/Developer/Xcode/DerivedData/cmux-${tag}/Build/Products/Debug/amux DEV ${tag}.app"
+if [[ ! -x "$app/Contents/MacOS/amux DEV" ]]; then
   cat >&2 <<EOF
 Tagged macOS app is missing:
   $app
@@ -174,7 +174,7 @@ EOF
   exit 1
 fi
 
-for pid in $(pgrep -f "cmux-${tag}/Build/Products/Debug/cmux DEV ${tag}.app/Contents/MacOS/cmux DEV" || true); do
+for pid in $(pgrep -f "cmux-${tag}/Build/Products/Debug/amux DEV ${tag}.app/Contents/MacOS/amux DEV" || true); do
   kill "$pid" >/dev/null 2>&1 || true
 done
 

@@ -20,10 +20,10 @@ echo "Release app:"
 echo "  ${APP_PATH}"
 
 # Dev shells (including CI/Codex) often force-disable paging by exporting these.
-# Don't leak that into cmux, otherwise `git diff` won't page even with PAGER=less.
+# Don't leak that into amux, otherwise `git diff` won't page even with PAGER=less.
 env -u GIT_PAGER -u GH_PAGER open -g "$APP_PATH"
 
-APP_PROCESS_PATH="${APP_PATH}/Contents/MacOS/cmux"
+APP_PROCESS_PATH="${APP_PATH}/Contents/MacOS/amux"
 ATTEMPT=0
 MAX_ATTEMPTS=20
 while [[ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]]; do

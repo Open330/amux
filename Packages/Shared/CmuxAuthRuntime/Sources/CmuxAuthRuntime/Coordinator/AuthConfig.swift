@@ -41,10 +41,10 @@ public struct AuthConfig: Equatable, Sendable {
         let stack = CMUXAuthConfig(
             environment: environment,
             overrides: overrides,
-            developmentProjectId: "454ecd03-1db2-4050-845e-4ce5b0cd9895",
-            productionProjectId: "9790718f-14cd-4f7e-824d-eaf527a82b82",
-            developmentPublishableClientKey: "pck_xb63160bwe9699vtxfzfj6emmxpafg5mkjrtp6ehzxv5g",
-            productionPublishableClientKey: "pck_kzj80gx4mh2jrzn1cx6y5e8jk0kwa01vkevh2p9zd4twr"
+            developmentProjectId: "amux-auth-development-unconfigured",
+            productionProjectId: "amux-auth-production-disabled",
+            developmentPublishableClientKey: "pck_amux_development_unconfigured",
+            productionPublishableClientKey: "pck_amux_production_disabled"
         )
 
         let callbackURL: String
@@ -54,8 +54,8 @@ public struct AuthConfig: Equatable, Sendable {
             callbackURL = "http://localhost:3000/auth/callback"
             defaultAPIBaseURL = "http://localhost:3000"
         case .production:
-            callbackURL = "https://cmux.com/auth/callback"
-            defaultAPIBaseURL = "https://cmux.com"
+            callbackURL = "http://127.0.0.1:9/auth/callback"
+            defaultAPIBaseURL = "http://127.0.0.1:9"
         }
 
         let override = overrides["ApiBaseURL"]

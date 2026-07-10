@@ -66,7 +66,7 @@ private final class CMUXCLISentryTelemetryBundleToken {}
         )
     }
 
-    @Test func unexpectedSocketTelemetryStoresWithoutBlockingForSentryFlush() throws {
+    @Test func unexpectedSocketFailureDoesNotCaptureInheritedSentryTelemetry() throws {
         let cliPath = try bundledCLIPath()
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("cmux-cli-sentry-flush-\(UUID().uuidString)", isDirectory: true)
@@ -90,12 +90,12 @@ private final class CMUXCLISentryTelemetryBundleToken {}
         #expect(result.status != 0, Comment(rawValue: result.stdout))
         #expect(result.stdout.contains("Missing relay auth metadata"), Comment(rawValue: result.stdout))
         #expect(
-            FileManager.default.fileExists(atPath: captureProbePath),
-            Comment(rawValue: "Unexpected relay auth failures should still be captured as telemetry-worthy errors. Output: \(result.stdout)")
+            !FileManager.default.fileExists(atPath: captureProbePath),
+            Comment(rawValue: "amux must not capture CLI failures in the inherited Sentry project. Output: \(result.stdout)")
         )
         #expect(
-            FileManager.default.fileExists(atPath: storeProbePath),
-            Comment(rawValue: "Unexpected relay auth failures should be stored durably without synchronously flushing Sentry. Output: \(result.stdout)")
+            !FileManager.default.fileExists(atPath: storeProbePath),
+            Comment(rawValue: "amux must not store inherited Sentry envelopes. Output: \(result.stdout)")
         )
     }
 

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "../../../i18n/navigation";
 import { LanguageSwitcher } from "./language-switcher";
-import { ProUpgradeVisibility } from "./pro-upgrade-visibility";
+import { GITHUB_ISSUES_URL, GITHUB_REPOSITORY_URL } from "../../lib/product";
 
 function isExternal(href: string) {
   return href.startsWith("http") || href.startsWith("mailto:");
@@ -15,11 +15,8 @@ export async function SiteFooter() {
     {
       heading: t("product"),
       links: [
-        { label: t("pricing"), href: "/pricing", proUpgrade: true },
-        { label: t("blog"), href: "/blog" },
-        { label: t("community"), href: "/community" },
-        { label: t("nightly"), href: "/nightly" },
         { label: t("assets"), href: "/assets" },
+        { label: t("github"), href: GITHUB_REPOSITORY_URL },
       ],
     },
     {
@@ -34,18 +31,13 @@ export async function SiteFooter() {
     {
       heading: t("legal"),
       links: [
-        { label: t("privacy"), href: "/privacy-policy" },
-        { label: t("terms"), href: "/terms-of-service" },
-        { label: t("eula"), href: "/eula" },
+        { label: t("openSource"), href: `${GITHUB_REPOSITORY_URL}/blob/main/LICENSE` },
       ],
     },
     {
       heading: t("social"),
       links: [
-        { label: t("github"), href: "https://github.com/manaflow-ai/cmux" },
-        { label: t("twitter"), href: "https://twitter.com/manaflowai" },
-        { label: t("discord"), href: "https://discord.gg/xsgFEVrWCZ" },
-        { label: t("contact"), href: "mailto:founders@manaflow.com" },
+        { label: t("contact"), href: GITHUB_ISSUES_URL },
       ],
     },
   ];
@@ -82,13 +74,7 @@ export async function SiteFooter() {
                       )}
                     </li>
                   );
-                  return link.proUpgrade ? (
-                    <ProUpgradeVisibility key={link.href}>
-                      {item}
-                    </ProUpgradeVisibility>
-                  ) : (
-                    item
-                  );
+                  return item;
                 })}
               </ul>
             </div>
@@ -101,7 +87,7 @@ export async function SiteFooter() {
               ·
             </span>
             <a
-              href="https://github.com/manaflow-ai/cmux"
+              href={GITHUB_REPOSITORY_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"

@@ -239,30 +239,12 @@ extension TerminalController: ControlSystemContext {
     }
 
     func controlFeedbackOpen(workspaceID: UUID?, windowID: UUID?, requestedActivate: Bool) {
-        let shouldActivate = v2FocusAllowed(requested: requestedActivate)
         DispatchQueue.main.async {
-            let targetWindow: NSWindow?
-            if let windowID, let app = AppDelegate.shared {
-                targetWindow = app.mainWindow(for: windowID)
-            } else if let workspaceID, let app = AppDelegate.shared {
-                targetWindow = app.mainWindowContainingWorkspace(workspaceID)
-            } else {
-                targetWindow = nil
-            }
-
-            if shouldActivate {
-                if let targetWindow {
-                    _ = AppDelegate.shared?.focusWindowForAppActivation(targetWindow, reason: .feedback)
-                } else {
-                    // The legacy body also passed .activateIgnoringOtherApps; the
-                    // option is deprecated and documented as a no-op on macOS 14+
-                    // (this target's minimum), so dropping it is behavior-neutral
-                    // and keeps this file deprecation-warning-free.
-                    NSRunningApplication.current.activate(options: [.activateAllWindows])
-                }
-            }
-
-            FeedbackComposerBridge().openComposer(in: targetWindow)
+            _ = workspaceID
+            _ = windowID
+            _ = requestedActivate
+            guard let url = URL(string: "https://github.com/Open330/amux/issues/new") else { return }
+            NSWorkspace.shared.open(url)
         }
     }
 

@@ -151,7 +151,7 @@ extension CLINotifyProcessIntegrationRegressionTests {
             "cmux-controlled ssh invocations must override a host-configured RemoteCommand; stderr: \(startupResult.stderr)"
         )
         XCTAssertFalse(
-            startupResult.stderr.contains("[cmux] ssh exited with status"),
+            startupResult.stderr.contains("[amux] ssh exited with status"),
             startupResult.stderr
         )
 
@@ -262,7 +262,7 @@ extension CLINotifyProcessIntegrationRegressionTests {
             "The bootstrap installer hop must override a host-configured RemoteCommand; stderr: \(startupResult.stderr)"
         )
         XCTAssertFalse(
-            startupResult.stderr.contains("[cmux] ssh exited with status"),
+            startupResult.stderr.contains("[amux] ssh exited with status"),
             startupResult.stderr
         )
         XCTAssertEqual(startupResult.status, 0, startupResult.stderr)

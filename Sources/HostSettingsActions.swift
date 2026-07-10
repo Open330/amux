@@ -7,7 +7,7 @@ import Foundation
 import OSLog
 import SwiftUI
 
-private let hostSettingsLogger = Logger(subsystem: "com.cmuxterm.app", category: "Settings")
+private let hostSettingsLogger = Logger(subsystem: "com.open330.amux", category: "Settings")
 
 /// App-side implementation of the package's `SettingsHostActions`
 /// protocol. Routes UI-triggered actions to the existing host
@@ -98,7 +98,7 @@ final class HostSettingsActions: SettingsHostActions {
     }
 
     func sendFeedback() {
-        guard let url = URL(string: "https://github.com/manaflow-ai/cmux/issues/new") else { return }
+        guard let url = URL(string: "https://github.com/Open330/amux/issues/new") else { return }
         NSWorkspace.shared.open(url)
     }
 
@@ -168,7 +168,8 @@ final class HostSettingsActions: SettingsHostActions {
     }
 
     func openMobilePairingWindow() {
-        MobilePairingWindowController.shared.show()
+        // Retained for settings protocol compatibility; amux has no hosted
+        // mobile-pairing service.
     }
 
     private func existingConfigWindow() -> NSWindow? {

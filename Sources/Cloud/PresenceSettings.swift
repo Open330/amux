@@ -2,12 +2,8 @@ import Foundation
 
 /// UserDefaults keys for the device presence heartbeat.
 ///
-/// Release default OFF: a stable Mac announces nothing unless the flag is
-/// enabled and a service URL is set (the production worker URL ships with the
-/// Settings surface as a follow-up). Debug default ON against the dev/staging
-/// instance: Debug builds sign into the dev Stack project, which is exactly
-/// what `cmux-presence-dev` verifies, so tagged dogfood builds get live
-/// presence with zero setup while both defaults stay explicitly overridable.
+/// amux ships no hosted presence endpoint. A distributor must explicitly set a
+/// service URL and authentication composition before this client can run.
 enum PresenceSettings {
     /// Master gate. Resolved by ``isEnabled(defaults:)``; an explicit value
     /// always wins, otherwise Debug defaults on and Release off.
@@ -17,14 +13,11 @@ enum PresenceSettings {
     static let serviceURLKey = "presenceServiceURL"
     /// Env override for dev/tagged builds, mirroring CMUX_VM_API_BASE_URL.
     static let serviceURLEnvKey = "CMUX_PRESENCE_BASE_URL"
-    /// The dev/staging worker (dev Stack project), the Debug-build default.
-    /// See workers/presence/README.md.
-    static let debugDefaultServiceURL = "https://cmux-presence-dev.debussy.workers.dev"
+    /// Empty by design: amux does not inherit the upstream development worker.
+    static let debugDefaultServiceURL = ""
 
-    /// The production presence worker (prod Stack project), the Release-build
-    /// default so stable cmux can announce presence once the user enables mobile.
-    /// See workers/presence/README.md.
-    static let productionServiceURL = "https://presence.cmux.dev"
+    /// Empty by design: amux does not inherit the upstream production worker.
+    static let productionServiceURL = ""
 
     /// Whether the heartbeat gate is on. An explicitly written value always wins.
     /// With no stored value, presence FOLLOWS the mobile feature: announcing the

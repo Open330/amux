@@ -1,8 +1,8 @@
 import Foundation
 
 extension CMUXCLI {
-    static let settingsDocsURL = "https://cmux.com/docs/configuration#cmux-json"
-    static let settingsSchemaURL = "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json"
+    static let settingsDocsURL = "https://github.com/Open330/amux/blob/main/docs/configuration.md"
+    static let settingsSchemaURL = "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json"
     static let primarySettingsDisplayPath = "~/.config/cmux/cmux.json"
     static let legacySettingsDisplayPath = "~/.config/cmux/settings.json"
     static let fallbackSettingsDisplayPath = "~/Library/Application Support/com.cmuxterm.app/settings.json"
@@ -26,92 +26,92 @@ extension CMUXCLI {
         DocsReference(
             topic: "settings",
             aliases: ["configuration", "config", "cmux-json", "settings-json", "settingsjson", "schema"],
-            summary: "cmux-owned settings, cmux.json locations, schema, and reload flow.",
+            summary: "amux-owned settings, cmux.json locations, schema, and reload flow.",
             webURL: settingsDocsURL,
             rawResources: [
                 DocsResource(label: "settings schema", url: settingsSchemaURL),
-                DocsResource(label: "cmux skill", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/skills/cmux/SKILL.md"),
+                DocsResource(label: "amux skill", url: "https://raw.githubusercontent.com/Open330/amux/main/skills/cmux/SKILL.md"),
             ],
             commands: [
-                "cmux settings path",
-                "cmux settings cmux-json",
-                "cmux config doctor",
-                "cmux reload-config",
+                "amux settings path",
+                "amux settings cmux-json",
+                "amux config doctor",
+                "amux reload-config",
             ]
         ),
         DocsReference(
             topic: "shortcuts",
             aliases: ["keyboard", "keybindings", "keys"],
-            summary: "cmux-owned keyboard shortcuts and two-step chord syntax.",
-            webURL: "https://cmux.com/docs/keyboard-shortcuts",
+            summary: "amux-owned keyboard shortcuts and two-step chord syntax.",
+            webURL: "https://github.com/Open330/amux/blob/main/docs/configuration.md",
             rawResources: [
-                DocsResource(label: "shortcut data", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux-shortcuts.ts"),
+                DocsResource(label: "shortcut data", url: "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux-shortcuts.ts"),
                 DocsResource(label: "settings schema", url: settingsSchemaURL),
             ],
             commands: [
-                "cmux shortcuts",
-                "cmux settings shortcuts",
-                "cmux docs settings",
+                "amux shortcuts",
+                "amux settings shortcuts",
+                "amux docs settings",
             ]
         ),
         DocsReference(
             topic: "api",
             aliases: ["cli", "socket", "automation", "handles"],
             summary: "CLI/socket API, handle model, windows, workspaces, panes, and surfaces.",
-            webURL: "https://cmux.com/docs/api",
+            webURL: "https://github.com/Open330/amux/blob/main/docs/cli-contract.md",
             rawResources: [
-                DocsResource(label: "CLI contract", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/docs/cli-contract.md"),
-                DocsResource(label: "cmux skill", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/skills/cmux/SKILL.md"),
+                DocsResource(label: "CLI contract", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/cli-contract.md"),
+                DocsResource(label: "amux skill", url: "https://raw.githubusercontent.com/Open330/amux/main/skills/cmux/SKILL.md"),
             ],
             commands: [
-                "cmux identify --json",
-                "cmux tree --all",
+                "amux identify --json",
+                "amux tree --all",
             ]
         ),
         DocsReference(
             topic: "browser",
             aliases: ["browser-automation", "webview"],
             summary: "Browser panel automation commands and snapshot-driven web interaction.",
-            webURL: "https://cmux.com/docs/browser-automation",
+            webURL: "https://github.com/Open330/amux/blob/main/docs/agent-browser-port-spec.md",
             rawResources: [
-                DocsResource(label: "browser skill", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/skills/cmux-browser/SKILL.md"),
-                DocsResource(label: "browser commands", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/skills/cmux-browser/references/commands.md"),
+                DocsResource(label: "browser skill", url: "https://raw.githubusercontent.com/Open330/amux/main/skills/cmux-browser/SKILL.md"),
+                DocsResource(label: "browser commands", url: "https://raw.githubusercontent.com/Open330/amux/main/skills/cmux-browser/references/commands.md"),
             ],
             commands: [
-                "cmux browser --help",
-                "cmux browser snapshot",
+                "amux browser --help",
+                "amux browser snapshot",
             ]
         ),
         DocsReference(
             topic: "agents",
             aliases: ["integrations", "agent-integrations"],
             summary: "Agent hook integrations, Feed approvals, notifications, and session restore.",
-            webURL: "https://cmux.com/docs/agent-integrations/oh-my-codex",
+            webURL: "https://github.com/Open330/amux/blob/main/docs/agent-hooks.md",
             rawResources: [
-                DocsResource(label: "agent hook docs", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/docs/agent-hooks.md"),
-                DocsResource(label: "feed docs", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/docs/feed.md"),
-                DocsResource(label: "notifications docs", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/docs/notifications.md"),
+                DocsResource(label: "agent hook docs", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/agent-hooks.md"),
+                DocsResource(label: "feed docs", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/feed.md"),
+                DocsResource(label: "notifications docs", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/notifications.md"),
             ],
             commands: [
-                "cmux hooks setup",
-                "cmux hooks setup <agent>",
-                "cmux hooks hermes-agent install",
-                "cmux hooks hermes-agent uninstall",
-                "cmux hooks <agent> uninstall",
+                "amux hooks setup",
+                "amux hooks setup <agent>",
+                "amux hooks hermes-agent install",
+                "amux hooks hermes-agent uninstall",
+                "amux hooks <agent> uninstall",
             ]
         ),
         DocsReference(
             topic: "dock",
             aliases: ["doc", "controls", "right-sidebar", "dock-json"],
             summary: "Custom right-sidebar terminal controls from .cmux/dock.json or ~/.config/cmux/dock.json.",
-            webURL: "https://cmux.com/docs/dock",
+            webURL: "https://github.com/Open330/amux/blob/main/docs/dock.md",
             rawResources: [
-                DocsResource(label: "dock docs", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/docs/dock.md"),
-                DocsResource(label: "dock web copy", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/messages/en.json"),
+                DocsResource(label: "dock docs", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/dock.md"),
+                DocsResource(label: "dock web copy", url: "https://raw.githubusercontent.com/Open330/amux/main/web/messages/en.json"),
             ],
             commands: [
-                "cmux docs dock",
-                "cmux docs dock --json",
+                "amux docs dock",
+                "amux docs dock --json",
                 "python3 -m json.tool .cmux/dock.json",
             ]
         ),
@@ -119,14 +119,14 @@ extension CMUXCLI {
             topic: "sidebars",
             aliases: ["sidebar", "custom-sidebar", "custom-sidebars", "vibe-sidebar"],
             summary: "Vibe-code a custom sidebar: a runtime-interpreted SwiftUI-style file in ~/.config/cmux/sidebars/ (beta).",
-            webURL: "https://cmux.com/docs/custom-sidebars",
+            webURL: "https://github.com/Open330/amux/blob/main/docs/custom-sidebars.md",
             rawResources: [
-                DocsResource(label: "custom sidebar authoring guide", url: "https://raw.githubusercontent.com/manaflow-ai/cmux/main/docs/custom-sidebars.md"),
+                DocsResource(label: "custom sidebar authoring guide", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/custom-sidebars.md"),
             ],
             commands: [
                 "mkdir -p ~/.config/cmux/sidebars",
                 "cat > ~/.config/cmux/sidebars/mine.swift   # write a SwiftUI-style view, then right-click the sidebar button to pick it",
-                "cmux docs api   # discover cmux() action methods/params",
+                "amux docs api   # discover cmux() action methods/params",
             ]
         ),
     ]
@@ -151,7 +151,7 @@ extension CMUXCLI {
         }
 
         guard args.count == 1 else {
-            throw CLIError(message: "Usage: cmux docs [settings|shortcuts|api|browser|agents|dock]")
+            throw CLIError(message: "Usage: amux docs [settings|shortcuts|api|browser|agents|dock]")
         }
 
         if topic == "list" || topic == "all" {
@@ -164,7 +164,7 @@ extension CMUXCLI {
         }
 
         guard let reference = docsReference(for: topic) else {
-            throw CLIError(message: "Unknown docs topic '\(topic)'. Run 'cmux docs' for topics.")
+            throw CLIError(message: "Unknown docs topic '\(topic)'. Run 'amux docs' for topics.")
         }
 
         if wantsJSON {
@@ -176,14 +176,14 @@ extension CMUXCLI {
 
     func docsUsage() -> String {
         return """
-        Usage: cmux docs [settings|shortcuts|api|browser|agents|dock]
+        Usage: amux docs [settings|shortcuts|api|browser|agents|dock]
 
-        Print the canonical docs URL, raw GitHub resources, and useful commands for a cmux topic.
-        This command does not require a running cmux app or socket.
+        Print the canonical docs URL, raw GitHub resources, and useful commands for an amux topic.
+        This command does not require a running amux app or socket.
 
         Agents:
-          Use `cmux docs settings` before editing ~/.config/cmux/cmux.json.
-          Use `cmux docs dock` before creating or editing .cmux/dock.json.
+          Use `amux docs settings` before editing ~/.config/cmux/cmux.json.
+          Use `amux docs dock` before creating or editing .cmux/dock.json.
           Back up any existing cmux.json file to a timestamped .bak copy before editing so the user can revert.
           Fetch raw resources with the printed curl commands when you need the latest schema.
         """
@@ -219,24 +219,24 @@ extension CMUXCLI {
             ]
             payload["ghostty_config"] = [
                 "path": Self.ghosttyConfigDisplayPath,
-                "note": "Not cmux-owned, but cmux reads it. Use for terminal transparency (background-opacity), blur, font, theme, etc.",
+                "note": "Not amux-owned, but amux reads it. Use for terminal transparency (background-opacity), blur, font, theme, etc.",
             ]
             payload["backup"] = "Back up any existing cmux.json file to a timestamped .bak copy before editing so the user can revert."
-            payload["reload_command"] = "cmux reload-config"
+            payload["reload_command"] = "amux reload-config"
             payload["reload_scope"] = "Reloads Ghostty config + cmux.json and refreshes terminals in place. No app restart needed."
         }
         return payload
     }
 
     private func printDocsIndex() {
-        print("cmux docs")
+        print("amux docs")
         print()
         print("Topics:")
         for reference in Self.docsReferences {
             print("  \(reference.topic.padding(toLength: 10, withPad: " ", startingAt: 0)) \(reference.summary)")
         }
         print()
-        print("Run `cmux docs <topic>` for URLs, raw resources, and next commands.")
+        print("Run `amux docs <topic>` for URLs, raw resources, and next commands.")
     }
 
     private func printDocsReference(_ reference: DocsReference) {
@@ -270,7 +270,7 @@ extension CMUXCLI {
             print("  legacy config: \(Self.legacySettingsDisplayPath)")
             print("  legacy app support: \(Self.fallbackSettingsDisplayPath)")
             print()
-            print("Related (not cmux-owned, but cmux reads it for terminal behavior):")
+            print("Related (not amux-owned, but amux reads it for terminal behavior):")
             print("  \(Self.ghosttyConfigDisplayPath)")
             print("  Use this for terminal transparency (background-opacity), blur, font, theme, etc.")
             print()
@@ -278,7 +278,7 @@ extension CMUXCLI {
             print("  Back up any existing cmux.json file to a timestamped .bak copy so the user can revert.")
             print()
             print("Reload after editing cmux.json or Ghostty config:")
-            print("  cmux reload-config   (reloads BOTH and refreshes terminals; no app restart needed)")
+            print("  amux reload-config   (reloads BOTH and refreshes terminals; no app restart needed)")
         }
     }
 
@@ -301,13 +301,13 @@ extension CMUXCLI {
         switch subcommand {
         case "path", "paths":
             guard args.count == 1 else {
-                throw CLIError(message: "Usage: cmux settings path")
+                throw CLIError(message: "Usage: amux settings path")
             }
             printSettingsPaths(jsonOutput: wantsJSON)
             return
         case "docs", "documentation":
             guard args.count == 1 else {
-                throw CLIError(message: "Usage: cmux settings docs")
+                throw CLIError(message: "Usage: amux settings docs")
             }
             if wantsJSON, let reference = docsReference(for: "settings") {
                 print(jsonString(docsPayload(reference)))
@@ -318,10 +318,10 @@ extension CMUXCLI {
         case "open":
             let targetRaw: String?
             if args.count > 2 {
-                throw CLIError(message: "Usage: cmux settings open [target]")
+                throw CLIError(message: "Usage: amux settings open [target]")
             } else if let rawTarget = args.dropFirst().first {
                 guard let target = settingsTargetRawValue(for: rawTarget) else {
-                    throw CLIError(message: "Unknown settings target '\(rawTarget)'. Run 'cmux settings --help'.")
+                    throw CLIError(message: "Unknown settings target '\(rawTarget)'. Run 'amux settings --help'.")
                 }
                 targetRaw = target
             } else {
@@ -336,10 +336,10 @@ extension CMUXCLI {
             return
         default:
             guard let targetRaw = settingsTargetRawValue(for: subcommand) else {
-                throw CLIError(message: "Unknown settings subcommand '\(subcommand)'. Run 'cmux settings --help'.")
+                throw CLIError(message: "Unknown settings subcommand '\(subcommand)'. Run 'amux settings --help'.")
             }
             guard args.count == 1 else {
-                throw CLIError(message: "Usage: cmux settings [open [target]|path|docs|<target>]")
+                throw CLIError(message: "Usage: amux settings [open [target]|path|docs|<target>]")
             }
             try openSettingsTarget(
                 targetRaw,
@@ -359,14 +359,14 @@ extension CMUXCLI {
 
     func settingsUsage() -> String {
         return """
-        Usage: cmux settings [open [target]|path|docs|<target>]
+        Usage: amux settings [open [target]|path|docs|<target>]
 
-        Open cmux Settings, print cmux.json paths, or show settings documentation.
+        Open amux Settings, print cmux.json paths, or show settings documentation.
 
         Subcommands:
           open [target]       Open Settings, optionally to a target section.
           path                Print cmux.json paths, docs URL, and schema URL.
-          docs                Print the same output as `cmux docs settings`.
+          docs                Print the same output as `amux docs settings`.
 
         Targets:
           account, app, terminal, sidebar-appearance, custom-sidebars,
@@ -379,14 +379,14 @@ extension CMUXCLI {
           legacy config: \(Self.legacySettingsDisplayPath)
           legacy app support: \(Self.fallbackSettingsDisplayPath)
 
-        Related (not cmux-owned, but cmux reads it for terminal behavior):
+        Related (not amux-owned, but amux reads it for terminal behavior):
           \(Self.ghosttyConfigDisplayPath)
 
         Before editing cmux.json:
           Back up any existing cmux.json file to a timestamped .bak copy so the user can revert.
 
         Reload after editing cmux.json or Ghostty config:
-          cmux reload-config   (reloads BOTH and refreshes terminals; no app restart needed)
+          amux reload-config   (reloads BOTH and refreshes terminals; no app restart needed)
         """
     }
 

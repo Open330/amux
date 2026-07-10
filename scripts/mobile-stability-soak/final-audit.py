@@ -128,7 +128,7 @@ def main() -> int:
         if not pid or command is None:
             failures.append(f"{label}.pid {pid} is not live")
             continue
-        if label == "mac" and "cmux DEV swmob.app/Contents/MacOS/cmux DEV" not in command:
+        if label == "mac" and "amux DEV swmob.app/Contents/MacOS/amux DEV" not in command:
             failures.append(f"{label}.pid {pid} does not look like tagged macOS cmux")
         if label in {"iphone", "ipad"} and "cmux.app/cmux" not in command:
             failures.append(f"{label}.pid {pid} does not look like cmux")

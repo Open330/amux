@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "cmux Upgrade",
-  description: "cmux upgrade pricing inside the cmux app.",
+  title: "amux",
+  description: "amux for macOS.",
 };
 
 export default function AppPricingLayout({

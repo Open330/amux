@@ -9,9 +9,9 @@ import { DocsHeading } from "@/app/[locale]/components/docs-heading";
 
 const skills = [
   {
-    id: "cmux",
+    id: "amux",
     path: "skills/cmux/SKILL.md",
-    command: "cmux identify --json",
+    command: "amux identify --json",
     nameKey: "cmuxName",
     descriptionKey: "cmuxDescription",
     useKey: "cmuxUse",
@@ -19,7 +19,7 @@ const skills = [
   {
     id: "cmux-workspace",
     path: "skills/cmux-workspace/SKILL.md",
-    command: "cmux current-workspace --json",
+    command: "amux current-workspace --json",
     nameKey: "workspaceName",
     descriptionKey: "workspaceDescription",
     useKey: "workspaceUse",
@@ -35,7 +35,7 @@ const skills = [
   {
     id: "cmux-customization",
     path: "skills/cmux-customization/SKILL.md",
-    command: "cmux reload-config",
+    command: "amux reload-config",
     nameKey: "customizationName",
     descriptionKey: "customizationDescription",
     useKey: "customizationUse",
@@ -51,7 +51,7 @@ const skills = [
   {
     id: "cmux-browser",
     path: "skills/cmux-browser/SKILL.md",
-    command: "cmux browser surface:2 snapshot --interactive",
+    command: "amux browser surface:2 snapshot --interactive",
     nameKey: "browserName",
     descriptionKey: "browserDescription",
     useKey: "browserUse",
@@ -59,7 +59,7 @@ const skills = [
   {
     id: "cmux-markdown",
     path: "skills/cmux-markdown/SKILL.md",
-    command: "cmux markdown open plan.md",
+    command: "amux markdown open plan.md",
     nameKey: "markdownName",
     descriptionKey: "markdownDescription",
     useKey: "markdownUse",
@@ -68,7 +68,7 @@ const skills = [
 
 const skillCoverage = [
   {
-    id: "cmux",
+    id: "amux",
     nameKey: "cmuxName",
     scopeKey: "cmuxScope",
     referencesKey: "cmuxReferences",
@@ -206,12 +206,12 @@ export default function SkillsPage() {
           code: (chunks) => <code>{chunks}</code>,
         })}
       </p>
-      <CodeBlock title={t("installWithVercel")} lang="bash">{`# Install all cmux skills
-npx skills add manaflow-ai/cmux -g -y
+      <CodeBlock title={t("installWithVercel")} lang="bash">{`# Install all amux skills
+npx skills add Open330/amux -g -y
 
 # Or install just diagnostics
-npx skills add manaflow-ai/cmux --skill cmux-diagnostics -g -y`}</CodeBlock>
-      <CodeBlock title={t("installWithSkillsSh")} lang="bash">{`curl -fsSL https://raw.githubusercontent.com/manaflow-ai/cmux/main/skills.sh | bash`}</CodeBlock>
+npx skills add Open330/amux --skill cmux-diagnostics -g -y`}</CodeBlock>
+      <CodeBlock title={t("installWithSkillsSh")} lang="bash">{`curl -fsSL https://raw.githubusercontent.com/Open330/amux/main/skills.sh | bash`}</CodeBlock>
       <Callout type="info">
         {t.rich("installDestination", {
           code: (chunks) => <code>{chunks}</code>,
@@ -226,7 +226,7 @@ npx skills add manaflow-ai/cmux --skill cmux-diagnostics -g -y`}</CodeBlock>
 ./skills.sh --dest ~/.codex/skills
 ./skills.sh --dry-run`}</CodeBlock>
       <p>{t("pinRefIntro")}</p>
-      <CodeBlock lang="bash">{`curl -fsSL https://raw.githubusercontent.com/manaflow-ai/cmux/main/skills.sh | bash -s -- --ref main`}</CodeBlock>
+      <CodeBlock lang="bash">{`curl -fsSL https://raw.githubusercontent.com/Open330/amux/main/skills.sh | bash -s -- --ref main`}</CodeBlock>
 
       <DocsHeading level={2} id="included-title">{t("includedTitle")}</DocsHeading>
       <p>{t("includedIntro")}</p>

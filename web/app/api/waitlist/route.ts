@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       // and unique domains miss the cache, so an unthrottled path would let a
       // public POST flood the resolver as well as Slack. Reuses the feedback
       // rule. Only active on Vercel.
-      if (process.env.VERCEL === "1") {
+      if (process.env.VERCEL === "1" && env.CMUX_FEEDBACK_RATE_LIMIT_ID) {
         const { error, rateLimited } = await checkRateLimit(
           env.CMUX_FEEDBACK_RATE_LIMIT_ID,
           { request },

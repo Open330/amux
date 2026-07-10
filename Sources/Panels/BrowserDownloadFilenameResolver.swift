@@ -318,7 +318,7 @@ extension URL {
             ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
             ?? "cmux"
         let trimmed = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "cmux" : trimmed
+        return trimmed.isEmpty ? "amux" : trimmed
     }
 
     private static func cmuxSanitizedDownloadSourceURL(_ sourceURL: URL) -> URL? {

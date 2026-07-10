@@ -7,7 +7,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple" alt="macOS 14+" />
-  <img src="https://img.shields.io/badge/status-alpha%20·%20v0.1.0-orange" alt="status" />
+  <img src="https://img.shields.io/badge/status-0.2.0%20pre--release-orange" alt="status" />
   <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="GPL-3.0-or-later" />
   <img src="https://img.shields.io/badge/renderer-Ghostty-6f42c1" alt="Ghostty" />
   <img src="https://img.shields.io/badge/agents-muxa-30A46C" alt="muxa" />
@@ -60,7 +60,7 @@ flowchart LR
 
 ## Build from source
 
-Requirements: **macOS 14+**, **Xcode 26+**, `zig` (for GhosttyKit), `tmux 3.x`.
+Requirements: **Apple Silicon**, **macOS 14+**, **Xcode 26+**, `zig` (for GhosttyKit), `tmux 3.x`.
 Optional: [muxa](https://github.com/Open330/muxa) (`muxad` running) for agent badges.
 
 ```bash
@@ -101,9 +101,17 @@ Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.
 | **2 — Agent layer** | `CmuxMuxa` daemon client (hello/snapshot/subscribe), sidebar agent badges, **attend** (jump to longest-blocked agent, ⌘⇧J), prompt composer, `waiting_choice` native sheet | ✅ shipped |
 | **muxa co-evolution** | muxad carries `tmux_socket` + `tmux_session` on the wire so amux joins by session name across servers ([Open330/muxa#60](https://github.com/Open330/muxa/pull/60)) | ✅ merged (upgrade muxad) |
 | **3 — Deep UX** | New/attach/detach/kill lifecycle, detach-by-default, opt-in ⌘N tmux-backed workspace | 🔶 lifecycle shipped — Detached-sessions **visual** sidebar section + stats panel remain |
-| **4 — Product** | amux branding, bundled tmux 3.7b + muxad/muxa, opt-in muxad LaunchAgent, first-run wizard, signed + notarized dmg, Homebrew cask | ✅ **v0.1.0-alpha shipped** (Sparkle auto-update pending amux's own key) |
+| **4 — Product** | amux branding, bundled tmux 3.7b + muxad/muxa, opt-in muxad LaunchAgent, first-run wizard, signed + notarized dmg, Homebrew cask | 🔶 **v0.2.0 pre-release** — app/runtime pipeline is wired; amux Sparkle and publish secrets remain to be configured |
 
 Download the signed, notarized build from [Releases](https://github.com/Open330/amux/releases/latest).
+
+### Compatibility names
+
+`amux` is the product and canonical CLI name. Existing `CMUX_*` environment variables,
+`cmux.json`, `.cmux/` project directories, `cmux.*` action IDs, and the `cmux` CLI alias
+remain supported so cmux configurations and agent integrations continue to work after migration.
+New user-facing examples and release artifacts use `amux`.
+The full boundary is documented in [`docs/amux-identity.md`](docs/amux-identity.md).
 
 ## Relationship to cmux
 
@@ -122,7 +130,7 @@ into the local engine. Upstream is merged periodically.
 
 ## Development
 
-- CI runs on a Gitea mirror (GitHub Actions workflows are intentionally removed).
+- Reviewed version tags build and publish through GitHub Actions; development CI may also run on the Gitea mirror.
 - Contributor rules, typing-latency pitfalls, and package architecture live in [`CLAUDE.md`](CLAUDE.md) and `skills/`.
 - The muxad client package has its own suite: `cd Packages/macOS/CmuxMuxa && swift test`.
 - The original cmux README (incl. its translations) is preserved at [`docs/upstream-cmux-README.md`](docs/upstream-cmux-README.md); amux ships its own English README and will add translations as the docs mature.

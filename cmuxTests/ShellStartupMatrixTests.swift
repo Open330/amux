@@ -69,7 +69,7 @@ struct ShellStartupMatrixTests {
 
     @Test
     func bashStartupUsesBundledPromptCommandAndHonorsGhosttyMode() {
-        let integrationDir = "/Applications/cmux.app/Contents/Resources/shell-integration"
+        let integrationDir = "/Applications/amux.app/Contents/Resources/shell-integration"
         var environment: [String: String] = [:]
         var protectedKeys: Set<String> = []
 
@@ -128,7 +128,7 @@ struct ShellStartupMatrixTests {
 
         let command = TerminalSurface.applyManagedShellSpecificStartupEnvironment(
             shell: shell,
-            integrationDir: "/Applications/cmux.app/Contents/Resources/shell-integration",
+            integrationDir: "/Applications/amux.app/Contents/Resources/shell-integration",
             userGhosttyShellIntegrationMode: "detect",
             to: &environment,
             protectedKeys: &protectedKeys

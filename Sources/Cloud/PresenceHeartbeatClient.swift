@@ -105,8 +105,8 @@ final class PresenceHeartbeatClient {
     }
 
     /// Resolved service base URL: env override first (dev/tagged builds), then
-    /// the defaults key, then the Debug-build dev-instance default. Nil
-    /// disables the client entirely.
+    /// the defaults key, then an explicitly configured build default. Nil
+    /// disables the client entirely; amux ships with both defaults empty.
     static func resolvedServiceURL(
         environment: [String: String] = ProcessInfo.processInfo.environment,
         defaults: UserDefaults = .standard
@@ -117,12 +117,8 @@ final class PresenceHeartbeatClient {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         if raw == nil || raw?.isEmpty == true {
             #if DEBUG
-            // Debug builds authenticate against the dev Stack project, which is
-            // what the dev/staging worker verifies — see PresenceSettings.
             raw = PresenceSettings.debugDefaultServiceURL
             #else
-            // Release builds talk to the production presence worker, so stable
-            // cmux announces presence once mobile is enabled (gated by isEnabled).
             raw = PresenceSettings.productionServiceURL
             #endif
         }

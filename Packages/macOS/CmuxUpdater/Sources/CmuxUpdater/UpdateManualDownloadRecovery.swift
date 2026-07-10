@@ -26,8 +26,8 @@ public struct UpdateManualDownloadRecovery: Sendable {
     ///   - stableDownloadURLString: Direct DMG URL for the stable channel.
     ///   - nightlyDownloadURLString: Direct DMG URL for the nightly channel.
     public init(
-        stableDownloadURLString: String = "https://github.com/manaflow-ai/cmux/releases/latest/download/cmux-macos.dmg",
-        nightlyDownloadURLString: String = "https://github.com/manaflow-ai/cmux/releases/download/nightly/cmux-nightly-macos.dmg"
+        stableDownloadURLString: String = "https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg",
+        nightlyDownloadURLString: String = "https://github.com/Open330/amux/releases/download/nightly/amux-nightly-macos.dmg"
     ) {
         self.stableDownloadURLString = stableDownloadURLString
         self.nightlyDownloadURLString = nightlyDownloadURLString
@@ -36,7 +36,7 @@ public struct UpdateManualDownloadRecovery: Sendable {
     /// Returns a direct download URL when manually downloading is a sensible recovery for
     /// `error`, or `nil` when it is not.
     ///
-    /// Returned for installation, extraction, resume, and download failures, including cmux's
+    /// Returned for installation, extraction, resume, and download failures, including amux's
     /// own install-watchdog trip, where grabbing the latest build sidesteps a broken in-app
     /// install. Returns `nil` for feed, signature, configuration, and "already up to date" errors,
     /// where a manual download would not help or could be unsafe.

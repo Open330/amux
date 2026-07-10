@@ -73,7 +73,7 @@ _cmux_relay_cli_path() {
         printf '%s\n' "${CMUX_BUNDLED_CLI_PATH}"
         return 0
     fi
-    command -v cmux 2>/dev/null
+    command -v amux 2>/dev/null || command -v cmux 2>/dev/null
 }
 
 _cmux_socket_uses_remote_relay() {
@@ -113,7 +113,7 @@ _cmux_relay_rpc() {
     local relay_cli=""
     local response=""
     _cmux_socket_uses_remote_relay || return 1
-    # Relay `cmux rpc` exits nonzero on server error. The real remote CLI prints
+    # Relay `amux rpc` exits nonzero on server error. The real remote CLI prints
     # only the JSON result payload on success, while some test stubs return the
     # full `{"ok":...}` envelope. Retry only on explicit `ok:false`.
     relay_cli="$(_cmux_relay_cli_path)" || return 1
@@ -253,7 +253,7 @@ _cmux_install_cli_command_shim() {
             printf '%s\n' '    fi'
             printf '%s\n' 'fi'
             printf '%s\n' 'if [[ ! -x "$cmux_wrapper" ]]; then'
-            printf '%s\n' '    cmux_cli="$(command -v cmux 2>/dev/null || true)"'
+            printf '%s\n' '    cmux_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"'
             printf '%s\n' '    if [[ -n "$cmux_cli" ]]; then'
             printf '%s\n' '        cmux_candidate="$(dirname "$cmux_cli")/cmux-claude-wrapper"'
             printf '%s\n' '        if [[ -x "$cmux_candidate" ]]; then'

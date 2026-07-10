@@ -8,7 +8,7 @@ struct ClaudeTeamsOptionalValueTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--worktree",
                     "/tmp/team repo",
@@ -18,7 +18,7 @@ struct ClaudeTeamsOptionalValueTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--worktree",
                 "/tmp/team repo",
@@ -33,7 +33,7 @@ struct ClaudeTeamsOptionalValueTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--worktree",
                     "fix the bug",
@@ -43,7 +43,7 @@ struct ClaudeTeamsOptionalValueTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--worktree",
             ]
@@ -55,7 +55,7 @@ struct ClaudeTeamsOptionalValueTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control",
                     "fix the bug",
@@ -65,7 +65,7 @@ struct ClaudeTeamsOptionalValueTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control",
             ]

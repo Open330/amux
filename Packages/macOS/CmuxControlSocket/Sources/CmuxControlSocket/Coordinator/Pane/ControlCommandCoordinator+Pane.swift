@@ -336,7 +336,7 @@ extension ControlCommandCoordinator {
         case .browserDisabledInvalidURL(let rawURL):
             return .err(code: "invalid_params", message: "Invalid URL", data: .object(["url": .string(rawURL)]))
         case .browserDisabledNoURL:
-            return .err(code: "browser_disabled", message: "cmux browser is disabled", data: nil)
+            return .err(code: "browser_disabled", message: "amux browser is disabled", data: nil)
         case .browserDisabledExternalOpenFailed(let url):
             return .err(
                 code: "external_open_failed",

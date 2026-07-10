@@ -37,7 +37,7 @@ import Testing
     @Test func recordThenExportRoundTrips() async {
         let log = DiagnosticLog(
             capacity: 16,
-            buildStamp: "cmux DEV test",
+            buildStamp: "amux DEV test",
             anchorWallNanos: 1_700_000_000_000_000_000,
             anchorMonotonicNanos: 500
         )
@@ -55,7 +55,7 @@ import Testing
         #expect(lines[0].contains("anchorWallNs=1700000000000000000"))
         #expect(lines[0].contains("anchorMonoNs=500"))
         #expect(lines[0].contains("count=3"))
-        #expect(lines[0].contains("build=cmux DEV test"))
+        #expect(lines[0].contains("build=amux DEV test"))
 
         // One compact row per event: tNanos,code,surface,ms,a,b,c (absent = empty).
         #expect(lines[1] == "1000,1,,,,,")

@@ -2,7 +2,7 @@ import XCTest
 
 final class SidebarPullRequestInteractivityUITests: XCTestCase {
     private var socketPath = ""
-    private let defaultsDomain = "com.cmuxterm.app.debug"
+    private let defaultsDomain = "com.open330.amux.debug"
     private let launchTag = "ui-tests-sidebar-pr-interactivity"
     private let pullRequestNumber = 123
     private var pullRequestURL: String {

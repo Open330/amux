@@ -37,9 +37,9 @@ export default function OhMyOpenCodePage() {
       />
 
       <DocsHeading level={2} id="usage">{t("usage")}</DocsHeading>
-      <CodeBlock lang="bash">{`cmux omo
-cmux omo --continue
-cmux omo --model claude-sonnet-4-6`}</CodeBlock>
+      <CodeBlock lang="bash">{`amux omo
+amux omo --continue
+amux omo --model claude-sonnet-4-6`}</CodeBlock>
       <p>{t("usageDesc")}</p>
 
       <DocsHeading level={2} id="what-you-get">{t("whatYouGet")}</DocsHeading>

@@ -23,7 +23,7 @@ struct PostHogAnalyticsPropertiesTests {
     @MainActor
     @Test("feature flag resolution prefers override, then remote, then default")
     func featureFlagResolutionPrecedence() throws {
-        let flag = try #require(CmuxFeatureFlags.allFlags.first { $0.defaultWhenUnavailable })
+        let flag = try #require(CmuxFeatureFlags.allFlags.first)
         let suiteName = "cmux.feature.flags.precedence.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer {
@@ -37,32 +37,32 @@ struct PostHogAnalyticsPropertiesTests {
 
         #expect(flags.overrideValue(for: flag) == nil)
         #expect(flags.remoteValue(for: flag) == nil)
-        #expect(flags.effectiveValue(for: flag))
-
-        remoteValues[flag.key] = false
-        flags.applyLoadedFlags()
-        #expect(flags.remoteValue(for: flag) == false)
         #expect(!flags.effectiveValue(for: flag))
 
-        flags.setOverride(true, for: flag)
-        #expect(flags.overrideValue(for: flag) == true)
-        #expect(flags.remoteValue(for: flag) == false)
+        remoteValues[flag.key] = true
+        flags.applyLoadedFlags()
+        #expect(flags.remoteValue(for: flag) == true)
         #expect(flags.effectiveValue(for: flag))
+
+        flags.setOverride(false, for: flag)
+        #expect(flags.overrideValue(for: flag) == false)
+        #expect(flags.remoteValue(for: flag) == true)
+        #expect(!flags.effectiveValue(for: flag))
 
         flags.setOverride(nil, for: flag)
         #expect(flags.overrideValue(for: flag) == nil)
-        #expect(!flags.effectiveValue(for: flag))
+        #expect(flags.effectiveValue(for: flag))
 
         remoteValues.removeValue(forKey: flag.key)
         flags.applyLoadedFlags()
         #expect(flags.remoteValue(for: flag) == nil)
-        #expect(flags.effectiveValue(for: flag))
+        #expect(!flags.effectiveValue(for: flag))
     }
 
     @MainActor
     @Test("feature flag overrides persist through UserDefaults")
     func featureFlagOverridePersistenceRoundTrip() throws {
-        let flag = try #require(CmuxFeatureFlags.allFlags.first { $0.defaultWhenUnavailable })
+        let flag = try #require(CmuxFeatureFlags.allFlags.first)
         let suiteName = "cmux.feature.flags.persistence.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer {
@@ -81,13 +81,16 @@ struct PostHogAnalyticsPropertiesTests {
         secondLoad.setOverride(nil, for: flag)
         let thirdLoad = CmuxFeatureFlags(defaults: defaults) { _ in true }
         #expect(thirdLoad.overrideValue(for: flag) == nil)
+        #expect(!thirdLoad.effectiveValue(for: flag))
+
+        thirdLoad.applyLoadedFlags()
         #expect(thirdLoad.effectiveValue(for: flag))
     }
 
     @MainActor
     @Test("feature flag override notifications follow effective value changes")
     func featureFlagOverrideNotificationsFollowEffectiveValueChanges() throws {
-        let flag = try #require(CmuxFeatureFlags.allFlags.first { $0.defaultWhenUnavailable })
+        let flag = try #require(CmuxFeatureFlags.allFlags.first)
         let suiteName = "cmux.feature.flags.notifications.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer {

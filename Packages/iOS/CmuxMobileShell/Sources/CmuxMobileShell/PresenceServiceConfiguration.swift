@@ -17,18 +17,15 @@ extension PresenceClient {
     /// people dogfood the presence/backup worker at once without sharing one
     /// instance.
     public static let serviceURLInfoPlistKey = "CMUXPresenceBaseURL"
-    /// The dev/staging worker (dev Stack project); see workers/presence/README.md.
-    public static let debugDefaultServiceURL = "https://cmux-presence-dev.debussy.workers.dev"
-    /// The production presence worker (prod Stack project); see
-    /// workers/presence/README.md. The Release default, so a stable iOS app
-    /// subscribes to the same presence service stable Macs heartbeat to.
-    public static let productionServiceURL = "https://presence.cmux.dev"
+    /// Empty by design: amux does not inherit the upstream development worker.
+    public static let debugDefaultServiceURL = ""
+    /// Empty by design: amux does not inherit the upstream production worker.
+    public static let productionServiceURL = ""
 
     /// The presence service base URL for this process. Override precedence: env,
-    /// then UserDefaults, then the baked Info.plist value, then the build default
-    /// (dev worker on Debug, production worker on Release). Never `nil` now — the
-    /// phone always has a presence service to subscribe to; whether a given Mac
-    /// shows up depends on that Mac heartbeating (mobile enabled) to the same one.
+    /// then UserDefaults, then the baked Info.plist value, then the build default.
+    /// amux ships with empty defaults, so this returns `nil` unless a distributor
+    /// explicitly provides an owned endpoint.
     ///
     /// The default follows the AUTH CHANNEL when the composition root supplies
     /// one (`isDevelopmentAuthChannel`), not just the build config: each worker
@@ -53,9 +50,10 @@ extension PresenceClient {
         if let override, !override.isEmpty {
             return override
         }
-        return (isDevelopmentAuthChannel ?? isDebugBuild)
+        let fallback = (isDevelopmentAuthChannel ?? isDebugBuild)
             ? debugDefaultServiceURL
             : productionServiceURL
+        return fallback.isEmpty ? nil : fallback
     }
 
     /// Whether this is a Debug build (compile-time; parameterized above so the

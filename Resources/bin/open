@@ -459,16 +459,20 @@ if [[ -n "$settings_domain" ]]; then
 
 fi
 
-# Find cmux CLI (same directory as this script).
+# Find the canonical amux CLI (same directory as this script), retaining the
+# cmux binary name as a compatibility fallback for older bundles.
 SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
-CMUX_CLI="$SELF_DIR/cmux"
+CMUX_CLI="$SELF_DIR/amux"
+if [[ ! -x "$CMUX_CLI" ]]; then
+    CMUX_CLI="$SELF_DIR/cmux"
+fi
 
 if [[ ! -x "$CMUX_CLI" ]]; then
     system_open "$@"
     exit $?
 fi
 
-# Open each URL in cmux's in-app browser; track failures individually.
+# Open each URL in amux's in-app browser; track failures individually.
 # External-open pattern rules are evaluated in-app (NSRegularExpression) so
 # terminal link clicks and intercepted `open` commands share one regex dialect.
 failed_urls=()

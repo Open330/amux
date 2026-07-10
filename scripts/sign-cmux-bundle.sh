@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Inside-out codesign a cmux .app bundle for Developer ID + notarization.
+# Inside-out codesign an amux .app bundle for Developer ID + notarization.
 #
 # Usage:
 #   scripts/sign-cmux-bundle.sh <app-path> <app-entitlements> <signing-identity>
 #
 # Example:
 #   scripts/sign-cmux-bundle.sh \
-#     "build-universal/Build/Products/Release/cmux NIGHTLY.app" \
+#     "build-universal/Build/Products/Release/amux NIGHTLY.app" \
 #     cmux.nightly.entitlements \
 #     "Developer ID Application: Manaflow, Inc. (7WLXT3NR37)"
 #
@@ -61,7 +61,7 @@ COMMON=(--force --options runtime "${TS_FLAG[@]}" --sign "$IDENTITY")
 
 # 1. CLI helpers
 for helper in "$APP_PATH/Contents/Resources/bin"/*; do
-  [[ -f "$helper" && -x "$helper" ]] || continue
+  [[ ! -L "$helper" && -f "$helper" && -x "$helper" ]] || continue
   echo "==> signing helper $(basename "$helper")"
   /usr/bin/codesign "${COMMON[@]}" --entitlements "$HELPER_ENTITLEMENTS" "$helper"
 done
@@ -108,7 +108,7 @@ fi
 
 # Helpers must NOT carry the main app's application-identifier.
 for helper in "$APP_PATH/Contents/Resources/bin"/*; do
-  [[ -f "$helper" && -x "$helper" ]] || continue
+  [[ ! -L "$helper" && -f "$helper" && -x "$helper" ]] || continue
   if /usr/bin/codesign -d --entitlements :- "$helper" 2>&1 \
        | grep -q "application-identifier"; then
     echo "error: helper $(basename "$helper") unexpectedly carries application-identifier" >&2

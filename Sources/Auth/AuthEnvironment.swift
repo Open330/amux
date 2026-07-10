@@ -1,10 +1,8 @@
 import Foundation
 
 enum AuthEnvironment {
-    private static let developmentStackProjectID = "454ecd03-1db2-4050-845e-4ce5b0cd9895"
-    private static let developmentStackPublishableClientKey = "pck_xb63160bwe9699vtxfzfj6emmxpafg5mkjrtp6ehzxv5g"
-    private static let productionStackProjectID = "9790718f-14cd-4f7e-824d-eaf527a82b82"
-    private static let productionStackPublishableClientKey = "pck_kzj80gx4mh2jrzn1cx6y5e8jk0kwa01vkevh2p9zd4twr"
+    private static let unconfiguredStackProjectID = "amux-hosted-services-disabled"
+    private static let unconfiguredStackPublishableClientKey = "pck_amux_hosted_services_disabled"
 
     static var callbackScheme: String {
         callbackScheme(
@@ -35,21 +33,21 @@ enum AuthEnvironment {
             return overridden
         }
         if isDebugBuild {
-            // Untagged Debug builds register cmux-dev:// so they can coexist
+            // Untagged Debug builds register amux-dev:// so they can coexist
             // with the installed stable app. Tagged Debug builds use
-            // cmux-dev-<tag>://.
+            // amux-dev-<tag>://.
             if let tag = environment["CMUX_TAG"]?
                 .trimmingCharacters(in: .whitespacesAndNewlines),
                !tag.isEmpty,
                let schemeTag = sanitizedCallbackSchemeTag(tag) {
-                return "cmux-dev-\(schemeTag)"
+                return "amux-dev-\(schemeTag)"
             }
-            return "cmux-dev"
+            return "amux-dev"
         }
-        if bundleIdentifier == "com.cmuxterm.app.nightly" {
-            return "cmux-nightly"
+        if bundleIdentifier == "com.open330.amux.nightly" {
+            return "amux-nightly"
         }
-        return "cmux"
+        return "amux"
     }
 
     static func sanitizedCallbackSchemeTag(_ rawTag: String) -> String? {
@@ -83,9 +81,9 @@ enum AuthEnvironment {
     }
 
     static var websiteOrigin: URL {
-        resolvedURL(
+        return resolvedURL(
             environmentKey: "CMUX_WWW_ORIGIN",
-            fallback: "https://cmux.com"
+            fallback: "http://127.0.0.1:9"
         )
     }
 
@@ -159,7 +157,7 @@ enum AuthEnvironment {
     ///   1. process env `CMUX_VM_API_BASE_URL` — works when the app is launched from a shell.
     ///   2. `~/.cmux-dev.env` file `CMUX_VM_API_BASE_URL=...` line — works regardless of how
     ///      the app was launched (click-through, Dock, `open`, etc.). Only honored in DEBUG.
-    ///   3. VM backend dev origin (`http://localhost:$CMUX_PORT` in Debug, cmux.com in Release).
+    ///   3. VM backend dev origin (`http://localhost:$CMUX_PORT` in Debug, disabled in Release).
     static var vmAPIBaseURL: URL {
         if let overridden = ProcessInfo.processInfo.environment["CMUX_VM_API_BASE_URL"]?
             .trimmingCharacters(in: .whitespacesAndNewlines),
@@ -281,7 +279,7 @@ enum AuthEnvironment {
         #if DEBUG
         return "http://localhost:\(resolvedCmuxPort(environment: environment))"
         #else
-        return "https://cmux.com"
+        return "http://127.0.0.1:9"
         #endif
     }
 
@@ -289,7 +287,7 @@ enum AuthEnvironment {
         #if DEBUG
         return "http://localhost:\(cmuxPort)"
         #else
-        return "https://cmux.com"
+        return "http://127.0.0.1:9"
         #endif
     }
 
@@ -302,43 +300,46 @@ enum AuthEnvironment {
         #if DEBUG
         return "http://localhost:\(cmuxPort)"
         #else
-        return "https://api.cmux.sh"
+        return "http://127.0.0.1:9"
         #endif
     }
 
     static var stackBaseURL: URL {
-        resolvedURL(
+        #if DEBUG
+        let fallback = "https://api.stack-auth.com"
+        #else
+        let fallback = "http://127.0.0.1:9"
+        #endif
+        return resolvedURL(
             environmentKey: "CMUX_STACK_BASE_URL",
-            fallback: "https://api.stack-auth.com"
+            fallback: fallback
         )
     }
 
     static var stackProjectID: String {
-        let environment = ProcessInfo.processInfo.environment
+        stackProjectID(environment: ProcessInfo.processInfo.environment)
+    }
+
+    static func stackProjectID(environment: [String: String]) -> String {
         if let projectID = environment["CMUX_STACK_PROJECT_ID"]?
             .trimmingCharacters(in: .whitespacesAndNewlines),
            !projectID.isEmpty {
             return projectID
         }
-        #if DEBUG
-        return developmentStackProjectID
-        #else
-        return productionStackProjectID
-        #endif
+        return unconfiguredStackProjectID
     }
 
     static var stackPublishableClientKey: String {
-        let environment = ProcessInfo.processInfo.environment
+        stackPublishableClientKey(environment: ProcessInfo.processInfo.environment)
+    }
+
+    static func stackPublishableClientKey(environment: [String: String]) -> String {
         if let clientKey = environment["CMUX_STACK_PUBLISHABLE_CLIENT_KEY"]?
             .trimmingCharacters(in: .whitespacesAndNewlines),
            !clientKey.isEmpty {
             return clientKey
         }
-        #if DEBUG
-        return developmentStackPublishableClientKey
-        #else
-        return productionStackPublishableClientKey
-        #endif
+        return unconfiguredStackPublishableClientKey
     }
 
     /// The website origin used for the after-sign-in handler.

@@ -20,7 +20,7 @@ extension CMUXCLI {
             return
         } else if let subcommand, !subcommand.hasPrefix("-") {
             throw CLIError(message: String(
-                format: String(localized: "cli.sessions.error.unknownSubcommand", defaultValue: "Unknown sessions subcommand: %@. Usage: cmux sessions list [options]"),
+                format: String(localized: "cli.sessions.error.unknownSubcommand", defaultValue: "Unknown sessions subcommand: %@. Usage: amux sessions list [options]"),
                 subcommand
             ))
         }
@@ -298,11 +298,11 @@ extension CMUXCLI {
 
     func sessionsUsage() -> String {
         String(localized: "cli.sessions.usage", defaultValue: """
-        Usage: cmux sessions list [options]
-               cmux sessions [options]
+        Usage: amux sessions list [options]
+               amux sessions [options]
 
         Print saved agent session records from ~/.cmuxterm/*-hook-sessions.json.
-        This command does not require a running cmux socket.
+        This command does not require a running amux socket.
         By default, broad output shows active, restorable, or transcript-backed records.
         Pass --all to inspect every saved hook record.
 
@@ -323,8 +323,8 @@ extension CMUXCLI {
         CODEX_HOME/archived_sessions.
 
         Compatibility aliases:
-          cmux sessions debug [options]
-          cmux session-debug [options]
+          amux sessions debug [options]
+          amux session-debug [options]
         """)
     }
 

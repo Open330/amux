@@ -1412,7 +1412,7 @@ struct CmuxResolvedConfigAction: Identifiable, Sendable, Hashable {
         return CmuxResolvedConfigAction(
             id: builtIn.configID,
             title: title,
-            subtitle: String(localized: "command.cmuxConfig.builtInSubtitle", defaultValue: "cmux"),
+            subtitle: String(localized: "command.cmuxConfig.builtInSubtitle", defaultValue: "amux"),
             keywords: keywords,
             palette: true,
             shortcut: nil,
@@ -1725,7 +1725,6 @@ struct CmuxConfigIssue: Identifiable, Equatable, Sendable {
 final class CmuxConfigStore: ObservableObject {
     private static let defaultNewWorkspaceContextMenu: [CmuxConfigContextMenuItem] = [
         .action(CmuxConfigContextMenuActionItem(action: CmuxSurfaceTabBarBuiltInAction.newWorkspace.configID)),
-        .action(CmuxConfigContextMenuActionItem(action: CmuxSurfaceTabBarBuiltInAction.cloudVM.configID)),
     ]
 
     @Published private(set) var loadedCommands: [CmuxCommandDefinition] = []

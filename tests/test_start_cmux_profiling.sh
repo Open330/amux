@@ -139,10 +139,10 @@ if [ -e "$TMP_DIR/out" ]; then
 fi
 
 if "$SCRIPT" --dry-run --test-ps-file "$ps_file" --out "$TMP_DIR/ambiguous" >/tmp/cmux-profile-ambiguous.log 2>&1; then
-  echo "FAIL: unqualified selection should reject multiple cmux processes" >&2
+  echo "FAIL: unqualified selection should reject multiple amux processes" >&2
   exit 1
 fi
-if ! grep -Fq "multiple cmux processes are running" /tmp/cmux-profile-ambiguous.log; then
+if ! grep -Fq "multiple amux processes are running" /tmp/cmux-profile-ambiguous.log; then
   echo "FAIL: ambiguous selection did not explain how to discriminate instances" >&2
   cat /tmp/cmux-profile-ambiguous.log >&2
   exit 1

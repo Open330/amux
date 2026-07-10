@@ -16,18 +16,34 @@ nonisolated enum SSHPTYAttachStartupCommandBuilder {
         remoteCommand: String? = nil,
         requireExisting: Bool = true
     ) -> String {
+        let cliMissing = String(
+            localized: "sshPTYAttach.error.cliMissing",
+            defaultValue: "[amux] bundled CLI not found for SSH PTY attach."
+        )
+        let configurationMissing = String(
+            localized: "sshPTYAttach.error.configurationMissing",
+            defaultValue: "[amux] required configuration missing for SSH PTY attach."
+        )
+        let workspaceContextMissing = String(
+            localized: "sshPTYAttach.error.workspaceContextMissing",
+            defaultValue: "[amux] required workspace context missing for SSH PTY attach."
+        )
+        let terminalContextMissing = String(
+            localized: "sshPTYAttach.error.terminalContextMissing",
+            defaultValue: "[amux] required terminal context missing for SSH PTY attach."
+        )
         var lines = [
             "cmux_ssh_attach_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"",
-            "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\"$(command -v cmux 2>/dev/null || true)\"; fi",
-            "if [ -z \"$cmux_ssh_attach_cli\" ]; then printf '%s\\n' '[cmux] bundled CLI not found for SSH PTY attach.' >&2; exit 127; fi",
-            "if [ -z \"${CMUX_SOCKET_PATH:-}\" ]; then printf '%s\\n' '[cmux] required configuration missing for SSH PTY attach.' >&2; exit 1; fi",
-            "if [ -z \"${CMUX_WORKSPACE_ID:-}\" ]; then printf '%s\\n' '[cmux] required workspace context missing for SSH PTY attach.' >&2; exit 1; fi",
+            "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "if [ -z \"$cmux_ssh_attach_cli\" ]; then printf '%s\\n' \(shellQuote(cliMissing)) >&2; exit 127; fi",
+            "if [ -z \"${CMUX_SOCKET_PATH:-}\" ]; then printf '%s\\n' \(shellQuote(configurationMissing)) >&2; exit 1; fi",
+            "if [ -z \"${CMUX_WORKSPACE_ID:-}\" ]; then printf '%s\\n' \(shellQuote(workspaceContextMissing)) >&2; exit 1; fi",
         ]
         if let sessionID = normalized(sessionID) {
             lines.append("cmux_ssh_attach_session_id=\(shellQuote(sessionID))")
         } else {
             lines += [
-                "if [ -z \"${CMUX_SURFACE_ID:-}\" ]; then printf '%s\\n' '[cmux] required terminal context missing for SSH PTY attach.' >&2; exit 1; fi",
+                "if [ -z \"${CMUX_SURFACE_ID:-}\" ]; then printf '%s\\n' \(shellQuote(terminalContextMissing)) >&2; exit 1; fi",
                 "cmux_ssh_attach_session_id=\"ssh-$CMUX_WORKSPACE_ID-$CMUX_SURFACE_ID\"",
             ]
         }
@@ -66,7 +82,7 @@ nonisolated enum SSHPTYAttachStartupCommandBuilder {
             "  case \"$cmux_ssh_attach_status\" in 254|255) ;; *) exit \"$cmux_ssh_attach_status\" ;; esac",
             "  if [ \"$cmux_ssh_attach_retry\" -ge \"$cmux_ssh_attach_reconnect_limit\" ]; then exit \"$cmux_ssh_attach_status\"; fi",
             "  cmux_ssh_attach_retry=$((cmux_ssh_attach_retry + 1))",
-            "  if [ -t 2 ]; then printf '\\n\\033[33m[cmux] remote PTY bridge closed; reattaching (attempt %s/%s).\\033[0m\\n' \"$cmux_ssh_attach_retry\" \"$cmux_ssh_attach_reconnect_limit\" >&2 || true; fi",
+            "  if [ -t 2 ]; then printf '\\n\\033[33m[amux] remote PTY bridge closed; reattaching (attempt %s/%s).\\033[0m\\n' \"$cmux_ssh_attach_retry\" \"$cmux_ssh_attach_reconnect_limit\" >&2 || true; fi",
             "  if [ \"$cmux_ssh_attach_reconnect_delay\" -gt 0 ]; then sleep \"$cmux_ssh_attach_reconnect_delay\"; fi",
             "done",
         ]

@@ -39,10 +39,10 @@ struct FeedbackComposerBridgeTests {
 
     @Test func endpointHonorsEnvironmentOverride() {
         // The override is read from the process environment; with no override set
-        // the resolved endpoint falls back to the production default.
+        // the resolved endpoint stays disabled until explicitly configured.
         let settings = FeedbackComposerSettings()
         if ProcessInfo.processInfo.environment[settings.endpointEnvironmentKey] == nil {
-            #expect(settings.endpointURL()?.absoluteString == settings.defaultEndpoint)
+            #expect(settings.endpointURL() == nil)
         }
     }
 

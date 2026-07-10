@@ -17,7 +17,10 @@ extension CMUXCLI {
             lowered.contains("pty.write.notification") ||
             lowered.contains("pty.resize.notification") ||
             lowered.contains("method_not_found") {
-            return "remote daemon does not support persistent SSH PTY sessions; reconnect the remote workspace to update cmux"
+            return String(
+                localized: "remoteDaemon.error.missingPersistentPTYCapability",
+                defaultValue: "remote daemon does not support persistent SSH PTY sessions; reconnect the remote workspace to update amux"
+            )
         }
         if lowered.contains("pty_session_not_found") ||
             (lowered.contains("persistent ssh pty session") && lowered.contains("not running")) ||

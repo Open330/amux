@@ -1,6 +1,7 @@
 import { locales } from "./routing";
+import { HAS_CONFIGURED_PUBLIC_SITE, PUBLIC_SITE_URL } from "../app/lib/product";
 
-const BASE = "https://cmux.com";
+const BASE = PUBLIC_SITE_URL;
 
 /**
  * Build the full alternates object (canonical + hreflang languages)
@@ -12,6 +13,9 @@ export function buildAlternates(
   path: string,
   availableLocales: readonly string[] = locales,
 ) {
+  if (!HAS_CONFIGURED_PUBLIC_SITE) {
+    return { canonical: BASE, languages: { "x-default": BASE } };
+  }
   const languages: Record<string, string> = {};
   for (const loc of availableLocales) {
     languages[loc] =

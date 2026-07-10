@@ -82,7 +82,10 @@ nonisolated private func v2RemotePTYUserFacingErrorMessage(_ message: String) ->
     if lowered.contains("missing required capability") ||
         lowered.contains("pty.session") ||
         lowered.contains("method_not_found") {
-        return "remote daemon does not support persistent SSH PTY sessions; reconnect the remote workspace to update cmux"
+        return String(
+            localized: "remoteDaemon.error.missingPersistentPTYCapability",
+            defaultValue: "remote daemon does not support persistent SSH PTY sessions; reconnect the remote workspace to update amux"
+        )
     }
     if lowered.contains("pty_session_not_found") ||
         (lowered.contains("persistent ssh pty session") && lowered.contains("not running")) ||
@@ -1028,6 +1031,19 @@ class TerminalController {
         ControlCommandExecutionPolicy(forMethod: method)
     }
 
+    private nonisolated static let inheritedHostedServicePrefixes = ["auth.", "vm.", "remotes.", "aiAccounts.", "mobile.", "dogfood."]
+
+    private nonisolated static func isInheritedHostedV2Method(_ method: String) -> Bool {
+        inheritedHostedServicePrefixes.contains(where: method.hasPrefix)
+    }
+
+    private nonisolated static func inheritedHostedServiceUnavailableMessage() -> String {
+        String(
+            localized: "cli.hostedServices.unavailable",
+            defaultValue: "This inherited hosted service is unavailable in amux."
+        )
+    }
+
     /// Runs one worker-lane v2 request on the calling socket-worker thread and
     /// returns its encoded response, or `nil` when the command sends no reply
     /// (`feed.push` without an id). The caller (the socket execution-policy
@@ -1248,6 +1264,13 @@ class TerminalController {
     }
 
     private nonisolated func socketWorkerV2Response(_ request: V2SocketRequest) -> String {
+        if Self.isInheritedHostedV2Method(request.method) {
+            return v2Error(
+                id: request.id,
+                code: "unsupported",
+                message: Self.inheritedHostedServiceUnavailableMessage()
+            )
+        }
         switch request.method {
         case "auth.status":
             let semaphore = DispatchSemaphore(value: 0)
@@ -1530,7 +1553,10 @@ class TerminalController {
             if let pid {
                 guard isDescendant(pid) else {
                     _ = writeSocketResponse(
-                        "ERROR: Access denied — only processes started inside cmux can connect",
+                        String(
+                            localized: "socket.accessDenied.amuxOnly",
+                            defaultValue: "ERROR: Access denied — only processes started inside amux can connect"
+                        ),
                         to: socket
                     )
                     return
@@ -2189,6 +2215,14 @@ class TerminalController {
         let method = bridged.method
         let params = bridged.params
 
+        if Self.isInheritedHostedV2Method(method) {
+            return v2Error(
+                id: id,
+                code: "unsupported",
+                message: Self.inheritedHostedServiceUnavailableMessage()
+            )
+        }
+
         guard Self.executionPolicy(forV2Method: method) == .mainActor else {
             return v2Error(
                 id: id,
@@ -2664,6 +2698,7 @@ class TerminalController {
 #if DEBUG
         methods.append(contentsOf: Self.v2DebugMethodNames)
 #endif
+        methods.removeAll(where: Self.isInheritedHostedV2Method)
 
         return [
             "protocol": "cmux-socket",
@@ -2767,7 +2802,7 @@ class TerminalController {
         }
         if let cliPath = Bundle.main.resourceURL?
             .appendingPathComponent("bin", isDirectory: true)
-            .appendingPathComponent("cmux", isDirectory: false)
+            .appendingPathComponent("amux", isDirectory: false)
             .path {
             result["app_cli_path"] = cliPath
         }
@@ -2809,7 +2844,7 @@ class TerminalController {
                 nil,
                 .err(
                     code: "invalid_params",
-                    message: "Invalid window selector. Use --window <id|ref|index> to target one window, or run `cmux list-windows` to see available windows and retry.",
+                    message: "Invalid window selector. Use --window <id|ref|index> to target one window, or run `amux list-windows` to see available windows and retry.",
                     data: v2WindowSelectorDetails(params: params)
                 )
             )
@@ -2819,7 +2854,7 @@ class TerminalController {
                 nil,
                 .err(
                     code: "invalid_params",
-                    message: "Choose either --window <id|ref|index> or --all-windows, not both. Run `cmux list-windows` to see available windows and retry.",
+                    message: "Choose either --window <id|ref|index> or --all-windows, not both. Run `amux list-windows` to see available windows and retry.",
                     data: v2WindowSelectorDetails(params: params)
                 )
             )
@@ -2851,7 +2886,7 @@ class TerminalController {
     private func v2WindowNotFoundResult(params: [String: Any], windowId: UUID) -> V2CallResult {
         .err(
             code: "not_found",
-            message: "Window not found. Run `cmux list-windows` to see available windows, then retry with --window <id|ref|index>.",
+            message: "Window not found. Run `amux list-windows` to see available windows, then retry with --window <id|ref|index>.",
             data: v2WindowSelectorDetails(params: params) ?? ["window_id": windowId.uuidString]
         )
     }
@@ -5721,51 +5756,15 @@ class TerminalController {
 
 
     private nonisolated func v2FeedbackSubmit(params: [String: Any]) -> V2CallResult {
-        guard let email = params["email"] as? String else {
-            return .err(code: "invalid_params", message: "Missing email", data: ["field": "email"])
-        }
-        guard let body = params["body"] as? String else {
-            return .err(code: "invalid_params", message: "Missing body", data: ["field": "body"])
-        }
-        let imagePaths = params["image_paths"] as? [String] ?? []
-
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: V2CallResult = .err(code: "internal_error", message: "Feedback submission failed", data: nil)
-
-        Task {
-            let resolved: V2CallResult
-            do {
-                let attachmentCount = try await FeedbackComposerBridge().submit(
-                    email: email,
-                    message: body,
-                    imagePaths: imagePaths
-                )
-                resolved = .ok([
-                    "submitted": true,
-                    "attachment_count": attachmentCount,
-                ])
-            } catch let error as FeedbackComposerBridgeError {
-                let code: String
-                switch error {
-                case .invalidEmail, .emptyMessage, .messageTooLong, .tooManyImages, .invalidImagePath:
-                    code = "invalid_params"
-                case .submissionFailed:
-                    code = "request_failed"
-                }
-                resolved = .err(code: code, message: error.localizedDescription, data: nil)
-            } catch {
-                resolved = .err(code: "internal_error", message: error.localizedDescription, data: nil)
-            }
-
-            result = resolved
-            semaphore.signal()
-        }
-
-        if semaphore.wait(timeout: .now() + 35) == .timedOut {
-            return .err(code: "timeout", message: "Feedback submission timed out", data: nil)
-        }
-
-        return result
+        _ = params
+        return .err(
+            code: "unsupported",
+            message: String(
+                localized: "cli.feedback.directSubmissionUnavailable",
+                defaultValue: "Direct feedback submission is unavailable in amux. Use GitHub Issues instead."
+            ),
+            data: ["url": "https://github.com/Open330/amux/issues/new"]
+        )
     }
 
     // MARK: - V2 Feed (workstream) handlers
@@ -6691,7 +6690,7 @@ class TerminalController {
             )
         }
         guard let url else {
-            return .err(code: "browser_disabled", message: "cmux browser is disabled", data: nil)
+            return .err(code: "browser_disabled", message: "amux browser is disabled", data: nil)
         }
 
         var result: V2CallResult = .err(
@@ -6757,7 +6756,7 @@ class TerminalController {
 
         if BrowserAvailabilitySettings.isDisabled() {
             if v2IsDiffViewerURL(url) {
-                return .err(code: "browser_disabled", message: "cmux browser is disabled", data: nil)
+                return .err(code: "browser_disabled", message: "amux browser is disabled", data: nil)
             }
             return v2BrowserDisabledExternalOpenResult(rawURL: urlStr, url: url, tabManager: tabManager)
         }
@@ -7583,7 +7582,7 @@ class TerminalController {
                 data: [
                     "timeout_ms": timeoutMs,
                     "url": v2MainSync { webView.url?.absoluteString ?? "about:blank" },
-                    "hint": "Verify the page loaded with 'cmux browser <surface> get url' before waiting"
+                    "hint": "Verify the page loaded with 'amux browser <surface> get url' before waiting"
                 ]
             )
         }
@@ -9612,7 +9611,7 @@ class TerminalController {
             } else {
                 return .err(
                     code: "invalid_params",
-                    message: "destination_profile does not match a cmux browser profile",
+                    message: "destination_profile does not match an amux browser profile",
                     data: ["param": "destination_profile"]
                 )
             }
@@ -14202,18 +14201,11 @@ class TerminalController {
     /// wire mapping; the validation, allocation caps, and filesystem I/O live in
     /// the service.
     ///
-    /// It is protected by the same-account Stack-auth authorization the rest of
-    /// the mobile data plane enforces, so it never accepts an unauthenticated
-    /// caller. The phone only ever routes here for `@manaflow.ai` users on an
-    /// active connection, so this exists in Release builds too (the team can
-    /// dogfood beta/prod), and only a Mac that runs the watcher acts on it.
+    /// The retained local sink is fail-closed because amux configures no hosted
+    /// authentication domain. The public socket dispatcher rejects this method.
     func v2MobileDogfoodFeedbackSubmit(params: [String: Any]) async -> V2CallResult {
-        // Privilege check at the trust boundary: the mobile data plane only
-        // accepts same-account connections, so the caller is this Mac's own Stack
-        // account. The service re-enforces the @manaflow.ai gate, but we resolve
-        // the authenticated email here because it requires the main-actor
-        // `MobileHostService`. (The phone also gates the route on `@manaflow.ai`
-        // + `dogfood.v1`, but the Mac is the real boundary.)
+        // The service has no default privileged domain in amux, so this retained
+        // compatibility body returns unauthorized even if invoked internally.
         let localEmail = await MobileHostService.shared.currentAuthenticatedLocalUserEmail()
         let submission = DogfoodFeedbackSubmission(
             text: v2RawString(params, "text") ?? "",

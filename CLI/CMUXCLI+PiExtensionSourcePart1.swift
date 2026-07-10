@@ -1,9 +1,9 @@
 extension CMUXCLI {
     static let piExtensionSourcePart1 = #"""
 // cmux-pi-session-extension-marker v2
-// Bridges Pi session lifecycle, tool telemetry, notifications, and resume bindings into cmux.
-// Installed by `cmux hooks pi install` or `cmux hooks setup`.
-// DO NOT EDIT MANUALLY. cmux upgrades this file in place.
+// Bridges Pi session lifecycle, tool telemetry, notifications, and resume bindings into amux.
+// Installed by `amux hooks pi install` or `amux hooks setup`.
+// DO NOT EDIT MANUALLY. amux upgrades this file in place.
 
 import { spawn, spawnSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -148,7 +148,7 @@ function hookEnvironment(cwd: string, includeSocketPassword = false): NodeJS.Pro
     if (value === undefined) continue;
     if (shouldPreserveEnvKey(key)) env[key] = value;
   }
-  // Only cmux CLI children need the socket credential; keep it out of the generic allowlist.
+  // Only amux CLI children need the socket credential; keep it out of the generic allowlist.
   if (includeSocketPassword) {
     const socketPassword = process.env.CMUX_SOCKET_PASSWORD;
     if (socketPassword) env.CMUX_SOCKET_PASSWORD = socketPassword;
@@ -261,7 +261,7 @@ function warn(ctx: ExtensionContext | null, message: string, details: Record<str
   }
   const ui = (ctx as unknown as { ui?: { notify?: (message: string, type?: string) => void } } | null)?.ui;
   try {
-    ui?.notify?.("cmux Pi integration warning - check the terminal for details", "warning");
+    ui?.notify?.("amux Pi integration warning - check the terminal for details", "warning");
   } catch (_) {}
 }
 

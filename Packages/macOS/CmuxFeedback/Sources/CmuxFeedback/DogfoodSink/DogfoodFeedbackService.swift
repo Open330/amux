@@ -19,6 +19,7 @@ public struct DogfoodFeedbackService: Sendable {
     private let fileManagerProvider: @Sendable () -> FileManager
     private let cacheRoot: URL
     private let now: @Sendable () -> Date
+    private let privilegedEmailDomain: String?
 
     /// Create a feedback sink.
     ///
@@ -39,7 +40,8 @@ public struct DogfoodFeedbackService: Sendable {
         limits: DogfoodFeedbackLimits = .default,
         fileManagerProvider: @escaping @Sendable () -> FileManager = { .default },
         cacheRoot: URL? = nil,
-        now: @escaping @Sendable () -> Date = { Date.now }
+        now: @escaping @Sendable () -> Date = { Date.now },
+        privilegedEmailDomain: String? = nil
     ) {
         self.limits = limits
         self.fileManagerProvider = fileManagerProvider
@@ -47,19 +49,23 @@ public struct DogfoodFeedbackService: Sendable {
             .appendingPathComponent(".cache", isDirectory: true)
             .appendingPathComponent("cmux-dogfood-feedback", isDirectory: true)
         self.now = now
+        self.privilegedEmailDomain = privilegedEmailDomain
     }
 
-    /// The privileged feedback domain. Mirrors `isManaflowEmail` in
-    /// `CmuxMobileShellModel` (the phone's routing source of truth) but is
-    /// replicated here so the macOS app target need not link that mobile
-    /// package just for this one suffix check. Trims and lowercases before
-    /// matching so stored casing or padding does not bypass the gate.
+    /// Checks an explicitly configured feedback domain. amux supplies no
+    /// default, so inherited hosted feedback stays disabled until a distributor
+    /// owns and injects the complete trust boundary.
     /// - Parameter email: the caller's authenticated account email, if any.
-    /// - Returns: `true` when `email` is in the privileged `@manaflow.ai` domain.
-    public static func isPrivilegedFeedbackEmail(_ email: String?) -> Bool {
-        guard let email else { return false }
+    /// - Parameter domain: the configured domain, with or without a leading `@`.
+    public static func isPrivilegedFeedbackEmail(_ email: String?, domain: String?) -> Bool {
+        guard let email, let domain else { return false }
         let normalized = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return normalized.hasSuffix("@manaflow.ai")
+        let normalizedDomain = domain
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+        guard !normalizedDomain.isEmpty else { return false }
+        return normalized.hasSuffix("@\(normalizedDomain)")
     }
 
     /// Validate and persist a feedback submission, returning the outcome to map
@@ -79,11 +85,7 @@ public struct DogfoodFeedbackService: Sendable {
         _ submission: DogfoodFeedbackSubmission,
         authenticatedEmail: String?
     ) async -> DogfoodFeedbackOutcome {
-        // Privilege check at the trust boundary: the privileged agent feedback
-        // sink is restricted to the @manaflow.ai domain; a crafted request from
-        // any other account is rejected here regardless of which route the phone
-        // UI chose.
-        guard Self.isPrivilegedFeedbackEmail(authenticatedEmail) else {
+        guard Self.isPrivilegedFeedbackEmail(authenticatedEmail, domain: privilegedEmailDomain) else {
             return .unauthorized
         }
 

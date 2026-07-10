@@ -63,11 +63,11 @@ extension TabManager {
     }
 
     private func defaultWindowTitle(for tab: Workspace?) -> String {
-        guard let tab else { return "cmux" }
+        guard let tab else { return "amux" }
         let trimmedTitle = resolvedWorkspaceDisplayTitle(for: tab).trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmedTitle.isEmpty { return trimmedTitle }
         let trimmedDirectory = activeWindowTitleDirectory(for: tab)
-        return trimmedDirectory.isEmpty ? "cmux" : trimmedDirectory
+        return trimmedDirectory.isEmpty ? "amux" : trimmedDirectory
     }
 
     private func activeWindowTitleDirectory(for tab: Workspace?) -> String {

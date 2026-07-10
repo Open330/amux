@@ -6,7 +6,7 @@ export function captureBillingError(
   error: unknown,
   context: Record<string, string | number | boolean | null | undefined> = {},
 ): void {
-  if (!env.SENTRY_DSN) return;
+  if (env.AMUX_ENABLE_WEB_TELEMETRY !== "1" || !env.AMUX_SENTRY_DSN) return;
   Sentry.captureException(error, {
     tags: {
       subsystem: "billing",
@@ -19,7 +19,7 @@ export function captureAscError(
   error: unknown,
   context: Record<string, string | number | boolean | null | undefined> = {},
 ): void {
-  if (!env.SENTRY_DSN) return;
+  if (env.AMUX_ENABLE_WEB_TELEMETRY !== "1" || !env.AMUX_SENTRY_DSN) return;
   Sentry.captureException(error, {
     tags: {
       subsystem: "app-store-connect",

@@ -3,9 +3,12 @@ public import Foundation
 public enum SocketPathMarkerFiles {
     public static let stableMarkerFileName = "last-socket-path"
     public static let stableTmpPath = "/tmp/cmux-last-socket-path"
-    public static let nightlyBundleIdentifier = "com.cmuxterm.app.nightly"
-    public static let stagingBundleIdentifier = "com.cmuxterm.app.staging"
-    public static let defaultBaseDebugBundleIdentifier = "com.cmuxterm.app.debug"
+    public static let nightlyBundleIdentifier = "com.open330.amux.nightly"
+    public static let stagingBundleIdentifier = "com.open330.amux.staging"
+    public static let defaultBaseDebugBundleIdentifier = "com.open330.amux.debug"
+    public static let legacyNightlyBundleIdentifier = "com.cmuxterm.app.nightly"
+    public static let legacyStagingBundleIdentifier = "com.cmuxterm.app.staging"
+    public static let legacyBaseDebugBundleIdentifier = "com.cmuxterm.app.debug"
     public static let defaultDebugSocketPath = "/tmp/cmux-debug.sock"
     public static let defaultNightlySocketPath = "/tmp/cmux-nightly.sock"
     public static let defaultStagingSocketPath = "/tmp/cmux-staging.sock"
@@ -45,29 +48,40 @@ public enum SocketPathMarkerFiles {
         baseDebugBundleIdentifier: String = defaultBaseDebugBundleIdentifier
     ) -> SocketPathVariant {
         let bundleId = bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        if bundleId == nightlyBundleIdentifier {
-            return .nightly(slug: nil)
+        for identifier in [nightlyBundleIdentifier, legacyNightlyBundleIdentifier] {
+            if bundleId == identifier {
+                return .nightly(slug: nil)
+            }
+            let prefix = identifier + "."
+            if bundleId.hasPrefix(prefix) {
+                return .nightly(slug: bundleSuffixSlug(bundleId, prefix: prefix))
+            }
         }
-        let nightlyPrefix = nightlyBundleIdentifier + "."
-        if bundleId.hasPrefix(nightlyPrefix) {
-            return .nightly(slug: bundleSuffixSlug(bundleId, prefix: nightlyPrefix))
+        for identifier in [stagingBundleIdentifier, legacyStagingBundleIdentifier] {
+            if bundleId == identifier {
+                return .staging(slug: nil)
+            }
+            let prefix = identifier + "."
+            if bundleId.hasPrefix(prefix) {
+                return .staging(slug: bundleSuffixSlug(bundleId, prefix: prefix))
+            }
         }
-        if bundleId == stagingBundleIdentifier {
-            return .staging(slug: nil)
+        var debugIdentifiers = [baseDebugBundleIdentifier]
+        if baseDebugBundleIdentifier == defaultBaseDebugBundleIdentifier {
+            debugIdentifiers.append(legacyBaseDebugBundleIdentifier)
         }
-        let stagingPrefix = stagingBundleIdentifier + "."
-        if bundleId.hasPrefix(stagingPrefix) {
-            return .staging(slug: bundleSuffixSlug(bundleId, prefix: stagingPrefix))
-        }
-        if bundleId == baseDebugBundleIdentifier {
+        if debugIdentifiers.contains(bundleId) {
             if let tag = normalized(environment["CMUX_TAG"]),
                let slug = sanitizeSocketSlug(tag) {
                 return .dev(slug: slug)
             }
             return .dev(slug: nil)
         }
-        if bundleId.hasPrefix("\(baseDebugBundleIdentifier).") {
-            return .dev(slug: bundleSuffixSlug(bundleId, prefix: "\(baseDebugBundleIdentifier)."))
+        for identifier in debugIdentifiers {
+            let prefix = identifier + "."
+            if bundleId.hasPrefix(prefix) {
+                return .dev(slug: bundleSuffixSlug(bundleId, prefix: prefix))
+            }
         }
         return .stable
     }

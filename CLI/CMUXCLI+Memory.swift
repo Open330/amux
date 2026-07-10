@@ -106,7 +106,7 @@ extension CMUXCLI {
         do {
             return try client.sendV2(method: "system.memory", params: params)
         } catch let error as CLIError where error.message.hasPrefix("method_not_found:") {
-            throw CLIError(message: String(localized: "cli.memory.error.diagnosticsUnsupported", defaultValue: "cmux memory requires a running cmux build that supports memory diagnostics"))
+            throw CLIError(message: String(localized: "cli.memory.error.diagnosticsUnsupported", defaultValue: "amux memory requires a running amux build that supports memory diagnostics"))
         }
     }
 

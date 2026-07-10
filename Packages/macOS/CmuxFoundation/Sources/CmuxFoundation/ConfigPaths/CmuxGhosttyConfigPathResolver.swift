@@ -1,6 +1,6 @@
 public import Foundation
 
-/// Resolves which cmux-managed Ghostty config file under Application Support is
+/// Resolves which amux-managed Ghostty config file under Application Support is
 /// active for a given bundle identifier, including the release-channel fallback
 /// chain (debug/nightly/staging builds read the release config when they have
 /// none of their own).
@@ -10,9 +10,14 @@ public import Foundation
 /// bundle-id→URL transforms have no natural receiver type; modernization into
 /// an instantiated, dependency-injected resolver is deferred to the engine lift.
 public struct CmuxGhosttyConfigPathResolver {
-    /// The bundle identifier of the released cmux app, used as the canonical
+    /// The bundle identifier of the released amux app, used as the canonical
     /// config location and the fallback for dev/nightly/staging channels.
-    public static let releaseBundleIdentifier = "com.cmuxterm.app"
+    public static let releaseBundleIdentifier = "com.open330.amux"
+    public static let legacyReleaseBundleIdentifier = "com.cmuxterm.app"
+    public static let compatibleReleaseBundleIdentifiers = [
+        releaseBundleIdentifier,
+        legacyReleaseBundleIdentifier,
+    ]
     private static let releaseFallbackChannelSuffixes = ["debug", "nightly", "staging"]
 
     public init() {}
@@ -57,8 +62,7 @@ public struct CmuxGhosttyConfigPathResolver {
         fileManager: FileManager = .default
     ) -> [URL] {
         guard let currentBundleIdentifier, !currentBundleIdentifier.isEmpty else {
-            return preferredExistingConfigURLs(
-                for: Self.releaseBundleIdentifier,
+            return preferredReleaseConfigURLs(
                 appSupportDirectory: appSupportDirectory,
                 fileManager: fileManager
             )
@@ -73,8 +77,7 @@ public struct CmuxGhosttyConfigPathResolver {
             return currentURLs
         }
         if allowsReleaseFallback(currentBundleIdentifier) {
-            let releaseURLs = preferredExistingConfigURLs(
-                for: Self.releaseBundleIdentifier,
+            let releaseURLs = preferredReleaseConfigURLs(
                 appSupportDirectory: appSupportDirectory,
                 fileManager: fileManager
             )
@@ -115,6 +118,25 @@ public struct CmuxGhosttyConfigPathResolver {
         return []
     }
 
+    private func preferredReleaseConfigURLs(
+        appSupportDirectory: URL,
+        fileManager: FileManager
+    ) -> [URL] {
+        let canonical = preferredExistingConfigURLs(
+            for: Self.releaseBundleIdentifier,
+            appSupportDirectory: appSupportDirectory,
+            fileManager: fileManager
+        )
+        if !canonical.isEmpty {
+            return canonical
+        }
+        return preferredExistingConfigURLs(
+            for: Self.legacyReleaseBundleIdentifier,
+            appSupportDirectory: appSupportDirectory,
+            fileManager: fileManager
+        )
+    }
+
     private func isNonEmptyConfigFile(_ url: URL, fileManager: FileManager) -> Bool {
         var isDirectory = ObjCBool(false)
         guard fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory),
@@ -153,8 +175,10 @@ public struct CmuxGhosttyConfigPathResolver {
         _ bundleIdentifier: String,
         channelSuffix: String
     ) -> Bool {
-        let channelBundleIdentifier = "\(Self.releaseBundleIdentifier).\(channelSuffix)"
-        return bundleIdentifier == channelBundleIdentifier
-            || bundleIdentifier.hasPrefix("\(channelBundleIdentifier).")
+        [Self.releaseBundleIdentifier, Self.legacyReleaseBundleIdentifier].contains { releaseIdentifier in
+            let channelBundleIdentifier = "\(releaseIdentifier).\(channelSuffix)"
+            return bundleIdentifier == channelBundleIdentifier
+                || bundleIdentifier.hasPrefix("\(channelBundleIdentifier).")
+        }
     }
 }

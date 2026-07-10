@@ -10,13 +10,13 @@ Usage: submit-cmux-profile --profile <dir> [--target-name <name>] [--target-pid 
                            [--note <text>|--note-file <path>] [--skip-dialog] [--send]
                            [--package-only] [--dry-run]
 
-Package a cmux profiling directory and submit it to founders@manaflow.com with
-the archive attached.
+Package an amux profiling directory and optionally email the archive to an
+explicitly configured recipient.
 USAGE
 }
 
 profile_dir=""
-target_name="cmux"
+target_name="amux"
 target_pid=""
 channel="unknown"
 bundle_id="unknown"
@@ -28,7 +28,7 @@ skip_dialog="false"
 send_message="false"
 package_only="false"
 dry_run="false"
-recipient="${CMUX_PROFILE_FEEDBACK_EMAIL:-founders@manaflow.com}"
+recipient="${CMUX_PROFILE_FEEDBACK_EMAIL:-}"
 osascript_bin="${CMUX_PROFILE_OSASCRIPT:-/usr/bin/osascript}"
 open_bin="${CMUX_PROFILE_OPEN:-/usr/bin/open}"
 ditto_bin="${CMUX_PROFILE_DITTO:-/usr/bin/ditto}"
@@ -165,8 +165,8 @@ if [ -n "$note_file" ]; then
 fi
 
 safe_base="$(basename "$profile_dir" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
-[ -n "$safe_base" ] || safe_base="cmux-profile"
-archive_dir="${TMPDIR:-/tmp}/cmux-profile-submissions"
+[ -n "$safe_base" ] || safe_base="amux-profile"
+archive_dir="${TMPDIR:-/tmp}/amux-profile-submissions"
 archive_path="${archive_dir}/${safe_base}.zip"
 
 language_source="${CMUX_PROFILE_LOCALE:-${LANG:-}}"
@@ -176,8 +176,8 @@ fi
 language_source="$(printf '%s' "$language_source" | tr '[:upper:]' '[:lower:]')"
 
 if [[ "$language_source" == *"ja"* ]]; then
-  subject_prefix="cmuxプロファイリングキャプチャ"
-  body_intro="cmuxプロファイリングキャプチャを添付しました。"
+  subject_prefix="amuxプロファイリングキャプチャ"
+  body_intro="amuxプロファイリングキャプチャを添付しました。"
   body_target_label="対象"
   body_pid_label="PID"
   body_channel_label="チャンネル"
@@ -186,13 +186,13 @@ if [[ "$language_source" == *"ja"* ]]; then
   body_profile_label="プロファイルディレクトリ"
   body_archive_label="アーカイブ"
   body_notes_label="メモ"
-  dialog_text="cmuxはプロファイリングアーカイブを作成しました。状況を追記してから、アーカイブ付きのManaflow宛メール下書きを開いてください。"
+  dialog_text="amuxはプロファイリングアーカイブを作成しました。状況を追記してから、設定済みの宛先へのメール下書きを開いてください。"
   cancel_button="キャンセル"
   open_draft_button="下書きを開く"
-  dialog_title="cmuxプロファイルを送信"
+  dialog_title="amuxプロファイルを送信"
 else
-  subject_prefix="cmux profiling capture"
-  body_intro="cmux profiling capture attached."
+  subject_prefix="amux profiling capture"
+  body_intro="amux profiling capture attached."
   body_target_label="Target"
   body_pid_label="PID"
   body_channel_label="Channel"
@@ -201,10 +201,10 @@ else
   body_profile_label="Profile directory"
   body_archive_label="Archive"
   body_notes_label="Notes"
-  dialog_text="cmux created a profiling archive. Add any context, then open an email draft to Manaflow with the archive attached."
+  dialog_text="amux created a profiling archive. Add any context, then open an email draft to the configured recipient with the archive attached."
   cancel_button="Cancel"
   open_draft_button="Open Draft"
-  dialog_title="Submit cmux Profile"
+  dialog_title="Submit amux Profile"
 fi
 
 if [ "$dry_run" = "true" ]; then
@@ -213,6 +213,11 @@ if [ "$dry_run" = "true" ]; then
   [ -n "$reply_to" ] && printf 'Reply-to: %s\n' "$reply_to"
   printf 'Subject: %s: %s\n' "$subject_prefix" "$target_name"
   exit 0
+fi
+
+if [ "$package_only" != "true" ] && [ -z "$recipient" ]; then
+  echo "submit-cmux-profile: a recipient is required; pass --recipient or set CMUX_PROFILE_FEEDBACK_EMAIL" >&2
+  exit 2
 fi
 
 mkdir -p "$archive_dir"

@@ -46,7 +46,7 @@ final class CloudVMActionLauncher {
                 output: "",
                 action: String(
                     localized: "command.cloudVM.failed.action.missingCLI",
-                    defaultValue: "Install or reload a fresh cmux build, then try Start Cloud VM again. You can also run `cmux vm new` in a terminal to see the full error."
+                    defaultValue: "Install or reload a fresh amux build, then try Start Cloud VM again. You can also run `amux vm new` in a terminal to see the full error."
                 ),
                 preferredWindow: preferredWindow
             )
@@ -85,14 +85,14 @@ final class CloudVMActionLauncher {
                 guard terminationStatus != 0, !Self.shared.isShuttingDown else { return }
                 let format = String(
                     localized: "command.cloudVM.failed.exit",
-                    defaultValue: "cmux vm new exited with status %d."
+                    defaultValue: "amux vm new exited with status %d."
                 )
                 Self.shared.presentStartFailure(
                     summary: String(format: format, Int(terminationStatus)),
                     output: output,
                     action: String(
                         localized: "command.cloudVM.failed.action.exit",
-                        defaultValue: "Open a terminal and run `cmux auth status`, `cmux vm ls`, then `cmux vm new`. If you hit the active VM limit, delete one with `cmux vm rm <id>` and retry."
+                        defaultValue: "Open a terminal and run `amux auth status`, `amux vm ls`, then `amux vm new`. If you hit the active VM limit, delete one with `amux vm rm <id>` and retry."
                     ),
                     preferredWindow: launchWindow
                 )
@@ -111,12 +111,12 @@ final class CloudVMActionLauncher {
             presentStartFailure(
                 summary: String(
                     localized: "command.cloudVM.failed.launch",
-                    defaultValue: "cmux vm new could not be launched."
+                    defaultValue: "amux vm new could not be launched."
                 ),
                 output: error.localizedDescription,
                 action: String(
                     localized: "command.cloudVM.failed.action.launch",
-                    defaultValue: "Reload cmux so the bundled CLI is available, then try again. If it still fails, run `cmux vm new` in a terminal and send us the output."
+                    defaultValue: "Reload amux so the bundled CLI is available, then try again. If it still fails, run `amux vm new` in a terminal and send us the output."
                 ),
                 preferredWindow: preferredWindow
             )

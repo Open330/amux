@@ -31,13 +31,8 @@ struct CmuxFeatureFlagDefinition: Identifiable, Equatable {
 final class CmuxFeatureFlags {
     static let shared = CmuxFeatureFlags()
 
-    #if DEBUG
-    private static let proUpgradeUIDefault = true
-    #else
     private static let proUpgradeUIDefault = false
-    #endif
-
-    private static let mobileConnectButtonDefault = true
+    private static let mobileConnectButtonDefault = false
     private static let overrideKeyPrefix = "cmux.flags.override."
 
     // Order is load-bearing for the typed accessors below. A keyed lookup would
@@ -47,9 +42,8 @@ final class CmuxFeatureFlags {
         [
             // FLAG(key: pro-upgrade-ui-enabled-release, owner: lawrencecchen,
             //      reviewBy: 2026-10-01, defaultWhenUnavailable: false)
-            // Shows the Pro upgrade entrypoints (sidebar badge, Settings Account
-            // card, palette command, Help menu item). Release builds hide them until
-            // the PostHog flag is enabled; DEBUG keeps them visible for dogfood.
+            // Retained for config compatibility. amux does not expose the inherited
+            // cmux billing service, so the typed accessor remains disabled.
             CmuxFeatureFlagDefinition(
                 key: "pro-upgrade-ui-enabled-release",
                 title: String(localized: "featureFlags.proUpgrade.title", defaultValue: "Pro upgrade UI"),
@@ -62,9 +56,8 @@ final class CmuxFeatureFlags {
 
             // FLAG(key: mobile-connect-button-enabled-release, owner: lawrencecchen,
             //      reviewBy: 2026-10-01, defaultWhenUnavailable: true)
-            // Shows the top-right iPhone button that opens the Mobile Connect
-            // (phone pairing) window. Default keeps it visible when flags are
-            // unavailable; the window it opens ships in every build.
+            // Retained for config compatibility. amux does not expose the inherited
+            // cmux account-backed pairing service, so the accessor remains disabled.
             CmuxFeatureFlagDefinition(
                 key: "mobile-connect-button-enabled-release",
                 title: String(localized: "featureFlags.mobileConnect.title", defaultValue: "Mobile Connect button"),
@@ -78,11 +71,11 @@ final class CmuxFeatureFlags {
     }
 
     var isProUpgradeUIEnabled: Bool {
-        effectiveValue(for: Self.allFlags[0])
+        false
     }
 
     var isMobileConnectButtonEnabled: Bool {
-        effectiveValue(for: Self.allFlags[1])
+        false
     }
 
     @ObservationIgnored

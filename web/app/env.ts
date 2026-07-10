@@ -8,45 +8,19 @@ import { z } from "zod";
 const trimEnv = (value: string | undefined): string | undefined =>
   typeof value === "string" ? value.trim() : value;
 
-const defaultSubrouterBaseUrl = (): string =>
-  process.env.VERCEL_ENV === "production"
-    ? "https://subrouter.cmux.dev"
-    : "https://subrouter-staging.cmux.dev";
-
 const skipEnvValidation =
   process.env.SKIP_ENV_VALIDATION === "1" ||
   process.env.VERCEL_ENV === "preview";
-const allowPreviewStackPlaceholders = process.env.VERCEL_ENV === "preview";
-const isVercelNonPreviewDeployment =
-  process.env.VERCEL === "1" &&
-  typeof process.env.VERCEL_ENV === "string" &&
-  process.env.VERCEL_ENV !== "preview";
-const requireVercelNonPreviewValue = (name: string): z.ZodType<string | undefined> =>
-  z.string().min(1).optional().superRefine((value, context) => {
-    if (isVercelNonPreviewDeployment && !value) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `${name} is required for deployed non-preview runtimes`,
-      });
-    }
-  });
-
-const stackEnv = (
-  value: string | undefined,
-  fallback: string
-): string | undefined => {
-  const trimmed = trimEnv(value);
-  if (trimmed) return trimmed;
-  return allowPreviewStackPlaceholders ? fallback : undefined;
-};
 
 export const env = createEnv({
   server: {
-    RESEND_API_KEY: z.string().min(1),
-    CMUX_FEEDBACK_FROM_EMAIL: z.string().email(),
-    CMUX_FEEDBACK_RATE_LIMIT_ID: z.string().min(1),
-    CMUX_CLIENT_CONFIG_RATE_LIMIT_ID: requireVercelNonPreviewValue("CMUX_CLIENT_CONFIG_RATE_LIMIT_ID"),
-    STACK_SECRET_SERVER_KEY: z.string().min(1),
+    // Inherited hosted services are unavailable in amux. Their credentials are
+    // optional so a static product-site build never needs upstream secrets.
+    RESEND_API_KEY: z.string().min(1).optional(),
+    CMUX_FEEDBACK_FROM_EMAIL: z.string().email().optional(),
+    CMUX_FEEDBACK_RATE_LIMIT_ID: z.string().min(1).optional(),
+    CMUX_CLIENT_CONFIG_RATE_LIMIT_ID: z.string().min(1).optional(),
+    STACK_SECRET_SERVER_KEY: z.string().min(1).optional(),
     // APNs push (iOS notifications). Optional: the app boots without them; the
     // push route returns a clear "not configured" error until they are set.
     // CMUX_APNS_KEY_P8 holds the .p8 PEM (literal "\n" escapes are normalized
@@ -79,7 +53,9 @@ export const env = createEnv({
     ASC_PRIVATE_KEY_PATH: z.string().min(1).optional(),
     CMUX_TESTFLIGHT_APP_ID: z.string().min(1).optional(),
     CMUX_TESTFLIGHT_GROUP_ID: z.string().min(1).optional(),
-    SENTRY_DSN: z.string().url().optional(),
+    AMUX_ENABLE_WEB_TELEMETRY: z.enum(["0", "1"]).optional(),
+    AMUX_OTEL_SERVICE_NAME: z.string().min(1).optional(),
+    AMUX_SENTRY_DSN: z.string().url().optional(),
     // Slack Incoming Webhook for the #website-waitlist channel. Optional: the
     // /api/waitlist route silently skips the Slack ping when it is unset.
     SLACK_WAITLIST_WEBHOOK_URL: z.string().url().optional(),
@@ -92,8 +68,8 @@ export const env = createEnv({
     SUBROUTER_TENANT_KEY_SECRET: z.string().min(1).optional(),
   },
   client: {
-    NEXT_PUBLIC_STACK_PROJECT_ID: z.string().min(1),
-    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: z.string().min(1),
+    NEXT_PUBLIC_STACK_PROJECT_ID: z.string().min(1).optional(),
+    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: {
     RESEND_API_KEY: trimEnv(process.env.RESEND_API_KEY),
@@ -117,24 +93,17 @@ export const env = createEnv({
     ASC_PRIVATE_KEY_PATH: trimEnv(process.env.ASC_PRIVATE_KEY_PATH),
     CMUX_TESTFLIGHT_APP_ID: trimEnv(process.env.CMUX_TESTFLIGHT_APP_ID),
     CMUX_TESTFLIGHT_GROUP_ID: trimEnv(process.env.CMUX_TESTFLIGHT_GROUP_ID),
-    SENTRY_DSN: trimEnv(process.env.SENTRY_DSN),
+    AMUX_ENABLE_WEB_TELEMETRY: trimEnv(process.env.AMUX_ENABLE_WEB_TELEMETRY),
+    AMUX_OTEL_SERVICE_NAME: trimEnv(process.env.AMUX_OTEL_SERVICE_NAME),
+    AMUX_SENTRY_DSN: trimEnv(process.env.AMUX_SENTRY_DSN),
     SLACK_WAITLIST_WEBHOOK_URL: trimEnv(process.env.SLACK_WAITLIST_WEBHOOK_URL),
     SLACK_ENTERPRISE_WEBHOOK_URL: trimEnv(process.env.SLACK_ENTERPRISE_WEBHOOK_URL),
-    SUBROUTER_BASE_URL: trimEnv(process.env.SUBROUTER_BASE_URL) ?? defaultSubrouterBaseUrl(),
+    SUBROUTER_BASE_URL: trimEnv(process.env.SUBROUTER_BASE_URL),
     SUBROUTER_ADMIN_TOKEN: trimEnv(process.env.SUBROUTER_ADMIN_TOKEN),
     SUBROUTER_TENANT_KEY_SECRET: trimEnv(process.env.SUBROUTER_TENANT_KEY_SECRET),
-    NEXT_PUBLIC_STACK_PROJECT_ID: stackEnv(
-      process.env.NEXT_PUBLIC_STACK_PROJECT_ID,
-      "00000000-0000-4000-8000-000000000000"
-    ),
-    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: stackEnv(
-      process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
-      "preview-publishable-client-key"
-    ),
-    STACK_SECRET_SERVER_KEY: stackEnv(
-      process.env.STACK_SECRET_SERVER_KEY,
-      "preview-secret-server-key"
-    ),
+    NEXT_PUBLIC_STACK_PROJECT_ID: trimEnv(process.env.NEXT_PUBLIC_STACK_PROJECT_ID),
+    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: trimEnv(process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY),
+    STACK_SECRET_SERVER_KEY: trimEnv(process.env.STACK_SECRET_SERVER_KEY),
   },
   skipValidation: skipEnvValidation,
 });

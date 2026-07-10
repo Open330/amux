@@ -356,9 +356,9 @@ class Diagnostics:
         if self.app_pgrep:
             patterns.append(self.app_pgrep)
         if self.tag:
-            patterns.append(f"cmux DEV {self.tag}.app/Contents/MacOS/cmux DEV")
-            patterns.append(f"cmux DEV {self.tag}")
-        patterns.append("cmux DEV")
+            patterns.append(f"amux DEV {self.tag}.app/Contents/MacOS/amux DEV")
+            patterns.append(f"amux DEV {self.tag}")
+        patterns.append("amux DEV")
         seen: set[int] = set()
         for pattern in patterns:
             try:
@@ -552,7 +552,7 @@ class StressContext:
         env["CMUX_CLAUDE_HOOK_SENTRY_DISABLED"] = "1"
         if self.tag:
             env["CMUX_TAG"] = self.tag
-            env["CMUX_BUNDLE_ID"] = f"com.cmuxterm.app.debug.{self.tag.replace('-', '.')}"
+            env["CMUX_BUNDLE_ID"] = f"com.open330.amux.debug.{self.tag.replace('-', '.')}"
         env.pop("CMUX_SOCKET", None)
         env.pop("CMUX_SOCKET_PASSWORD", None)
         env.pop("CMUX_WORKSPACE_ID", None)
@@ -1533,8 +1533,8 @@ def resolve_cli_path(raw: str | None, tag: str | None) -> str:
     if env_cli:
         candidates.append(os.path.expanduser(env_cli))
     if tag:
-        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux DEV {tag}.app/Contents/Resources/bin/amux"))
-        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux DEV {tag}.app/Contents/Resources/bin/cmux"))
+        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux DEV {tag}.app/Contents/Resources/bin/amux"))
+        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux DEV {tag}.app/Contents/Resources/bin/cmux"))
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux"))
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux"))
     last_cli = pathlib.Path("/tmp/amux-last-cli-path")

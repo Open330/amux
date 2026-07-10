@@ -11,8 +11,8 @@ import SwiftUI
 /// cmux, Terminal Config link, Open Markdown in cmux Viewer,
 /// Markdown Viewer typography, iMessage Mode, Reorder on Notification, Dock Badge, Menu Bar
 /// Only, Show in Menu Bar, Unread Pane Ring, Pane Flash, Desktop
-/// Notifications, Notification Sound, Notification Command, Send
-/// anonymous telemetry, Warn Before Quit, Warn Before Closing Tab /
+/// Notifications, Notification Sound, Notification Command, Warn Before Quit,
+/// Warn Before Closing Tab /
 /// X Button / Hide Tab Close Button, Rename Selects Existing Name,
 /// Command Palette Searches All Surfaces.
 @MainActor
@@ -55,7 +55,6 @@ public struct AppSection: View {
     @State private var soundName: DefaultsValueModel<String>
     @State private var soundCommand: DefaultsValueModel<String>
     @State private var customSoundFile: DefaultsValueModel<String>
-    @State private var telemetry: DefaultsValueModel<Bool>
     @State private var confirmQuit: DefaultsValueModel<ConfirmQuitMode>
     @State private var warnCloseTab: DefaultsValueModel<Bool>
     @State private var warnCloseX: DefaultsValueModel<Bool>
@@ -64,7 +63,6 @@ public struct AppSection: View {
     @State private var paletteAllSurfaces: DefaultsValueModel<Bool>
 
     @State private var languageAtAppear: AppLanguage?
-    @State private var telemetryAtAppear: Bool?
 
     public init(
         defaultsStore: UserDefaultsSettingsStore,
@@ -105,7 +103,6 @@ public struct AppSection: View {
         _soundName = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.notifications.sound))
         _soundCommand = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.notifications.command))
         _customSoundFile = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.notifications.customSoundFilePath))
-        _telemetry = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.app.sendAnonymousTelemetry))
         _confirmQuit = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.app.confirmQuitMode))
         _warnCloseTab = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.app.warnBeforeClosingTab))
         _warnCloseX = State(initialValue: DefaultsValueModel(store: defaultsStore, key: catalog.app.warnBeforeClosingTabXButton))
@@ -134,8 +131,8 @@ public struct AppSection: View {
             mainCard
         }
         .task {
-            startSettingsObservation([language, appearance, appIcon, placement, inheritDir, minimalMode, keepWorkspaceOpen, firstClick, fileDrop, preferredEditor, openSupported, openMarkdown, globalFontMagnification, markdownFontSize, markdownFontFamily, markdownMaxWidth, canvasPaneGap, canvasSnapping, fileEditorWordWrap, iMessage, reorder, dockBadge, menuBarOnly, showInMenuBar, paneRing, paneFlash, agentPermissionPrompt, agentTurnComplete, agentIdleReminder, soundName, soundCommand, customSoundFile, telemetry, confirmQuit, warnCloseTab, warnCloseX, hideCloseButton, renameSelects, paletteAllSurfaces])
-            if languageAtAppear == nil { languageAtAppear = language.current }; if telemetryAtAppear == nil { telemetryAtAppear = telemetry.current }
+            startSettingsObservation([language, appearance, appIcon, placement, inheritDir, minimalMode, keepWorkspaceOpen, firstClick, fileDrop, preferredEditor, openSupported, openMarkdown, globalFontMagnification, markdownFontSize, markdownFontFamily, markdownMaxWidth, canvasPaneGap, canvasSnapping, fileEditorWordWrap, iMessage, reorder, dockBadge, menuBarOnly, showInMenuBar, paneRing, paneFlash, agentPermissionPrompt, agentTurnComplete, agentIdleReminder, soundName, soundCommand, customSoundFile, confirmQuit, warnCloseTab, warnCloseX, hideCloseButton, renameSelects, paletteAllSurfaces])
+            if languageAtAppear == nil { languageAtAppear = language.current }
         }
     }
 
@@ -148,7 +145,7 @@ public struct AppSection: View {
         }
         return String(
             localized: "settings.app.globalFontMagnification.subtitleOff",
-            defaultValue: "Scale every font in cmux by the same percentage. 100% = design size."
+            defaultValue: "Scale every font in amux by the same percentage. 100% = design size."
         )
     }
 
@@ -165,7 +162,7 @@ public struct AppSection: View {
                 configurationReview: .json("app.language"),
                 String(localized: "settings.app.language", defaultValue: "Language"),
                 subtitle: languageAtAppear != nil && language.current != languageAtAppear
-                    ? String(localized: "settings.app.language.restartSubtitle", defaultValue: "Restart cmux to apply")
+                    ? String(localized: "settings.app.language.restartSubtitle", defaultValue: "Restart amux to apply")
                     : nil,
                 controlWidth: Self.columnWidth
             ) {
@@ -268,8 +265,8 @@ public struct AppSection: View {
                 configurationReview: .json("app.focusPaneOnFirstClick"),
                 String(localized: "settings.app.paneFirstClickFocus", defaultValue: "Focus Pane on First Click"),
                 subtitle: firstClick.current
-                    ? String(localized: "settings.app.paneFirstClickFocus.subtitleOn", defaultValue: "When cmux is inactive, clicking a pane activates the window and focuses that pane in one click.")
-                    : String(localized: "settings.app.paneFirstClickFocus.subtitleOff", defaultValue: "When cmux is inactive, the first click only activates the window. Click again to focus the pane.")
+                    ? String(localized: "settings.app.paneFirstClickFocus.subtitleOn", defaultValue: "When amux is inactive, clicking a pane activates the window and focuses that pane in one click.")
+                    : String(localized: "settings.app.paneFirstClickFocus.subtitleOff", defaultValue: "When amux is inactive, the first click only activates the window. Click again to focus the pane.")
             ) {
                 Toggle("", isOn: Binding(get: { firstClick.current }, set: { firstClick.set($0) }))
                     .labelsHidden()
@@ -312,8 +309,8 @@ public struct AppSection: View {
             // Open Supported Files in cmux
             SettingsCardRow(
                 configurationReview: .json("app.openSupportedFilesInCmux"),
-                String(localized: "settings.app.openSupportedFilesInCmux", defaultValue: "Open Supported Files in cmux"),
-                subtitle: String(localized: "settings.app.openSupportedFilesInCmux.subtitle", defaultValue: "Cmd-clicking readable files opens text, code, PDFs, images, audio, video, and Quick Look previews in cmux.")
+                String(localized: "settings.app.openSupportedFilesInCmux", defaultValue: "Open Supported Files in amux"),
+                subtitle: String(localized: "settings.app.openSupportedFilesInCmux.subtitle", defaultValue: "Cmd-clicking readable files opens text, code, PDFs, images, audio, video, and Quick Look previews in amux.")
             ) {
                 Toggle("", isOn: Binding(get: { openSupported.current }, set: { openSupported.set($0) }))
                     .labelsHidden()
@@ -326,7 +323,7 @@ public struct AppSection: View {
                 configurationReview: .action,
                 searchAnchorID: "setting:app:terminal-config",
                 String(localized: "settings.app.configWindow", defaultValue: "Terminal Config"),
-                subtitle: String(localized: "settings.app.configWindow.subtitle", defaultValue: "Open the cmux terminal config and generated preview in one utility window."),
+                subtitle: String(localized: "settings.app.configWindow.subtitle", defaultValue: "Open the amux terminal config and generated preview in one utility window."),
                 controlWidth: Self.columnWidth
             ) {
                 Button(String(localized: "settings.app.configWindow.openButton", defaultValue: "Open Config")) {
@@ -353,8 +350,8 @@ public struct AppSection: View {
             // Open Markdown in cmux Viewer
             SettingsCardRow(
                 configurationReview: .json("app.openMarkdownInCmuxViewer"),
-                String(localized: "settings.app.openMarkdownInCmuxViewer", defaultValue: "Open Markdown in cmux Viewer"),
-                subtitle: String(localized: "settings.app.openMarkdownInCmuxViewer.subtitle", defaultValue: "When supported file routing is on, Cmd-clicking Markdown files opens the rendered cmux markdown viewer instead of the generic file preview.")
+                String(localized: "settings.app.openMarkdownInCmuxViewer", defaultValue: "Open Markdown in amux Viewer"),
+                subtitle: String(localized: "settings.app.openMarkdownInCmuxViewer.subtitle", defaultValue: "When supported file routing is on, Cmd-clicking Markdown files opens the rendered amux markdown viewer instead of the generic file preview.")
             ) {
                 Toggle("", isOn: Binding(get: { openMarkdown.current }, set: { openMarkdown.set($0) }))
                     .labelsHidden()
@@ -515,7 +512,7 @@ public struct AppSection: View {
             SettingsCardRow(
                 configurationReview: .json("app.menuBarOnly"),
                 String(localized: "settings.app.menuBarOnly", defaultValue: "Menu Bar Only"),
-                subtitle: String(localized: "settings.app.menuBarOnly.subtitle", defaultValue: "Hide the Dock icon and Cmd+Tab entry. Use the menu bar item to show cmux.")
+                subtitle: String(localized: "settings.app.menuBarOnly.subtitle", defaultValue: "Hide the Dock icon and Cmd+Tab entry. Use the menu bar item to show amux.")
             ) {
                 Toggle("", isOn: Binding(get: { menuBarOnly.current }, set: { enabled in
                     if hostActions.setMenuBarOnly(enabled) {
@@ -532,7 +529,7 @@ public struct AppSection: View {
             SettingsCardRow(
                 configurationReview: .json("notifications.showInMenuBar"),
                 String(localized: "settings.app.showInMenuBar", defaultValue: "Show in Menu Bar"),
-                subtitle: String(localized: "settings.app.showInMenuBar.subtitle", defaultValue: "Keep cmux in the menu bar for unread notifications and quick actions.")
+                subtitle: String(localized: "settings.app.showInMenuBar.subtitle", defaultValue: "Keep amux in the menu bar for unread notifications and quick actions.")
             ) {
                 Toggle("", isOn: Binding(get: { showInMenuBar.current }, set: { showInMenuBar.set($0) }))
                     .labelsHidden()
@@ -557,7 +554,7 @@ public struct AppSection: View {
             SettingsCardRow(
                 configurationReview: .json("notifications.paneFlash"),
                 String(localized: "settings.notifications.paneFlash.title", defaultValue: "Pane Flash"),
-                subtitle: String(localized: "settings.notifications.paneFlash.subtitle", defaultValue: "Briefly flash a blue outline when cmux highlights a pane.")
+                subtitle: String(localized: "settings.notifications.paneFlash.subtitle", defaultValue: "Briefly flash a blue outline when amux highlights a pane.")
             ) {
                 Toggle("", isOn: Binding(get: { paneFlash.current }, set: { paneFlash.set($0) }))
                     .labelsHidden()
@@ -654,20 +651,6 @@ public struct AppSection: View {
                 )
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 200)
-            }
-            SettingsCardDivider()
-
-            // Telemetry
-            SettingsCardRow(
-                configurationReview: .json("app.sendAnonymousTelemetry"),
-                String(localized: "settings.app.telemetry", defaultValue: "Send anonymous telemetry"),
-                subtitle: (telemetryAtAppear != nil && telemetry.current != telemetryAtAppear)
-                    ? String(localized: "settings.app.telemetry.subtitleChanged", defaultValue: "Change takes effect on next launch.")
-                    : String(localized: "settings.app.telemetry.subtitle", defaultValue: "Share anonymized crash and usage data to help improve cmux.")
-            ) {
-                Toggle("", isOn: Binding(get: { telemetry.current }, set: { telemetry.set($0) }))
-                    .labelsHidden()
-                    .controlSize(.small)
             }
             SettingsCardDivider()
 

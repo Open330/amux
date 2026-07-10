@@ -8,7 +8,7 @@ struct ClaudeTeamsPromptBoundaryRecoveryTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control-session-name-prefix",
                     "cmux-team",
@@ -20,7 +20,7 @@ struct ClaudeTeamsPromptBoundaryRecoveryTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control-session-name-prefix",
                 "cmux-team",
@@ -33,7 +33,7 @@ struct ClaudeTeamsPromptBoundaryRecoveryTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--remote-control-session-name-prefix",
                     "cmux-team",
@@ -47,7 +47,7 @@ struct ClaudeTeamsPromptBoundaryRecoveryTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
                 "--remote-control-session-name-prefix",
                 "cmux-team",

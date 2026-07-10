@@ -54,8 +54,8 @@ _STABLE_SOCKET_PATH = os.path.join(_STATE_DIR, "cmux.sock")
 _LEGACY_STABLE_SOCKET_PATH = "/tmp/cmux.sock"
 _STABLE_BUNDLE_ID = "com.cmuxterm.app"
 _NIGHTLY_BUNDLE_ID = "com.cmuxterm.app.nightly"
-_STAGING_BUNDLE_ID = "com.cmuxterm.app.staging"
-_DEFAULT_DEBUG_BUNDLE_ID = "com.cmuxterm.app.debug"
+_STAGING_BUNDLE_ID = "com.open330.amux.staging"
+_DEFAULT_DEBUG_BUNDLE_ID = "com.open330.amux.debug"
 
 
 def _sanitize_marker_slug(raw: str) -> Optional[str]:

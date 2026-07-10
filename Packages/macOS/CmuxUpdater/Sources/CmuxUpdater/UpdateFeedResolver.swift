@@ -3,7 +3,7 @@ import Foundation
 /// Resolves which Sparkle appcast feed URL the updater should use, given the URL baked
 /// into the app's `Info.plist` at build time.
 ///
-/// Stable releases ship with the stable appcast URL and `cmux NIGHTLY` has the nightly
+/// Stable releases ship with the stable appcast URL and `amux NIGHTLY` has the nightly
 /// appcast URL injected by CI. When the `Info.plist` value is missing or empty the resolver
 /// falls back to the latest-release appcast so the updater still has a feed to query.
 ///
@@ -38,7 +38,7 @@ public struct UpdateFeedResolver: Sendable {
     ///
     /// - Parameter fallbackFeedURL: The appcast URL to fall back to when the build-time
     ///   feed URL is absent. Defaults to the project's latest-release appcast.
-    public init(fallbackFeedURL: String = "https://github.com/manaflow-ai/cmux/releases/latest/download/appcast.xml") {
+    public init(fallbackFeedURL: String = "https://github.com/Open330/amux/releases/latest/download/appcast.xml") {
         self.fallbackFeedURL = fallbackFeedURL
     }
 

@@ -57,7 +57,7 @@ enum ProUpgradePresenter {
             workspaceReuseState.clear()
         }
 
-        let title = String(localized: "pricing.pro.workspace.title", defaultValue: "cmux Pro")
+        let title = String(localized: "pricing.pro.workspace.title", defaultValue: "amux Pro")
         guard let workspace = appDelegate.performProUpgradeWorkspaceAction(
             title: title,
             url: url,
@@ -147,7 +147,7 @@ private final class NativePricingWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = String(localized: "pricing.native.window.title", defaultValue: "cmux Upgrade")
+        window.title = String(localized: "pricing.native.window.title", defaultValue: "amux Upgrade")
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
         window.minSize = NSSize(width: 760, height: 520)
@@ -389,7 +389,7 @@ private struct NativePricingPlansView: View {
                     String(localized: "pricing.native.pro.feature.vms", defaultValue: "Cloud agents on isolated Cloud VMs"),
                     String(localized: "pricing.native.pro.feature.hours", defaultValue: "20 active compute-hours per month, then usage-based"),
                     String(localized: "pricing.native.pro.feature.gateway", defaultValue: "Model gateway with usage and cost analytics"),
-                    String(localized: "pricing.native.pro.feature.ios", defaultValue: "cmux iOS app and email support"),
+                    String(localized: "pricing.native.pro.feature.ios", defaultValue: "amux iOS app and email support"),
                 ]
             )
             NativePricingPlanCard(
@@ -412,9 +412,9 @@ private struct NativePricingPlansView: View {
                 price: String(localized: "pricing.native.enterprise.price", defaultValue: "Custom"),
                 period: nil,
                 isCurrent: false,
-                actionTitle: String(localized: "pricing.native.enterprise.cta", defaultValue: "Contact sales"),
+                actionTitle: String(localized: "pricing.native.enterprise.cta", defaultValue: "Open GitHub Issues"),
                 action: {
-                    if let url = URL(string: "mailto:founders@manaflow.com") {
+                    if let url = URL(string: "https://github.com/Open330/amux/issues/new") {
                         NSWorkspace.shared.open(url)
                     }
                 },

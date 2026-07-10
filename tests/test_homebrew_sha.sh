@@ -1,14 +1,14 @@
 #!/bin/bash
 # Regression test: verify the homebrew cask SHA256 matches the actual release DMG.
-# Catches issues like https://github.com/manaflow-ai/cmux/issues/110 where a race
-# condition caused the cask to contain the SHA of a 404 page instead of the DMG.
+# Catches release races where a cask contains the SHA of an error page instead
+# of the DMG.
 set -euo pipefail
 
-CASK_FILE="$(dirname "$0")/../homebrew-cmux/Casks/cmux.rb"
+CASK_FILE="$(dirname "$0")/../packaging/homebrew/amux.rb"
 
 if [ ! -f "$CASK_FILE" ]; then
-  echo "SKIP: homebrew-cmux submodule not initialized"
-  exit 0
+  echo "FAIL: amux cask not found at $CASK_FILE"
+  exit 1
 fi
 
 VERSION=$(grep 'version "' "$CASK_FILE" | head -1 | sed 's/.*"\(.*\)".*/\1/')
@@ -22,7 +22,7 @@ fi
 echo "Cask version: $VERSION"
 echo "Cask SHA256:  $CASK_SHA"
 
-URL="https://github.com/manaflow-ai/cmux/releases/download/v${VERSION}/cmux-macos.dmg"
+URL="https://github.com/Open330/amux/releases/download/v${VERSION}/amux-macos.dmg"
 TMPFILE=$(mktemp)
 trap 'rm -f "$TMPFILE"' EXIT
 

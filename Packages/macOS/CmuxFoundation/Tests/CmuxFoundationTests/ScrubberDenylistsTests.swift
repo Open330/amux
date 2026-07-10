@@ -152,7 +152,7 @@ import Testing
         "workspace 550e8400-e29b-41d4-a716-446655440000 ready",
         "surface 123e4567-e89b-12d3-a456-426614174000 attached",
         // Build/version numbers must not trip @creditcard or @usssn.
-        "cmux DEV build 1234567890 v2",
+        "amux DEV build 1234567890 v2",
         "version 0.64.13 (build 4521)",
         // A normal stack trace line.
         "at GhosttyTerminalView.forceRefresh() line 142 in frame 7",

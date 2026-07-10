@@ -7,21 +7,28 @@ import Testing
 struct DogfoodFeedbackServiceTests {
     private func makeService(
         limits: DogfoodFeedbackLimits = .default,
-        now: @escaping @Sendable () -> Date = { Date(timeIntervalSince1970: 1_700_000_000) }
+        now: @escaping @Sendable () -> Date = { Date(timeIntervalSince1970: 1_700_000_000) },
+        privilegedEmailDomain: String? = "example.test"
     ) -> (DogfoodFeedbackService, URL) {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("cmux-dogfood-test-\(UUID().uuidString)", isDirectory: true)
-        let service = DogfoodFeedbackService(limits: limits, cacheRoot: root, now: now)
+        let service = DogfoodFeedbackService(
+            limits: limits,
+            cacheRoot: root,
+            now: now,
+            privilegedEmailDomain: privilegedEmailDomain
+        )
         return (service, root)
     }
 
-    @Test("privileged domain gate trims, lowercases, and matches the suffix")
+    @Test("configured domain gate trims, lowercases, and matches the suffix")
     func privilegeGate() {
-        #expect(DogfoodFeedbackService.isPrivilegedFeedbackEmail("a@manaflow.ai"))
-        #expect(DogfoodFeedbackService.isPrivilegedFeedbackEmail("  A@Manaflow.AI \n"))
-        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail("a@example.com"))
-        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail(nil))
-        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail("manaflow.ai@evil.com"))
+        #expect(DogfoodFeedbackService.isPrivilegedFeedbackEmail("a@example.test", domain: "example.test"))
+        #expect(DogfoodFeedbackService.isPrivilegedFeedbackEmail("  A@EXAMPLE.TEST \n", domain: "@example.test"))
+        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail("a@example.com", domain: "example.test"))
+        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail(nil, domain: "example.test"))
+        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail("example.test@evil.com", domain: "example.test"))
+        #expect(!DogfoodFeedbackService.isPrivilegedFeedbackEmail("a@example.test", domain: nil))
     }
 
     @Test("non-privileged caller is rejected before any I/O")
@@ -44,7 +51,7 @@ struct DogfoodFeedbackServiceTests {
         let (service, _) = makeService(limits: limits)
         let outcome = await service.submit(
             DogfoodFeedbackSubmission(text: "", terminalText: "", buildStamp: "", diagnosticBlobBase64: "AAAAAAAA"),
-            authenticatedEmail: "a@manaflow.ai"
+            authenticatedEmail: "a@example.test"
         )
         #expect(outcome == .invalidParams(reason: "diagnostic_blob_base64 exceeds size limit"))
     }
@@ -59,7 +66,7 @@ struct DogfoodFeedbackServiceTests {
         let blob = Data(repeating: 0xAB, count: 32).base64EncodedString()
         let outcome = await service.submit(
             DogfoodFeedbackSubmission(text: "", terminalText: "", buildStamp: "", diagnosticBlobBase64: blob),
-            authenticatedEmail: "a@manaflow.ai"
+            authenticatedEmail: "a@example.test"
         )
         #expect(outcome == .invalidParams(reason: "diagnostic blob exceeds size limit"))
     }
@@ -75,7 +82,7 @@ struct DogfoodFeedbackServiceTests {
                 buildStamp: "DEV abc",
                 diagnosticBlobBase64: payload.base64EncodedString()
             ),
-            authenticatedEmail: "dev@manaflow.ai"
+            authenticatedEmail: "dev@example.test"
         )
         guard case let .written(bundlePath, bytes) = outcome else {
             Issue.record("expected written, got \(outcome)")
@@ -115,7 +122,7 @@ struct DogfoodFeedbackServiceTests {
                 buildStamp: "ZZZ",
                 diagnosticBlobBase64: Data("d".utf8).base64EncodedString()
             ),
-            authenticatedEmail: "dev@manaflow.ai"
+            authenticatedEmail: "dev@example.test"
         )
         guard case let .written(bundlePath, _) = outcome else {
             Issue.record("expected written, got \(outcome)")
@@ -146,11 +153,12 @@ struct DogfoodFeedbackServiceTests {
             let service = DogfoodFeedbackService(
                 limits: limits,
                 cacheRoot: root,
-                now: { Date(timeIntervalSince1970: captured) }
+                now: { Date(timeIntervalSince1970: captured) },
+                privilegedEmailDomain: "example.test"
             )
             _ = await service.submit(
                 DogfoodFeedbackSubmission(text: "", terminalText: "", buildStamp: "", diagnosticBlobBase64: payload),
-                authenticatedEmail: "dev@manaflow.ai"
+                authenticatedEmail: "dev@example.test"
             )
             tick += 60
         }

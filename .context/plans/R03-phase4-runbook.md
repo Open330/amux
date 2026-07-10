@@ -19,39 +19,37 @@ Status legend: ⬜ not started · 🟡 needs a decision/asset · ✅ done
   Palette, coexists with a running muxad (defers instead of competing).
   Decision resolved: opt-in + coexist.
 - 🟡 **§7 Gitea CI** — `.gitea/workflows/ci.yml` (build+tests+lints) and
-  `release.yml` (build→bundle→sign→notarize→dmg) written; release needs the
-  Vault secret paths + macOS runner label + publish target filled in (marked
-  TODO in the YAML).
-- ✅ **§1 Branding** — Release identity is amux (`com.open330.amux`, `amux.app`);
-  Debug/dev stays cmux so dogfood machinery is untouched. Verified via a
-  Release build producing amux.app.
+  `release.yml` (build→bundle→sign→notarize→appcast→GitHub release) are wired.
+  The runner still needs the three `AMUX_*` release secrets and `MUXA_REPO`.
+- ✅ **§1 Branding** — Release, Debug, and Staging identities are amux
+  (`com.open330.amux*`, `amux.app`, `amux DEV`, `amux STAGING`). The old
+  `CMUX_*`, `cmux.json`, `.cmux/`, socket names, and CLI alias remain as the
+  documented compatibility layer.
 - ✅ **§4 First-run wizard** — `AmuxOnboarding`, consent-gated, first-run +
   palette; wires agent hooks via bundled `muxa init --component <hooks>`
   (hooks-only — no tmux.conf edits, no competing daemon; verified by dry-run).
 - ✅ **Signed+notarized dmg** — v0.1.0-alpha released (Developer ID, Team
   728FW73BS8, notarized+stapled, Gatekeeper-accepted). `scripts/build-signed-dmg.sh`
   is the proven pipeline; `release.yml` now just calls it. Cask sha256 pinned.
-- 🟡 **§5 Sparkle appcast** — steps written; blocked on amux's own EdDSA key
-  (runbook §5). §6 tap repo still needs creating.
+- 🟡 **§5 Sparkle appcast** — the pipeline is complete and refuses to publish
+  without amux's EdDSA keypair. Provisioning the repository secrets remains.
+  §6 tap repo still needs creating.
 
 ### §5 Sparkle — REQUIRED before enabling auto-update
 
-amux still carries cmux's Sparkle public key in the Release build setting
-`SPARKLE_PUBLIC_KEY`. amux MUST use its OWN EdDSA keypair (the cmux private
-key is not ours, so no amux-signed update could ever verify, and shipping
-cmux's key is wrong). Steps:
+amux no longer carries cmux's Sparkle public key. The checked-in
+`SPARKLE_PUBLIC_KEY` build setting is empty and the release entrypoint requires
+amux's OWN EdDSA keypair. Steps:
 
 1. Generate once: Sparkle's `generate_keys` (from the Sparkle SPM artifact or
    `brew install --cask sparkle`). It prints a public key and stores the
    private key in the login keychain.
-2. Set the **public** key as the Release `SPARKLE_PUBLIC_KEY` build setting
-   (replacing `avjcgKibf1FTvhIjLBxhd+0HSpsXU4D0IGlVk8cgqRc=`).
-3. Store the **private** key in Vault; the release workflow's "Sign update +
-   generate appcast" step reads it as `SPARKLE_PRIVATE_KEY` (add it to the
-   Vault-fetch step).
-4. Until this is done, ship the dmg via manual download / brew cask only —
-   Sparkle won't offer updates (SUFeedURL points at amux's feed, which has no
-   validly-signed appcast yet). That is a safe alpha state.
+2. Store the public key as the Gitea secret `AMUX_SPARKLE_PUBLIC_KEY`.
+3. Store the private key as `AMUX_SPARKLE_PRIVATE_KEY`, and a GitHub release
+   token as `AMUX_GITHUB_TOKEN`.
+4. Push a version-matching tag. `build-sign-upload.sh` injects the public key,
+   signs the appcast with the private key, verifies the Open330 URLs, and
+   publishes immutable assets. Missing or mismatched keys fail closed.
 
 ### §6 Homebrew — REQUIRED for `brew install`
 
@@ -68,7 +66,7 @@ tmux pin: **3.7b** (latest release; `AMUX_TMUX_VERSION` overrides).
 
 ## 1. Branding split ⬜ (do first, on a release branch)
 
-The fork still builds as cmux (`com.cmuxterm.app`, "cmux DEV", cmux sockets).
+The fork still builds as cmux (`com.cmuxterm.app`, "amux DEV", cmux sockets).
 Flip identity in one commit so upstream merges stay mechanical:
 
 - `cmux.xcodeproj`: `PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux`, product

@@ -187,14 +187,14 @@ def test_debug_bundle_edits_variant_config_and_loads_variant_when_present(execut
             home
             / "Library"
             / "Application Support"
-            / "com.cmuxterm.app.debug.nightly.123"
+            / "com.open330.amux.debug.nightly.123"
             / "config.ghostty"
         )
 
         write_text(release_config, "font-size = 13\n")
         write_text(nightly_config, "font-size = 15\n")
 
-        payload = run_probe(executable, home, "com.cmuxterm.app.debug.nightly.123")
+        payload = run_probe(executable, home, "com.open330.amux.debug.nightly.123")
 
         expect(payload["cmux"]["path"] == str(nightly_config), f"unexpected nightly path: {payload}")
         expect("font-size = 15" in payload["cmux"]["contents"], f"wrong nightly contents: {payload}")
@@ -216,7 +216,7 @@ def test_debug_bundle_uses_release_fallback_when_variant_missing(
 
         write_text(release_config, "font-size = 13\n")
 
-        payload = run_probe(executable, home, "com.cmuxterm.app.debug.nightly.123")
+        payload = run_probe(executable, home, "com.open330.amux.debug.nightly.123")
 
         expect(payload["cmux"]["path"] == str(release_config), f"unexpected fallback edit path: {payload}")
         expect("font-size = 13" in payload["cmux"]["contents"], f"wrong fallback contents: {payload}")
@@ -233,11 +233,11 @@ def test_debug_bundle_targets_variant_config_when_no_current_or_fallback_config(
             home
             / "Library"
             / "Application Support"
-            / "com.cmuxterm.app.debug.nightly.123"
+            / "com.open330.amux.debug.nightly.123"
             / "config.ghostty"
         )
 
-        payload = run_probe(executable, home, "com.cmuxterm.app.debug.nightly.123")
+        payload = run_probe(executable, home, "com.open330.amux.debug.nightly.123")
 
         expect(payload["cmux"]["path"] == str(variant_config), f"unexpected empty edit path: {payload}")
         expect(payload["cmux"]["contents"] == "", f"empty variant target should have no contents: {payload}")

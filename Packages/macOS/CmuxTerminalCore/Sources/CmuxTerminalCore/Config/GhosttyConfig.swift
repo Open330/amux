@@ -1242,13 +1242,15 @@ public struct GhosttyConfig {
         appendUniquePath("/Applications/Ghostty.app/Contents/Resources/ghostty/themes/\(themeName)")
         appendUniquePath("~/.config/ghostty/themes/\(themeName)")
         for appSupportDirectory in CmuxApplicationSupportDirectories(environment: environment).userDirectories {
-            appendUniquePath(
-                appSupportDirectory
-                    .appendingPathComponent(CmuxGhosttyConfigPathResolver.releaseBundleIdentifier, isDirectory: true)
-                    .appendingPathComponent("themes", isDirectory: true)
-                    .appendingPathComponent(themeName, isDirectory: false)
-                    .path
-            )
+            for bundleIdentifier in CmuxGhosttyConfigPathResolver.compatibleReleaseBundleIdentifiers {
+                appendUniquePath(
+                    appSupportDirectory
+                        .appendingPathComponent(bundleIdentifier, isDirectory: true)
+                        .appendingPathComponent("themes", isDirectory: true)
+                        .appendingPathComponent(themeName, isDirectory: false)
+                        .path
+                )
+            }
         }
         appendUniquePath("~/Library/Application Support/com.mitchellh.ghostty/themes/\(themeName)")
 

@@ -3,12 +3,12 @@ set -euo pipefail
 
 tag="${CMUX_TAG:-swmob}"
 repo="${CMUX_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
-app="${CMUX_SWAPP:-$HOME/Library/Developer/Xcode/DerivedData/cmux-${tag}/Build/Products/Debug/cmux DEV ${tag}.app}"
+app="${CMUX_SWAPP:-$HOME/Library/Developer/Xcode/DerivedData/cmux-${tag}/Build/Products/Debug/amux DEV ${tag}.app}"
 port="${CMUX_PORT:-9300}"
 port_range="${CMUX_PORT_RANGE:-10}"
 port_end="${CMUX_PORT_END:-$((port + port_range - 1))}"
 dev_origin="${CMUX_DEV_ORIGIN:-http://localhost:${port}}"
-bin="$app/Contents/MacOS/cmux DEV"
+bin="$app/Contents/MacOS/amux DEV"
 cli="$app/Contents/Resources/bin/amux"
 if [[ ! -x "$cli" ]]; then
   cli="$app/Contents/Resources/bin/cmux"
@@ -24,7 +24,7 @@ if [[ ! -x "$bin" ]]; then
 fi
 
 exec env \
-  CMUX_BUNDLE_ID="com.cmuxterm.app.debug.${tag_bundle_id}" \
+  CMUX_BUNDLE_ID="com.open330.amux.debug.${tag_bundle_id}" \
   CMUX_SOCKET_ENABLE=1 \
   CMUX_SOCKET_MODE=allowAll \
   CMUX_SOCKET_PATH="/tmp/cmux-debug-${tag}.sock" \

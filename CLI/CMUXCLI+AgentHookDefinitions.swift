@@ -16,7 +16,7 @@ extension CMUXCLI {
         let configDirResolver: (@Sendable () -> String)?
         let sessionStoreSuffix: String // e.g. "cursor" -> ~/.cmuxterm/cursor-hook-sessions.json
         let disableEnvVar: String   // e.g. "CMUX_CURSOR_HOOKS_DISABLED"
-        let hookMarker: String      // Marker in commands: "cmux hooks cursor"
+        let hookMarker: String      // Canonical marker in commands: "amux hooks cursor"
         let binaryName: String
         let format: HookFormat
         let events: [HookEvent]
@@ -40,7 +40,7 @@ extension CMUXCLI {
         /// action, which performs the destructive cleanup this flag suppresses.
         let sessionEndIsTurnBoundary: Bool
         /// Feed-hook events. Each entry installs a second hook for
-        /// `agentEvent` that invokes `cmux hooks feed --source <name>`
+        /// `agentEvent` that invokes `amux hooks feed --source <name>`
         /// with a 120s timeout so the socket reply wait doesn't trip the
         /// agent's default hook timeout when the user takes time to
         /// approve/deny a permission / plan / question.
@@ -153,7 +153,7 @@ extension CMUXCLI {
     ]
 
     static func hookCommandString(for def: AgentHookDef, event: AgentHookDef.HookEvent) -> String {
-        let command = "cmux hooks \(def.name) \(event.cmuxSubcommand)"
+        let command = "amux hooks \(def.name) \(event.cmuxSubcommand)"
         let inline: String
         if def.name == "codex", codexHookCanRunFireAndForget(event.cmuxSubcommand) {
             inline = codexFireAndForgetAgentHookShellCommand(command, for: def)
@@ -167,7 +167,7 @@ extension CMUXCLI {
     }
 
     /// Wraps a codex persistent hook command as a `#!/bin/sh` script file in the
-    /// cmux-owned hooks dir and returns its path. A bare executable path runs
+    /// amux-owned hooks dir and returns its path. A bare executable path runs
     /// correctly under any runtime, including ones (subrouters/proxies) that exec
     /// the `command` string directly and fail an inline shell snippet with
     /// "No such file or directory (os error 2)". Falls back to the inline command
@@ -192,13 +192,13 @@ extension CMUXCLI {
         switch def.format {
         case .kiroAgentJSON:
             inline = exitTwoPropagatingAgentHookShellCommand(
-                "cmux hooks feed --source \(def.name) --event \(agentEvent)",
+                "amux hooks feed --source \(def.name) --event \(agentEvent)",
                 for: def,
                 noOpCommand: noOpCommand
             )
         default:
             inline = agentHookShellCommand(
-                "cmux hooks feed --source \(def.name) --event \(agentEvent)",
+                "amux hooks feed --source \(def.name) --event \(agentEvent)",
                 for: def,
                 noOpCommand: noOpCommand
             )
@@ -237,9 +237,9 @@ extension CMUXCLI {
         if usesPinnedHookDispatch(def) {
             return pinnedAgentHookShellCommand(command, for: def, noOpCommand: noOpCommand)
         }
-        let routedArguments = command.hasPrefix("cmux ") ? String(command.dropFirst("cmux ".count)) : command
+        let routedArguments = routedHookArguments(command)
         let noOpSnippet = shellNoOpSnippet(noOpCommand)
-        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v cmux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then { if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; } || \(noOpSnippet); else \(noOpSnippet); fi"
+        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then { if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; } || \(noOpSnippet); else \(noOpSnippet); fi"
     }
 
     private static func exitTwoPropagatingAgentHookShellCommand(
@@ -247,9 +247,9 @@ extension CMUXCLI {
         for def: AgentHookDef,
         noOpCommand: String = "echo '{}'"
     ) -> String {
-        let routedArguments = command.hasPrefix("cmux ") ? String(command.dropFirst("cmux ".count)) : command
+        let routedArguments = routedHookArguments(command)
         let noOpSnippet = shellNoOpSnippet(noOpCommand)
-        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v cmux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; status=$?; if [ \"$status\" -eq 2 ]; then exit 2; fi; if [ \"$status\" -ne 0 ]; then \(noOpSnippet); fi; else \(noOpSnippet); fi"
+        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; status=$?; if [ \"$status\" -eq 2 ]; then exit 2; fi; if [ \"$status\" -ne 0 ]; then \(noOpSnippet); fi; else \(noOpSnippet); fi"
     }
 
     private static func usesPinnedHookDispatch(_ def: AgentHookDef) -> Bool {
@@ -265,7 +265,7 @@ extension CMUXCLI {
         for def: AgentHookDef,
         noOpCommand: String = "echo '{}'"
     ) -> String {
-        let routedArguments = command.hasPrefix("cmux ") ? String(command.dropFirst("cmux ".count)) : command
+        let routedArguments = routedHookArguments(command)
         let socketPath = pinnedAgentHookSocketPath()
         let noOpSnippet = shellNoOpSnippet(noOpCommand)
         let shellTraceStart = pinnedHookShellTraceCommand(
@@ -288,6 +288,11 @@ extension CMUXCLI {
             statusExpression: "$cmux_hook_status"
         )
         let fallbackInvocation = pinnedHookInvocation(
+            executable: "amux",
+            routedArguments: routedArguments,
+            socketPath: socketPath
+        )
+        let legacyFallbackInvocation = pinnedHookInvocation(
             executable: "cmux",
             routedArguments: routedArguments,
             socketPath: socketPath
@@ -300,9 +305,9 @@ extension CMUXCLI {
                 routedArguments: routedArguments,
                 socketPath: socketPath
             )
-            dispatch = "if [ -x \(quotedCLIPath) ]; then \(primaryInvocation); elif command -v cmux >/dev/null 2>&1; then \(fallbackInvocation); else \(noOpSnippet); fi"
+            dispatch = "if [ -x \(quotedCLIPath) ]; then \(primaryInvocation); elif command -v amux >/dev/null 2>&1; then \(fallbackInvocation); elif command -v cmux >/dev/null 2>&1; then \(legacyFallbackInvocation); else \(noOpSnippet); fi"
         } else {
-            dispatch = "command -v cmux >/dev/null 2>&1 && \(fallbackInvocation) || \(noOpSnippet)"
+            dispatch = "if command -v amux >/dev/null 2>&1; then \(fallbackInvocation); elif command -v cmux >/dev/null 2>&1; then \(legacyFallbackInvocation); else \(noOpSnippet); fi"
         }
         return ": \(pinnedHookMarker(for: def)); \(shellTraceStart); printenv \(def.disableEnvVar) | grep -qx 1 && { \(shellTraceDisabled); \(noOpCommand); } || { \(dispatch); cmux_hook_status=$?; \(shellTraceExit); exit $cmux_hook_status; }"
     }
@@ -413,6 +418,13 @@ extension CMUXCLI {
         "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
+    private static func routedHookArguments(_ command: String) -> String {
+        for prefix in ["amux ", "cmux "] where command.hasPrefix(prefix) {
+            return String(command.dropFirst(prefix.count))
+        }
+        return command
+    }
+
     static func isCmuxOwnedHookCommand(_ command: String, for def: AgentHookDef, includeLegacy: Bool = true) -> Bool {
         if usesPinnedHookDispatch(def), command.contains(pinnedHookMarker(for: def)) {
             return true
@@ -427,7 +439,7 @@ extension CMUXCLI {
 
     private static func isLegacyCmuxOwnedHookCommand(_ command: String, for def: AgentHookDef) -> Bool {
         // Codex also had older top-level codex-hook/feed-hook commands.
-        // Other generic agents can have stale `cmux hooks ...` files from
+        // Other generic agents can have stale `amux hooks ...` files from
         // earlier integration attempts, and setup should be able to prune them.
         return legacyCmuxCommandTokenLists(from: command, for: def).contains { tokens in
             isLegacyCmuxOwnedHookTokens(tokens, for: def)
@@ -540,7 +552,7 @@ extension CMUXCLI {
     }
 
     static func hookMarkers(for def: AgentHookDef) -> [String] {
-        var markers = [def.hookMarker]
+        var markers = [def.hookMarker, def.hookMarker.replacingOccurrences(of: "amux ", with: "cmux ")]
         if def.name == "codex" {
             markers.append("cmux codex-hook")
         }
@@ -550,7 +562,7 @@ extension CMUXCLI {
     /// Marker substrings used when removing / upgrading our own Feed bridge
     /// entries on reinstall or uninstall.
     static func feedHookMarkers(for def: AgentHookDef) -> [String] {
-        var markers = ["cmux hooks feed --source"]
+        var markers = ["amux hooks feed --source", "cmux hooks feed --source"]
         if def.name == "codex" {
             markers.append("cmux feed-hook --source")
         }

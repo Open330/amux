@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import os.log
 
-nonisolated private let menuBarProfilingLogger = Logger(subsystem: "com.cmuxterm.app", category: "MenuBarProfiling")
+nonisolated private let menuBarProfilingLogger = Logger(subsystem: "com.open330.amux", category: "MenuBarProfiling")
 
 enum MenuBarProfilingLauncher {
     static let defaultDurationSeconds = 15
@@ -58,10 +58,10 @@ enum MenuBarProfilingLauncher {
 
         do {
             try process.run()
-            menuBarProfilingLogger.notice("Started cmux profiling for pid \(pid)")
+            menuBarProfilingLogger.notice("Started amux profiling for pid \(pid)")
             return true
         } catch {
-            menuBarProfilingLogger.error("Failed to start cmux profiling for pid \(pid): \(error.localizedDescription, privacy: .public)")
+            menuBarProfilingLogger.error("Failed to start amux profiling for pid \(pid): \(error.localizedDescription, privacy: .public)")
             NSSound.beep()
             return false
         }

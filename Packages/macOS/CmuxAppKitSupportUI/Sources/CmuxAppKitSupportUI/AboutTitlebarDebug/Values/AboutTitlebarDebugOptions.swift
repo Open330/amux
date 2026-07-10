@@ -71,7 +71,7 @@ public struct AboutTitlebarDebugOptions: Equatable, Sendable {
         case .about:
             return AboutTitlebarDebugOptions(
                 overridesEnabled: false,
-                windowTitle: "About cmux",
+                windowTitle: "About amux",
                 titleVisibility: .hidden,
                 titlebarAppearsTransparent: true,
                 movableByWindowBackground: false,

@@ -6,12 +6,18 @@ import Foundation
 // Supports both new format (32-byte seed) and old format (96-byte key+pub).
 
 guard CommandLine.arguments.count > 1 else {
-    fputs("Usage: derive_sparkle_public_key.swift <base64-private-key>\n", stderr)
+    fputs("Usage: derive_sparkle_public_key.swift <base64-private-key|->\n", stderr)
     exit(1)
 }
 
 // Pad base64 string if needed (Sparkle keys may be stored without padding)
-var b64 = CommandLine.arguments[1]
+var b64: String
+if CommandLine.arguments[1] == "-" {
+    b64 = String(data: FileHandle.standardInput.readDataToEndOfFile(), encoding: .utf8) ?? ""
+} else {
+    b64 = CommandLine.arguments[1]
+}
+b64 = b64.trimmingCharacters(in: .whitespacesAndNewlines)
 while b64.count % 4 != 0 {
     b64 += "="
 }

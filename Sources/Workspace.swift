@@ -2467,7 +2467,7 @@ final class Workspace: Identifiable, ObservableObject {
         alert.informativeText = String(
             format: String(
                 localized: "surfaceResumeApproval.runPrompt.message",
-                defaultValue: "cmux is restoring a terminal with this resume command:\n\n%@\n\nWorking directory: %@"
+                defaultValue: "amux is restoring a terminal with this resume command:\n\n%@\n\nWorking directory: %@"
             ),
             binding.command,
             binding.cwd ?? String(localized: "surfaceResumeApproval.cwd.none", defaultValue: "None")
@@ -3052,14 +3052,13 @@ final class Workspace: Identifiable, ObservableObject {
         // The default mobile-connect button is remotely toggleable; the flag
         // is read when buttons are (re)applied, so a dashboard change lands
         // on the next config reload or launch.
-        let buttons = CmuxFeatureFlags.shared.isMobileConnectButtonEnabled
-            ? buttons
-            : buttons.filter { button in
-                if case .builtIn(let builtInAction) = button.action, builtInAction == .mobileConnect {
-                    return false
-                }
-                return true
+        let buttons = buttons.filter { button in
+            if case .builtIn(let builtInAction) = button.action,
+               builtInAction == .mobileConnect || builtInAction == .cloudVM {
+                return false
             }
+            return true
+        }
         let executableButtons = Dictionary(
             uniqueKeysWithValues: buttons.compactMap { button in
                 if button.terminalCommand != nil {
@@ -9834,15 +9833,15 @@ final class Workspace: Identifiable, ObservableObject {
         // POSIX printf inside the shell wrapper, not by Swift's String(format:).
         let endedLineFormat = String(
             localized: "remote.disconnectBanner.sessionEnded",
-            defaultValue: "[cmux] remote session disconnected: %s"
+            defaultValue: "[amux] remote session disconnected: %s"
         )
         let reconnectLine = String(
             localized: "remote.disconnectBanner.reconnectHint",
-            defaultValue: "[cmux] Press Enter to reconnect. This terminal will stay disconnected until then."
+            defaultValue: "[amux] Press Enter to reconnect. This terminal will stay disconnected until then."
         )
         let reconnectUnavailableLine = String(
             localized: "remote.disconnectBanner.reconnectUnavailableHint",
-            defaultValue: "[cmux] Reconnect this workspace from the sidebar or by running the original cmux remote command again."
+            defaultValue: "[amux] Reconnect this workspace from the sidebar or by running the original amux remote command again."
         )
         // Encode the localized lines the same way as the target, so a translator using
         // backticks or $(…) in a translation string can't unexpectedly execute in the
@@ -9873,7 +9872,7 @@ final class Workspace: Identifiable, ObservableObject {
           IFS= read -r _ || exit 0
           cmux_reconnect_cli="${CMUX_BUNDLED_CLI_PATH:-}"
           if [ -z "$cmux_reconnect_cli" ] || [ ! -x "$cmux_reconnect_cli" ]; then
-            cmux_reconnect_cli="$(command -v cmux 2>/dev/null || true)"
+            cmux_reconnect_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
           fi
           cmux_reconnect_socket="${CMUX_SOCKET_PATH:-${CMUX_SOCKET:-}}"
           if [ -n "$cmux_reconnect_cli" ] && [ -n "$cmux_reconnect_socket" ] && [ -n "${CMUX_WORKSPACE_ID:-}" ]; then
@@ -10882,7 +10881,7 @@ final class Workspace: Identifiable, ObservableObject {
         let failure = NSAlert()
         failure.alertStyle = .warning
         failure.messageText = String(localized: "alert.moveTab.failed.title", defaultValue: "Move Failed")
-        failure.informativeText = String(localized: "alert.moveTab.failed.message", defaultValue: "cmux could not move this tab to the selected destination.")
+        failure.informativeText = String(localized: "alert.moveTab.failed.message", defaultValue: "amux could not move this tab to the selected destination.")
         failure.addButton(withTitle: String(localized: "alert.ok", defaultValue: "OK"))
         _ = failure.runModal()
     }
@@ -12621,27 +12620,23 @@ extension Workspace: BonsplitDelegate {
         guard let executable = surfaceTabBarCommandButtons[identifier] else {
             return
         }
-        let presentingWindow = selectedTerminalPanel(inPane: pane)?.surface.uiWindow
-            ?? NSApp.keyWindow
-            ?? NSApp.mainWindow
-
         if let builtInAction = executable.builtInAction {
             switch builtInAction {
             case .newWorkspace:
                 owningTabManager?.addWorkspace()
             case .cloudVM:
-                _ = AppDelegate.shared?.performCloudVMAction(
-                    tabManager: owningTabManager,
-                    preferredWindow: presentingWindow,
-                    debugSource: "surfaceTabBar.cloudVM"
-                )
+                return
             case .mobileConnect:
-                MobilePairingWindowController.shared.show()
+                return
             case .newTerminal, .newBrowser, .splitRight, .splitDown:
                 break
             }
             return
         }
+
+        let presentingWindow = selectedTerminalPanel(inPane: pane)?.surface.uiWindow
+            ?? NSApp.keyWindow
+            ?? NSApp.mainWindow
 
         guard let globalConfigPath = surfaceTabBarButtonGlobalConfigPath else {
             return

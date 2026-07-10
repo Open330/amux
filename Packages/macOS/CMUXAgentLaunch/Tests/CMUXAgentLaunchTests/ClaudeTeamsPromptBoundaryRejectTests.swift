@@ -8,7 +8,7 @@ struct ClaudeTeamsPromptBoundaryRejectTests {
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "fix",
@@ -17,14 +17,14 @@ struct ClaudeTeamsPromptBoundaryRejectTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )
         #expect(
             AgentLaunchSanitizer.sanitizedLaunchArguments(
                 [
-                    "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                    "/Applications/amux.app/Contents/Resources/bin/cmux",
                     "claude-teams",
                     "--tmux",
                     "fix",
@@ -33,7 +33,7 @@ struct ClaudeTeamsPromptBoundaryRejectTests {
                 launcher: "claudeTeams",
                 fallbackKind: "claude"
             ) == [
-                "/Applications/cmux.app/Contents/Resources/bin/cmux",
+                "/Applications/amux.app/Contents/Resources/bin/cmux",
                 "claude-teams",
             ]
         )

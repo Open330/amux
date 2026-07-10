@@ -1,7 +1,7 @@
 public import Darwin
 public import Foundation
 
-/// Pure resolution policy for the cmux control socket: where its path lives, which
+/// Pure resolution policy for the amux control socket: where its path lives, which
 /// ``SocketControlMode`` is in effect, and how environment overrides apply.
 ///
 /// Every member is a pure function of its inputs (environment, bundle identifier, user id,
@@ -19,7 +19,8 @@ public struct SocketControlSettings {
     /// Environment key carrying the dev build's launch tag.
     public static let launchTagEnvKey = "CMUX_TAG"
     /// Base bundle identifier shared by all debug builds.
-    public static let baseDebugBundleIdentifier = "com.cmuxterm.app.debug"
+    public static let baseDebugBundleIdentifier = "com.open330.amux.debug"
+    private static let stableReleaseBundleIdentifiers = ["com.open330.amux", "com.cmuxterm.app"]
     private static let stableSocketFileName = "cmux.sock"
     /// Legacy stable socket path used before the Application Support location.
     public static let legacyStableDefaultSocketPath = "/tmp/cmux.sock"
@@ -212,7 +213,7 @@ public struct SocketControlSettings {
         stableDefaultSocketCanBeReclaimed: (String) -> Bool = { _ in true }
     ) -> String {
         guard !isDebugBuild,
-              normalizedBundleIdentifier(bundleIdentifier) == "com.cmuxterm.app",
+              isStableReleaseBundleIdentifier(bundleIdentifier),
               isStableReleaseSocketPath(preferredPath, currentUserID: currentUserID) else {
             return preferredPath
         }
@@ -323,7 +324,12 @@ public struct SocketControlSettings {
 
     private static func shouldReserveStableSocketPath(bundleIdentifier: String?, isDebugBuild: Bool) -> Bool {
         if isDebugBuild { return true }
-        return normalizedBundleIdentifier(bundleIdentifier) != "com.cmuxterm.app"
+        return !isStableReleaseBundleIdentifier(bundleIdentifier)
+    }
+
+    private static func isStableReleaseBundleIdentifier(_ bundleIdentifier: String?) -> Bool {
+        guard let normalized = normalizedBundleIdentifier(bundleIdentifier) else { return false }
+        return stableReleaseBundleIdentifiers.contains(normalized)
     }
 
     private static func isStableReleaseSocketPath(_ path: String, currentUserID: uid_t) -> Bool {
@@ -407,11 +413,11 @@ public struct SocketControlSettings {
     /// Whether the bundle identifier is a debug build identifier.
     public static func isDebugLikeBundleIdentifier(_ bundleIdentifier: String?) -> Bool {
         guard let bundleIdentifier else { return false }
-        return bundleIdentifier == "com.cmuxterm.app.debug"
-            || bundleIdentifier.hasPrefix("com.cmuxterm.app.debug.")
+        return bundleIdentifier == "com.open330.amux.debug"
+            || bundleIdentifier.hasPrefix("com.open330.amux.debug.")
     }
 
-    /// Whether the bundle identifier is a tagged DEV build (`com.cmuxterm.app.debug.<tag>`).
+    /// Whether the bundle identifier is a tagged DEV build (`com.open330.amux.debug.<tag>`).
     public static func isTaggedDevBuild(bundleIdentifier: String? = Bundle.main.bundleIdentifier) -> Bool {
         guard let bundleIdentifier else { return false }
         return bundleIdentifier.hasPrefix("\(baseDebugBundleIdentifier).")
@@ -420,8 +426,8 @@ public struct SocketControlSettings {
     /// Whether the bundle identifier is a staging build identifier.
     public static func isStagingBundleIdentifier(_ bundleIdentifier: String?) -> Bool {
         guard let bundleIdentifier else { return false }
-        return bundleIdentifier == "com.cmuxterm.app.staging"
-            || bundleIdentifier.hasPrefix("com.cmuxterm.app.staging.")
+        return bundleIdentifier == "com.open330.amux.staging"
+            || bundleIdentifier.hasPrefix("com.open330.amux.staging.")
     }
 
     /// The directory holding the control socket and its marker files.

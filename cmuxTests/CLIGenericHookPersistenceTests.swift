@@ -2827,11 +2827,11 @@ extension CLINotifyProcessIntegrationRegressionTests {
             .compactMap { $0["command"] as? String }
 
         XCTAssertTrue(
-            notificationCommands.contains { $0.contains("cmux hooks grok notification") },
+            notificationCommands.contains { $0.contains("amux hooks grok notification") },
             "Expected Grok Notification to dispatch to the notification handler, saw \(notificationCommands)"
         )
         XCTAssertFalse(
-            notificationCommands.contains { $0.contains("cmux hooks grok stop") },
+            notificationCommands.contains { $0.contains("amux hooks grok stop") },
             "Grok Notification should not use the generic stop handler, saw \(notificationCommands)"
         )
         XCTAssertEqual(notificationTimeouts, [5])

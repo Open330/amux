@@ -45,7 +45,7 @@ extension UpdateController {
             code: UpdateStateModel.installDidNotStartCode,
             userInfo: [NSLocalizedDescriptionKey: String(
                 localized: "update.error.didNotStart.message",
-                defaultValue: "cmux couldn’t start the update. Check your internet connection and try again."
+                defaultValue: "amux couldn’t start the update. Check your internet connection and try again."
             )]
         )
         model.setState(.error(.init(

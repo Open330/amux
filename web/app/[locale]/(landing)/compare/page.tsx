@@ -23,7 +23,7 @@ export async function generateMetadata({
       title,
       description,
       url: alternates.canonical,
-      siteName: "cmux",
+      siteName: "amux",
       type: "website",
     },
     twitter: {

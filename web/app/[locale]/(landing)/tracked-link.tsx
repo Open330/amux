@@ -1,13 +1,11 @@
 "use client";
 
-import posthog from "posthog-js";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 
-// Localized internal link that records a PostHog click event, so we can see how
-// many clicks each guide / landing page gets and where they came from.
+// The event prop remains source-compatible with upstream callers, but amux does
+// not initialize or send data to the inherited analytics project.
 export function TrackedLink({
   href,
-  event,
   className,
   children,
 }: {
@@ -16,13 +14,8 @@ export function TrackedLink({
   className?: string;
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
   return (
-    <Link
-      href={href}
-      className={className}
-      onClick={() => posthog.capture(event, { target: href, from: pathname })}
-    >
+    <Link href={href} className={className}>
       {children}
     </Link>
   );

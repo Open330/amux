@@ -3,19 +3,19 @@ import Foundation
 
 /// Resolves dogfood Stack credentials for the macOS DEBUG auto-sign-in path.
 ///
-/// A tagged `cmux DEV` build is a separate bundle (separate keychain), so it
+/// A tagged `amux DEV` build is a separate bundle (separate keychain), so it
 /// starts signed out and shows the sign-in window. iOS already auto-signs-in on
 /// DEBUG launch by injecting `CMUX_UITEST_STACK_EMAIL` / `CMUX_UITEST_STACK_PASSWORD`
 /// into the app's environment (SIMCTL / devicectl), which the existing
 /// `CMUXAuthAutoLoginCredentials` path reads. The macOS app needs the same
-/// behavior, but a `cmux DEV` opened from Finder or the CMUX Tag Opener does
+/// behavior, but a `amux DEV` opened from Finder or the CMUX Tag Opener does
 /// **not** inherit a shell's environment, so an env-only approach never fires on
 /// those launches. This resolver adds a file-read fallback so the creds are
 /// found regardless of how the app was launched.
 ///
-/// Resolution order is **dogfood account first, then agent account**, so the
-/// dog Mac comes up as the human dogfood account (`lawrence@manaflow.ai`) even
-/// when an agent's `CMUX_UITEST_*` creds are also present (the iOS dogfood flow
+/// Resolution order is **dogfood account first, then agent account**, so a
+/// developer's explicitly configured dogfood account wins even when an agent's
+/// `CMUX_UITEST_*` creds are also present (the iOS dogfood flow
 /// commonly leaves those in the environment / `~/.secrets`). Within each
 /// account, env wins over `~/.secrets/cmuxterm-dev.env`, which wins over
 /// `~/.secrets/cmux.env`:

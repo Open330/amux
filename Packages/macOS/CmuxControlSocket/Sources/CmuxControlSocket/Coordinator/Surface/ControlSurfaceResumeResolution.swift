@@ -9,7 +9,7 @@ internal import Foundation
 /// the app-side approval flow, stores/reads/clears the binding, and returns this.
 public enum ControlSurfaceResumeResolution: Sendable, Equatable {
     /// No TabManager / window resolved (legacy `unavailable` with the shared
-    /// "cmux window is not available…" message).
+    /// "amux window is not available…" message).
     case windowUnavailable
     /// No surface target resolved (legacy `not_found` / "Surface not found").
     case surfaceNotFound

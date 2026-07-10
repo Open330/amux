@@ -34,7 +34,7 @@ HSplitView {
         Text("Switch scheme")
             .font(.caption)
             .foregroundColor("#8E8E93")
-        let schemes = ["cmux", "cmux DEV", "cmuxUITests", "CMUXMobileSyncCore"]
+        let schemes = ["cmux", "amux DEV", "cmuxUITests", "CMUXMobileSyncCore"]
         ForEach(schemes) { scheme in
             HStack(spacing: 8) {
                 Image(systemName: scheme == activeScheme ? "largecircle.fill.circle" : "circle")

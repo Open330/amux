@@ -33,7 +33,7 @@ public struct SettingsJSONSection: View {
             configurationReview: .action,
             searchAnchorID: "setting:settingsJSON:open-file",
             String(localized: "settings.settingsJSON.file", defaultValue: "User config file"),
-            subtitle: String(localized: "settings.settingsJSON.file.subtitle", defaultValue: "Edit cmux-owned app settings, shortcuts, automation, sidebar, notifications, and browser behavior."),
+            subtitle: String(localized: "settings.settingsJSON.file.subtitle", defaultValue: "Edit amux-owned app settings, shortcuts, automation, sidebar, notifications, and browser behavior."),
             controlWidth: 330
         ) {
             HStack(spacing: 8) {
@@ -65,7 +65,7 @@ public struct SettingsJSONSection: View {
         ) {
             Link(
                 String(localized: "settings.settingsJSON.docsButton", defaultValue: "Open Docs"),
-                destination: URL(string: "https://cmux.com/docs/configuration#cmux-json")!
+                destination: URL(string: "https://github.com/Open330/amux/blob/main/docs/configuration.md")!
             )
             .cmuxFont(.caption)
             .accessibilityIdentifier("SettingsJSONDocsLink")
