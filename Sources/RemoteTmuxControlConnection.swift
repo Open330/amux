@@ -93,6 +93,10 @@ final class RemoteTmuxControlConnection {
     private var pendingCommands: [CommandKind] = []
     private var connectionWaiters: [UUID: (Bool) -> Void] = [:]
     private var panesWaitingForTmuxPrefixKey: Set<Int> = []
+    /// Set only while an explicit `prefix+d` detach is in flight. tmux 3.7b
+    /// emits a reason-less `%exit` for this action, so the mirror needs this
+    /// local intent to distinguish detach from the session ending remotely.
+    private(set) var clientDetachRequested = false
     /// `false` until the attach command's own `%begin`/`%end` block — always the
     /// FIRST block on each control stream, preceding every notification — has been
     /// consumed. That first block is matched explicitly (see the `.commandResult`
@@ -986,13 +990,18 @@ final class RemoteTmuxControlConnection {
     @discardableResult
     private func sendTmuxClientPrefixKey(paneId: Int, key: String) -> Bool {
         let activePaneId = windowId(containingPane: paneId).flatMap { activePaneByWindow[$0] }
+        let isClientDetach = key == "d"
+        if isClientDetach { clientDetachRequested = true }
         for command in Self.tmuxClientPrefixCommands(
             paneId: paneId,
             key: key,
             activePaneId: activePaneId,
             prefixKeyName: tmuxPrefixKeyName ?? "C-b"
         ) {
-            guard sendInternal(command, kind: .other) else { return false }
+            guard sendInternal(command, kind: isClientDetach ? .clientDetach : .other) else {
+                if isClientDetach { clientDetachRequested = false }
+                return false
+            }
         }
         return true
     }
@@ -1033,6 +1042,10 @@ final class RemoteTmuxControlConnection {
         activePaneId: Int?,
         prefixKeyName: String = "C-b"
     ) -> [String] {
+        // `tmux -CC` reports prefix+d as a reason-less `%exit`. Issue the
+        // semantic command directly so amux can reliably treat it as an
+        // explicit detach and remove the mirror workspace.
+        if key == "d" { return ["detach-client"] }
         var commands: [String] = []
         if activePaneId != paneId {
             commands.append("select-pane -t %\(paneId)")
@@ -1609,6 +1622,7 @@ final class RemoteTmuxControlConnection {
         guard !pendingCommands.isEmpty else { return }
         let kind = pendingCommands.removeFirst()
         guard !isError else {
+            if kind == .clientDetach { clientDetachRequested = false }
             // An errored activity query must still complete (with nil) — a close
             // decision is waiting on it and falls back to the cached state.
             if case let .activityQuery(token) = kind,
@@ -1767,7 +1781,7 @@ final class RemoteTmuxControlConnection {
             } else {
                 observers.emitPaneOutput(paneId, Self.altScreenExitSequence)
             }
-        case .other:
+        case .clientDetach, .other:
             break
         }
     }

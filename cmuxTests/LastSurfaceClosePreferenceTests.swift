@@ -198,6 +198,29 @@ struct LastSurfaceClosePreferenceTests {
     }
 
     @Test
+    func explicitTmuxClientDetachOverridesKeepWorkspaceOpenPreference() throws {
+        try withManager(closeWorkspaceOnLastSurface: false) { manager in
+            let workspace = manager.addWorkspace()
+            let panelId = try #require(workspace.focusedPanelId)
+            let surfaceId = try #require(workspace.surfaceIdFromPanelId(panelId))
+
+            workspace.isRemoteTmuxMirror = true
+            workspace.markTabCloseButtonClose(surfaceId: surfaceId)
+            #expect(!workspace.markRemoteTmuxWorkspaceCloseAfterWindowCloseIfNeeded(
+                surfaceId: surfaceId,
+                tabStripClose: true,
+                tabCloseButton: true
+            ))
+
+            #expect(!workspace.handleRemoteTmuxSessionEndedKeepingWorkspaceOpenIfNeeded(
+                forceCloseWorkspace: true
+            ))
+            #expect(workspace.isRemoteTmuxMirror)
+            #expect(workspace.panels[panelId] != nil)
+        }
+    }
+
+    @Test
     func remoteTmuxWindowCloseKeepsWorkspaceOpenImmediatelyForShortcut() throws {
         try withManager(closeWorkspaceOnLastSurface: false) { manager in
             let firstWorkspace = manager.tabs[0]

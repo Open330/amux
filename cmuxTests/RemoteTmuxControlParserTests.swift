@@ -186,6 +186,16 @@ import Testing
         )
     }
 
+    @Test func tmuxPrefixDUsesExplicitClientDetach() {
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "d",
+                activePaneId: 7
+            ) == ["detach-client"]
+        )
+    }
+
     @Test func tmuxPrefixClientKeyTokenMapsCommonTmuxBindings() throws {
         let percent = Data([0x25])
         let quote = Data([0x22])

@@ -12,5 +12,8 @@ enum RemoteTmuxControlCommandKind: Equatable {
     /// typed-input prefix interception follows a remapped prefix (C-a, …)
     /// instead of assuming the C-b default.
     case prefixKey
+    /// Explicit `prefix+d` client detach. Kept distinct so a rejected command
+    /// can clear the pending detach intent instead of affecting a later exit.
+    case clientDetach
     case other
 }

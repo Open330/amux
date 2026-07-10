@@ -107,6 +107,7 @@ import Testing
         #expect(decision.hasDeferredWorkspaceObservationInvalidation)
     }
 
+    @MainActor
     @Test func contextMenuAgentStatusChangeUpdatesDisplayedGlyphImmediately() {
         let current = Self.snapshot(
             remoteConnectionStatusText: "Connected",
@@ -160,6 +161,7 @@ import Testing
         presentationKey: SidebarWorkspaceSnapshotBuilder.PresentationKey? = nil,
         title: String = "workspace",
         customDescription: String? = nil,
+        runtimeKind: SidebarWorkspaceSnapshotBuilder.RuntimeKind = .localShell,
         isPinned: Bool = false,
         customColorHex: String? = nil,
         remoteConnectionStatusText: String = "Disconnected",
@@ -173,6 +175,7 @@ import Testing
             presentationKey: presentationKey ?? Self.presentationKey(),
             title: title,
             customDescription: customDescription,
+            runtimeKind: runtimeKind,
             isPinned: isPinned,
             customColorHex: customColorHex,
             remoteWorkspaceSidebarText: nil,
@@ -198,6 +201,28 @@ import Testing
         )
     }
 
+    @Test func workspaceRuntimeKindsSeparateTmuxAndShellWorkspaces() {
+        #expect(
+            SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: true,
+                isRemoteWorkspace: false
+            ) == .tmuxSession
+        )
+        #expect(
+            SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: false,
+                isRemoteWorkspace: true
+            ) == .sshShell
+        )
+        #expect(
+            SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: false,
+                isRemoteWorkspace: false
+            ) == .localShell
+        )
+    }
+
+    @MainActor
     private static func agentStatusEntry(value: String, icon: String, color: String) -> SidebarStatusEntry {
         SidebarStatusEntry(
             key: AmuxAgentStatusService.statusEntryKey,
