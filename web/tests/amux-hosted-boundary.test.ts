@@ -27,6 +27,15 @@ describe("amux hosted-service boundary", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 
+  test("rejects direct access to the internal agent-page renderer", () => {
+    const response = middleware(
+      new NextRequest(
+        "https://attacker.example/agent-page-variant?path=/en/docs/getting-started.md",
+      ),
+    );
+    expect(response.status).toBe(410);
+  });
+
   test("redirects inherited auth handlers and pricing pages", () => {
     const handler = middleware(
       new NextRequest("https://preview.example/handler/after-sign-in"),

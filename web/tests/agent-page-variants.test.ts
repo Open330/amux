@@ -306,7 +306,7 @@ describe("agent page variants", () => {
     expect(headers.get("vary")).toBe("Accept-Language");
   });
 
-  test("forwards protected preview auth headers to canonical HTML fetches", () => {
+  test("never forwards request credentials to canonical HTML fetches", () => {
     const requestHeaders = new Headers({
       cookie: "_vercel_sso_nonce=abc; NEXT_LOCALE=ja",
       "accept-language": "ja,en;q=0.9",
@@ -319,12 +319,12 @@ describe("agent page variants", () => {
     const headers = headersForCanonicalFetch({ requestHeaders, searchParams });
 
     expect(headers.get("accept")).toBe("text/html");
-    expect(headers.get("cookie")).toContain("_vercel_sso_nonce=abc");
     expect(headers.get("accept-language")).toBe("ja,en;q=0.9");
-    expect(headers.get("authorization")).toBe("Bearer token");
-    expect(headers.get("x-vercel-protection-bypass")).toBe("secret");
-    expect(headers.get("x-vercel-set-bypass-cookie")).toBe("true");
-    expect(hasSensitiveCanonicalAccess(headers)).toBe(true);
+    expect(headers.get("cookie")).toBeNull();
+    expect(headers.get("authorization")).toBeNull();
+    expect(headers.get("x-vercel-protection-bypass")).toBeNull();
+    expect(headers.get("x-vercel-set-bypass-cookie")).toBeNull();
+    expect(hasSensitiveCanonicalAccess(headers)).toBe(false);
     expect(hasSensitiveCanonicalAccess(new Headers({ accept: "text/html" }))).toBe(
       false,
     );
@@ -360,29 +360,27 @@ describe("agent page variants", () => {
     const llms = buildLlmsText("https://preview.example");
 
     expect(llms).toContain(
-      "[cmux vs Herdr](https://preview.example/compare/cmux-vs-herdr)",
+      "[amux vs Herdr](https://preview.example/compare/amux-vs-herdr)",
     );
     expect(llms).toContain(
       "[How to run multiple Claude Code agents in parallel](https://preview.example/compare/multiple-claude-code-agents-parallel)",
     );
     expect(llms).not.toContain("https://cmux.com/compare/");
+    expect(llms).not.toContain("https://preview.example/pricing.md");
+    expect(llms).not.toContain("https://preview.example/ios.md");
+    expect(llms).not.toContain("https://preview.example/docs/vault.md");
+    expect(llms).not.toContain("https://preview.example/blog.md");
   });
 
   test("limits en-ja docs variants to translated locales", () => {
-    expect(resolveAgentPageVariant("/docs/vault.md")).not.toBeNull();
-    expect(resolveAgentPageVariant("/ja/docs/vault.md")).not.toBeNull();
+    expect(resolveAgentPageVariant("/docs/vault.md")).toBeNull();
+    expect(resolveAgentPageVariant("/ja/docs/vault.md")).toBeNull();
     expect(resolveAgentPageVariant("/de/docs/vault.md")).toBeNull();
     expect(resolveAgentPageVariant("/docs/task-manager.txt")).not.toBeNull();
     expect(resolveAgentPageVariant("/ja/docs/task-manager.txt")).not.toBeNull();
     expect(resolveAgentPageVariant("/de/docs/task-manager.txt")).toBeNull();
 
-    const sitemapPaths = sitemap().map((entry) => new URL(String(entry.url)).pathname);
-    expect(sitemapPaths).toContain("/docs/vault");
-    expect(sitemapPaths).toContain("/ja/docs/vault");
-    expect(sitemapPaths).not.toContain("/de/docs/vault");
-    expect(sitemapPaths).toContain("/docs/task-manager");
-    expect(sitemapPaths).toContain("/ja/docs/task-manager");
-    expect(sitemapPaths).not.toContain("/de/docs/task-manager");
+    expect(sitemap()).toEqual([]);
   });
 
   test("limits en-ja docs alternate links to live localized routes", () => {
