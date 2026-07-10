@@ -107,6 +107,7 @@ import Testing
         #expect(decision.hasDeferredWorkspaceObservationInvalidation)
     }
 
+    @MainActor
     @Test func contextMenuAgentStatusChangeUpdatesDisplayedGlyphImmediately() {
         let current = Self.snapshot(
             remoteConnectionStatusText: "Connected",
@@ -221,6 +222,7 @@ import Testing
         )
     }
 
+    @MainActor
     private static func agentStatusEntry(value: String, icon: String, color: String) -> SidebarStatusEntry {
         SidebarStatusEntry(
             key: AmuxAgentStatusService.statusEntryKey,
