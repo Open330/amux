@@ -113,6 +113,55 @@ struct AmuxSessionSwitcherItemTests {
         #expect(item("agents", id: 1, agents: [active, newerWaiting, olderWaiting]).primaryAgent?.sessionId == "older")
     }
 
+    @Test func unifiedRankingKeepsAttentionAheadOfCurrentOpenSession() {
+        struct Candidate {
+            let item: AmuxSessionSwitcherItem
+            let isOpen: Bool
+            let isCurrent: Bool
+        }
+
+        let attention = Candidate(
+            item: item(
+                "attention",
+                id: 1,
+                agents: [agent(
+                    "attention",
+                    state: .waitingInput,
+                    activity: "2026-07-10T08:00:00Z"
+                )]
+            ),
+            isOpen: false,
+            isCurrent: false
+        )
+        let current = Candidate(
+            item: item(
+                "current",
+                id: 2,
+                agents: [agent("current", state: .working, activity: "2026-07-10T09:00:00Z")]
+            ),
+            isOpen: true,
+            isCurrent: true
+        )
+        let otherOpen = Candidate(
+            item: item(
+                "other-open",
+                id: 3,
+                agents: [agent("other", state: .working, activity: "2026-07-10T09:30:00Z")]
+            ),
+            isOpen: true,
+            isCurrent: false
+        )
+
+        let ordered = AmuxSessionSwitcherItem.ordered(
+            [otherOpen, current, attention],
+            item: \.item,
+            isOpen: \.isOpen,
+            isCurrent: \.isCurrent
+        )
+
+        #expect(ordered.map(\.item.session.name) == ["attention", "current", "other-open"])
+    }
+
     @MainActor
     @Test func hostListKeepsLocalEndpointsFirstAndDeduplicatesSSHHosts() {
         let alpha = RemoteTmuxHost(destination: "alpha")
