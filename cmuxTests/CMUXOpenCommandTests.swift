@@ -473,7 +473,7 @@ final class CMUXOpenCommandTests: XCTestCase {
         let targetCLIURL = homeURL
             .appendingPathComponent("Library/Developer/Xcode/DerivedData/cmux-\(tag)", isDirectory: true)
             .appendingPathComponent("Build/Products/Debug/cmux DEV \(tag).app", isDirectory: true)
-            .appendingPathComponent("Contents/Resources/bin/cmux", isDirectory: false)
+            .appendingPathComponent("Contents/Resources/bin/amux", isDirectory: false)
         let targetResourcesURL = targetCLIURL
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -483,6 +483,12 @@ final class CMUXOpenCommandTests: XCTestCase {
         try FileManager.default.createDirectory(at: targetCLIURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try FileManager.default.copyItem(at: URL(fileURLWithPath: cliPath), to: targetCLIURL)
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: targetCLIURL.path)
+        let compatibilityCLIURL = targetCLIURL.deletingLastPathComponent()
+            .appendingPathComponent("cmux", isDirectory: false)
+        try FileManager.default.createSymbolicLink(
+            at: compatibilityCLIURL,
+            withDestinationURL: URL(fileURLWithPath: "amux", relativeTo: targetCLIURL.deletingLastPathComponent())
+        )
         try writeTestDiffViewerAssets(
             resourcesURL: targetResourcesURL,
             appMain: "export const cmuxTaggedSocketAssetMarker = 'target-\(tag)';\n"

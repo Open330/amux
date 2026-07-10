@@ -63,6 +63,7 @@ final class RemoteTmuxConnectionObservers {
         onConnectionStateChanged: ((RemoteTmuxControlConnection.ConnectionState) -> Void)?
     ) -> Token {
         let token = Token()
+        paneOutputCallbacksCache = nil
         if let onPaneOutput { paneOutputObservers[token] = onPaneOutput }
         if let onPaneCwd { paneCwdObservers[token] = onPaneCwd }
         if let onPaneReflow { paneReflowObservers[token] = onPaneReflow }
@@ -76,6 +77,7 @@ final class RemoteTmuxConnectionObservers {
 
     /// Deregisters the callbacks registered under `token`.
     func remove(_ token: Token) {
+        paneOutputCallbacksCache = nil
         paneOutputObservers[token] = nil
         paneCwdObservers[token] = nil
         paneReflowObservers[token] = nil
@@ -86,11 +88,22 @@ final class RemoteTmuxConnectionObservers {
         stateObservers[token] = nil
     }
 
+    /// Cached values-array for the ONE per-output-chunk emit, so the flood path
+    /// doesn't allocate a dictionary-values copy per `%output`. Invalidated on
+    /// add/remove; iterating the cached value array keeps the same
+    /// safe-against-reentrant-unregister semantics as a fresh snapshot.
+    private var paneOutputCallbacksCache: [(_ paneId: Int, _ data: Data) -> Void]?
+
     /// Fans `%output` bytes out to every pane-output observer.
     func emitPaneOutput(_ paneId: Int, _ data: Data) {
-        // Snapshot before iterating: a callback may unregister an observer (mutating
-        // the dict) synchronously, which would trap on the live collection.
-        for callback in Array(paneOutputObservers.values) { callback(paneId, data) }
+        let callbacks: [(_ paneId: Int, _ data: Data) -> Void]
+        if let cached = paneOutputCallbacksCache {
+            callbacks = cached
+        } else {
+            callbacks = Array(paneOutputObservers.values)
+            paneOutputCallbacksCache = callbacks
+        }
+        for callback in callbacks { callback(paneId, data) }
     }
 
     /// Fans a pane's working directory out to every cwd observer.

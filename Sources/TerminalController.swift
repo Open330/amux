@@ -1387,6 +1387,8 @@ class TerminalController {
             return v2RemoteTmuxMirror(id: request.id, params: request.params)
         case "remote.tmux.window":
             return v2RemoteTmuxWindow(id: request.id, params: request.params)
+        case "amux.local_tmux_sync":
+            return v2AmuxLocalTmuxSync(id: request.id, params: request.params)
         case "amux.remote_setup":
             return v2AmuxRemoteSetup(id: request.id, params: request.params)
         case "sidebar.custom.validate":
@@ -1403,6 +1405,12 @@ class TerminalController {
             return v2AmuxSessions(id: request.id, params: request.params)
         case "amux.attach_session":
             return v2AmuxAttachSession(id: request.id, params: request.params)
+        case "amux.pane_read":
+            return v2AmuxPaneRead(id: request.id, params: request.params)
+        case "amux.pane_wait":
+            return v2AmuxPaneWait(id: request.id, params: request.params)
+        case "amux.pane_send":
+            return v2Result(id: request.id, v2AmuxPaneSend(params: request.params))
 #if DEBUG
         case "debug.sidebar.simulate_drag":
             return v2Result(id: request.id, v2DebugSidebarSimulateDrag(params: request.params))
@@ -2508,7 +2516,7 @@ class TerminalController {
             "workspace.remote.pty_bridge",
             "workspace.remote.pty_resize",
             "workspace.remote.pty_attach_end",
-            "workspace.remote.terminal_session_end", "remote.tmux.sessions", "remote.tmux.attach", "remote.tmux.detach", "remote.tmux.state", "remote.tmux.mirror", "remote.tmux.window",
+            "workspace.remote.terminal_session_end", "remote.tmux.sessions", "remote.tmux.attach", "remote.tmux.detach", "remote.tmux.state", "remote.tmux.mirror", "remote.tmux.window", "amux.local_tmux_sync",
             "session.restore_previous",
             "settings.open",
             "feedback.open",

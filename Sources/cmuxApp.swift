@@ -122,10 +122,10 @@ struct cmuxApp: App {
         let authComposition = MacAuthComposition()
         self.authComposition = authComposition
 
-        // If invoked with CLI-style arguments (e.g. `cmux hooks setup`), exec the
-        // bundled CLI at Contents/Resources/bin/cmux. The GUI binary and the CLI
-        // share the name `cmux`, so if the GUI's Contents/MacOS leaks onto $PATH
-        // (which happens for any shell descended from this process), bare `cmux`
+        // If invoked with CLI-style arguments (e.g. `amux hooks setup`), exec the
+        // bundled CLI at Contents/Resources/bin/amux. Tagged/debug builds still
+        // keep a `cmux` compatibility link, but if the GUI's Contents/MacOS leaks
+        // onto $PATH (which happens for any shell descended from this process), bare `cmux`
         // resolves here instead of the CLI. See
         // https://github.com/manaflow-ai/cmux/issues/4678.
         // cmux ships a universal binary so it still supports Intel Macs, but a

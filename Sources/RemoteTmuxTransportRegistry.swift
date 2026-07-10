@@ -23,7 +23,7 @@ final class RemoteTmuxTransportRegistry {
         }
         let transport: any RemoteTmuxTransport = switch host.kind {
         case .ssh: RemoteTmuxSSHTransport(host: host)
-        case .localAmux: RemoteTmuxLocalTransport(host: host)
+        case .localDefault, .localAmux: RemoteTmuxLocalTransport(host: host)
         }
         transports[host.connectionHash] = transport
         return transport

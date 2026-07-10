@@ -107,6 +107,39 @@ import Testing
         #expect(decision.hasDeferredWorkspaceObservationInvalidation)
     }
 
+    @Test func contextMenuAgentStatusChangeUpdatesDisplayedGlyphImmediately() {
+        let current = Self.snapshot(
+            remoteConnectionStatusText: "Connected",
+            latestConversationMessage: "old message",
+            listeningPorts: [3000],
+            agentStatusEntry: Self.agentStatusEntry(value: "1 working", icon: "brain", color: "#30A46C")
+        )
+        let next = Self.snapshot(
+            remoteConnectionStatusText: "Disconnected",
+            latestConversationMessage: "new message",
+            listeningPorts: [3000, 4000],
+            agentStatusEntry: Self.agentStatusEntry(
+                value: "1 waiting",
+                icon: "person.crop.circle.badge.questionmark",
+                color: "#F5A623"
+            )
+        )
+
+        let decision = SidebarWorkspaceSnapshotRefreshPolicy().decision(
+            current: current,
+            next: next,
+            force: false,
+            contextMenuVisible: true
+        )
+
+        #expect(decision.workspaceSnapshotStorage?.agentStatusEntry?.value == "1 waiting")
+        #expect(decision.workspaceSnapshotStorage?.remoteConnectionStatusText == "Connected")
+        #expect(decision.workspaceSnapshotStorage?.latestConversationMessage == "old message")
+        #expect(decision.workspaceSnapshotStorage?.listeningPorts == [3000])
+        #expect(decision.pendingWorkspaceSnapshot == next)
+        #expect(decision.hasDeferredWorkspaceObservationInvalidation)
+    }
+
     @Test func closedContextMenuStoresNextAndClearsPending() {
         let current = Self.snapshot(title: "old", isPinned: false)
         let next = Self.snapshot(title: "new", isPinned: true)
@@ -133,6 +166,7 @@ import Testing
         latestConversationMessage: String? = nil,
         listeningPorts: [Int] = [],
         finderDirectoryPath: String? = nil,
+        agentStatusEntry: SidebarStatusEntry? = nil,
         mediaActivity: BrowserMediaActivity = BrowserMediaActivity()
     ) -> SidebarWorkspaceSnapshotBuilder.Snapshot {
         SidebarWorkspaceSnapshotBuilder.Snapshot(
@@ -147,6 +181,7 @@ import Testing
             showsRemoteReconnectAffordance: false,
             copyableSidebarSSHError: nil,
             latestConversationMessage: latestConversationMessage,
+            agentStatusEntry: agentStatusEntry,
             metadataEntries: [],
             metadataBlocks: [],
             latestLog: nil,
@@ -160,6 +195,17 @@ import Testing
             listeningPorts: listeningPorts,
             finderDirectoryPath: finderDirectoryPath,
             mediaActivity: mediaActivity
+        )
+    }
+
+    private static func agentStatusEntry(value: String, icon: String, color: String) -> SidebarStatusEntry {
+        SidebarStatusEntry(
+            key: AmuxAgentStatusService.statusEntryKey,
+            value: value,
+            icon: icon,
+            color: color,
+            priority: 90,
+            timestamp: Date(timeIntervalSince1970: 1)
         )
     }
 

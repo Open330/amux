@@ -5171,6 +5171,29 @@ final class Workspace: Identifiable, ObservableObject {
         }
     }
 
+    /// Returns true when `panelId` is the active child pane inside the selected
+    /// mirrored tmux window tab. Mirror child panels are not registered as
+    /// bonsplit tabs, so generic panel→surface focus checks must use this
+    /// mirror-aware path.
+    func isCurrentRemoteTmuxMirrorChildFocusTarget(panelId childPanelId: UUID) -> Bool {
+        guard let entry = remoteTmuxWindowMirrors.first(where: { $0.value.containsPanel(childPanelId) }) else {
+            return false
+        }
+        let windowPanelId = entry.key
+        let mirror = entry.value
+        guard mirror.isActivePanel(childPanelId),
+              let windowTabId = surfaceIdFromPanelId(windowPanelId) else {
+            return false
+        }
+        guard let paneId = bonsplitController.allPaneIds.first(where: { paneId in
+            bonsplitController.tabs(inPane: paneId).contains(where: { $0.id == windowTabId })
+        }) else {
+            return false
+        }
+        return bonsplitController.selectedTab(inPane: paneId)?.id == windowTabId
+            && bonsplitController.focusedPaneId == paneId
+    }
+
     var isRestorableInSessionSnapshot: Bool {
         if isRemoteTmuxMirror { return false }
         guard let remoteConfiguration else { return true }

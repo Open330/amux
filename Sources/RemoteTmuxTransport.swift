@@ -4,10 +4,10 @@ import Foundation
 /// host, independent of how the commands reach the tmux server.
 ///
 /// Two conformers: ``RemoteTmuxSSHTransport`` (commands multiplex over the
-/// host's SSH ControlMaster) and ``RemoteTmuxLocalTransport`` (the amux local
-/// engine — commands spawn the local tmux binary against the dedicated
-/// `-L amux` server). The `-CC` control *stream* is not part of this surface;
-/// ``RemoteTmuxControlConnection`` owns it via
+/// host's SSH ControlMaster) and ``RemoteTmuxLocalTransport`` (commands spawn
+/// the local tmux binary, either against the user's default server or the
+/// dedicated amux `-L amux` server). The `-CC` control *stream* is not part of
+/// this surface; ``RemoteTmuxControlConnection`` owns it via
 /// ``RemoteTmuxHost/controlProcessInvocation(sessionName:createIfMissing:)``.
 protocol RemoteTmuxTransport: Actor {
     /// The host this transport talks to (immutable; readable off-actor).

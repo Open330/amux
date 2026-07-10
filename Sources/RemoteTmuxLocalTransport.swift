@@ -1,8 +1,9 @@
 import Foundation
 
-/// ``RemoteTmuxTransport`` for the amux local engine: every command spawns the
-/// local tmux binary against the dedicated, config-isolated server
-/// (`tmux -f /dev/null -L amux <args…>`).
+/// ``RemoteTmuxTransport`` for local tmux endpoints: every command spawns the
+/// local tmux binary. The amux engine uses the dedicated, config-isolated server
+/// (`tmux -f /dev/null -L amux <args…>`); localhost sync uses the user's default
+/// tmux server unchanged.
 ///
 /// There is no shared channel to warm or tear down (each command is its own
 /// short-lived process), so ``ensureMasterReady()`` always reports ready and
@@ -15,7 +16,8 @@ import Foundation
 actor RemoteTmuxLocalTransport: RemoteTmuxTransport {
     private static let maxCapturedOutputBytes = 1_048_576
 
-    /// The amux local host (see ``RemoteTmuxHost/amuxLocal()``).
+    /// The local host (see ``RemoteTmuxHost/amuxLocal()`` and
+    /// ``RemoteTmuxHost/localDefault()``).
     nonisolated let host: RemoteTmuxHost
 
     init(host: RemoteTmuxHost) {
@@ -27,12 +29,21 @@ actor RemoteTmuxLocalTransport: RemoteTmuxTransport {
         let tmuxPath = RemoteTmuxHost.localTmuxExecutablePath()
         let executablePath: String
         let arguments: [String]
+        let tmuxArguments: [String]
+        switch host.kind {
+        case .localDefault:
+            tmuxArguments = args
+        case .localAmux:
+            tmuxArguments = ["-f", "/dev/null", "-L", RemoteTmuxHost.amuxLocalSocketName] + args
+        case .ssh:
+            tmuxArguments = args
+        }
         if tmuxPath.contains("/") {
             executablePath = tmuxPath
-            arguments = ["-f", "/dev/null", "-L", RemoteTmuxHost.amuxLocalSocketName] + args
+            arguments = tmuxArguments
         } else {
             executablePath = "/usr/bin/env"
-            arguments = [tmuxPath, "-f", "/dev/null", "-L", RemoteTmuxHost.amuxLocalSocketName] + args
+            arguments = [tmuxPath] + tmuxArguments
         }
         return try await Self.run(
             executablePath: executablePath,

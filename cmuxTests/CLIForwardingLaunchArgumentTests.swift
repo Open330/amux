@@ -6,6 +6,7 @@ import XCTest
 final class CLIForwardingLaunchArgumentTests: XCTestCase {
     func testCliSubcommandsForwardToBundledCLI() {
         XCTAssertTrue(CLIForwardingLaunchRouter.shouldForwardToBundledCLI(arguments: ["cmux", "wait-for", "workspace:1"]))
+        XCTAssertTrue(CLIForwardingLaunchRouter.shouldForwardToBundledCLI(arguments: ["amux", "sync", "tmux"]))
         XCTAssertTrue(CLIForwardingLaunchRouter.shouldForwardToBundledCLI(arguments: ["cmux", "hooks", "setup"]))
     }
 
@@ -28,7 +29,7 @@ final class CLIForwardingLaunchArgumentTests: XCTestCase {
         try fileManager.createDirectory(at: macOSURL, withIntermediateDirectories: true)
         try fileManager.createDirectory(at: resourcesBinURL, withIntermediateDirectories: true)
 
-        let cliURL = resourcesBinURL.appendingPathComponent("cmux")
+        let cliURL = resourcesBinURL.appendingPathComponent("amux")
         XCTAssertTrue(fileManager.createFile(atPath: cliURL.path, contents: Data("#!/bin/sh\n".utf8)))
         try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: cliURL.path)
 

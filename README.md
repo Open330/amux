@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="design/amux-logo.png" alt="amux logo" width="96" height="96" />
+</p>
+
 <h1 align="center">amux</h1>
 <p align="center"><strong>agent mux</strong> — the tmux-native, agent-first terminal for macOS</p>
 

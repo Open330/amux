@@ -9,6 +9,10 @@ port_range="${CMUX_PORT_RANGE:-10}"
 port_end="${CMUX_PORT_END:-$((port + port_range - 1))}"
 dev_origin="${CMUX_DEV_ORIGIN:-http://localhost:${port}}"
 bin="$app/Contents/MacOS/cmux DEV"
+cli="$app/Contents/Resources/bin/amux"
+if [[ ! -x "$cli" ]]; then
+  cli="$app/Contents/Resources/bin/cmux"
+fi
 tag_bundle_id="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/./g; s/^\.+//; s/\.+$//; s/\.+/./g')"
 if [[ -z "$tag_bundle_id" ]]; then
   tag_bundle_id="agent"
@@ -33,7 +37,7 @@ exec env \
   CMUX_PORT_RANGE="$port_range" \
   CMUX_PORT_END="$port_end" \
   PORT="$port" \
-  CMUX_BUNDLED_CLI_PATH="$app/Contents/Resources/bin/cmux" \
+  CMUX_BUNDLED_CLI_PATH="$cli" \
   CMUX_SHELL_INTEGRATION_DIR="$app/Contents/Resources/shell-integration" \
   CMUX_REMOTE_DAEMON_ALLOW_LOCAL_BUILD=1 \
   CMUXTERM_REPO_ROOT="$repo" \

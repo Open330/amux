@@ -247,10 +247,13 @@ struct CLIRemoteShellStartupPerformanceTests {
 
     private func bundledCLIPath() throws -> String {
         let appBundle = Bundle.main.bundleURL
-        let direct = appBundle.appendingPathComponent("Contents/Resources/bin/cmux")
-        if FileManager.default.isExecutableFile(atPath: direct.path) { return direct.path }
+        let binURL = appBundle.appendingPathComponent("Contents/Resources/bin", isDirectory: true)
+        for name in ["amux", "cmux"] {
+            let direct = binURL.appendingPathComponent(name, isDirectory: false)
+            if FileManager.default.isExecutableFile(atPath: direct.path) { return direct.path }
+        }
         throw NSError(domain: "cmux.tests", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Bundled cmux CLI not found in \(appBundle.path)",
+            NSLocalizedDescriptionKey: "Bundled amux CLI not found in \(appBundle.path)",
         ])
     }
 

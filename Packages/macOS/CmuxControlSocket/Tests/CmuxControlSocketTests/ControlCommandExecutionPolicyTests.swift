@@ -34,7 +34,14 @@ struct ControlCommandExecutionPolicyTests {
             "sidebar.custom.open",
             "debug.sidebar.simulate_drag", "mobile.attach_ticket.create",
             "mobile.terminal.set_font",
+            "amux.local_tmux_sync",
             "amux.remote_setup",
+            // The agent-driving pane primitives: read/wait park v2VmCall's
+            // semaphore (tmux round trips / long poll) — worker lane. Their
+            // send twin stays main-lane (quick v2MainSync hop), pinned in
+            // everythingElseRunsOnTheMainActor below.
+            "amux.pane_read",
+            "amux.pane_wait",
             // JavaScript-evaluating browser methods block on page JS and must
             // not hold the main actor (see socketWorkerMethods rationale).
             "browser.eval", "browser.wait", "browser.snapshot", "browser.click",
@@ -61,6 +68,9 @@ struct ControlCommandExecutionPolicyTests {
             // Focus-intent verbs stay on the main lane until the mutations
             // tranche decides them deliberately.
             "surface.focus", "workspace.select", "pane.focus", "window.focus",
+            // amux.pane_send: a quick v2MainSync hop like amux.send_prompt —
+            // main lane, unlike its worker-lane read/wait siblings.
+            "amux.pane_send", "amux.send_prompt",
         ] {
             let policy = ControlCommandExecutionPolicy(forMethod: method)
             #expect(policy == .mainActor, "\(method)")

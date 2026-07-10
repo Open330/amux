@@ -14,7 +14,7 @@ struct RemoteTmuxLayoutContainer: View {
     let portalPriority: Int
     let onClosePane: (Int) -> Void
 
-    private let dividerThickness: CGFloat = 2
+    private let dividerThickness: CGFloat = RemoteTmuxMirrorGridMath.dividerThickness
 
     var body: some View {
         switch node.content {
@@ -46,7 +46,7 @@ struct RemoteTmuxLayoutContainer: View {
                     isFocused: mirror.activePaneId == paneId,
                     isVisibleInUI: isVisibleInUI,
                     portalPriority: portalPriority,
-                    isSplit: true,
+                    isSplit: false,
                     appearance: appearance,
                     hasUnreadNotification: false,
                     terminalAgentContext: "",
@@ -67,19 +67,28 @@ struct RemoteTmuxLayoutContainer: View {
 
     @ViewBuilder
     private func splitStack(children: [RemoteTmuxLayoutNode], axis: Axis) -> some View {
-        let weights = children.map { CGFloat(axis == .horizontal ? $0.width : $0.height) }
-        let total = max(1, weights.reduce(0, +))
         GeometryReader { geo in
             let span = axis == .horizontal ? geo.size.width : geo.size.height
             let usable = max(1, span - dividerThickness * CGFloat(max(0, children.count - 1)))
+            // Allocate children from tmux's CELL allocation (plus each subtree's
+            // chrome), not raw pixel proportion: tmux divides the window in cells
+            // with a 1-cell separator per gap, so proportional pixels drift a
+            // cell or more per pane and the surfaces render a different grid
+            // than the `%output` tmux streams for them.
+            let spans = RemoteTmuxMirrorGridMath.childPixelSpans(
+                children: children,
+                horizontalAxis: axis == .horizontal,
+                usable: usable,
+                cell: mirror.referenceCellSize()
+            )
             if axis == .horizontal {
                 HStack(spacing: dividerThickness) {
-                    childViews(children, weights: weights, total: total, usable: usable, axis: axis)
+                    childViews(children, spans: spans, axis: axis)
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
             } else {
                 VStack(spacing: dividerThickness) {
-                    childViews(children, weights: weights, total: total, usable: usable, axis: axis)
+                    childViews(children, spans: spans, axis: axis)
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
             }
@@ -90,13 +99,11 @@ struct RemoteTmuxLayoutContainer: View {
     @ViewBuilder
     private func childViews(
         _ children: [RemoteTmuxLayoutNode],
-        weights: [CGFloat],
-        total: CGFloat,
-        usable: CGFloat,
+        spans: [CGFloat],
         axis: Axis
     ) -> some View {
         ForEach(children.indices, id: \.self) { index in
-            let dimension = usable * weights[index] / total
+            let dimension = spans[index]
             RemoteTmuxLayoutContainer(
                 node: children[index],
                 mirror: mirror,

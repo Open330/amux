@@ -37025,115 +37025,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux はこのコマンドを開始できませんでした。もう一度試すか、問題が続く場合は cmux を再インストールしてください。"
+            "value": "amux はこのコマンドを開始できませんでした。もう一度試すか、問題が続く場合は amux を再インストールしてください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            "value": "amux could not start this command. Try again, or reinstall amux if the problem continues."
           }
         }
       }
@@ -37144,115 +37144,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux はアプリバンドルからコマンドラインツールを開始できませんでした。cmux を再インストールするか、通常の cmux CLI インストールからコマンドを実行してください。"
+            "value": "amux はアプリバンドルからコマンドラインツールを開始できませんでした。amux を再インストールするか、通常の amux CLI インストールからコマンドを実行してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         }
       }
@@ -37263,115 +37263,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux はアプリバンドルからこのコマンドを実行できませんでした。cmux を再インストールするか、通常の cmux CLI インストールからコマンドを実行してください。"
+            "value": "amux はアプリバンドルからこのコマンドを実行できませんでした。amux を再インストールするか、通常の amux CLI インストールからコマンドを実行してください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            "value": "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
           }
         }
       }
@@ -42290,25 +42290,25 @@
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nije moguće instalirati cmux CLI"
+            "value": "Nije moguće instalirati amux CLI"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke installere cmux CLI"
+            "value": "Kunne ikke installere amux CLI"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI konnte nicht installiert werden"
+            "value": "amux CLI konnte nicht installiert werden"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Couldn't Install cmux CLI"
+            "value": "Couldn't Install amux CLI"
           }
         },
         "es": {
@@ -42332,19 +42332,19 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI をインストールできませんでした"
+            "value": "amux CLI をインストールできませんでした"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI를 설치할 수 없습니다"
+            "value": "amux CLI를 설치할 수 없습니다"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke installere cmux CLI"
+            "value": "Kunne ikke installere amux CLI"
           }
         },
         "pl": {
@@ -42362,37 +42362,37 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось установить cmux CLI"
+            "value": "Не удалось установить amux CLI"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ไม่สามารถติดตั้ง cmux CLI ได้"
+            "value": "ไม่สามารถติดตั้ง amux CLI ได้"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI Yüklenemedi"
+            "value": "amux CLI Yüklenemedi"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не вдалося встановити cmux CLI"
+            "value": "Не вдалося встановити amux CLI"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "无法安装 cmux CLI"
+            "value": "无法安装 amux CLI"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "無法安裝 cmux CLI"
+            "value": "無法安裝 amux CLI"
           }
         }
       }
@@ -42409,25 +42409,25 @@
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI instaliran"
+            "value": "amux CLI instaliran"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI installeret"
+            "value": "amux CLI installeret"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI installiert"
+            "value": "amux CLI installiert"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI Installed"
+            "value": "amux CLI Installed"
           }
         },
         "es": {
@@ -42451,19 +42451,19 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI がインストールされました"
+            "value": "amux CLI がインストールされました"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI 설치 완료"
+            "value": "amux CLI 설치 완료"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI installert"
+            "value": "amux CLI installert"
           }
         },
         "pl": {
@@ -42481,37 +42481,37 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI установлен"
+            "value": "amux CLI установлен"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ติดตั้ง cmux CLI แล้ว"
+            "value": "ติดตั้ง amux CLI แล้ว"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI Yüklendi"
+            "value": "amux CLI Yüklendi"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI встановлено"
+            "value": "amux CLI встановлено"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI 已安装"
+            "value": "amux CLI 已安装"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI 已安裝"
+            "value": "amux CLI 已安裝"
           }
         }
       }
@@ -48386,25 +48386,25 @@
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Simbolička veza cmux CLI nije pronađena na %@."
+            "value": "Simbolička veza amux CLI nije pronađena na %@."
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Intet cmux CLI symbolsk link blev fundet på %@."
+            "value": "Intet amux CLI symbolsk link blev fundet på %@."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Es wurde keine symbolische Verknüpfung für cmux CLI unter %@ gefunden."
+            "value": "Es wurde keine symbolische Verknüpfung für amux CLI unter %@ gefunden."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No cmux CLI symlink was found at %@."
+            "value": "No amux CLI symlink was found at %@."
           }
         },
         "es": {
@@ -48428,19 +48428,19 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@にcmux CLIのシンボリックリンクが見つかりませんでした。"
+            "value": "%@にamux CLIのシンボリックリンクが見つかりませんでした。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@에서 cmux CLI 심볼릭 링크를 찾을 수 없습니다."
+            "value": "%@에서 amux CLI 심볼릭 링크를 찾을 수 없습니다."
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ingen cmux CLI-symbolsk lenke ble funnet på %@."
+            "value": "Ingen amux CLI-symbolsk lenke ble funnet på %@."
           }
         },
         "pl": {
@@ -48458,37 +48458,37 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Символическая ссылка cmux CLI не найдена по пути %@."
+            "value": "Символическая ссылка amux CLI не найдена по пути %@."
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ไม่พบลิงก์สัญลักษณ์ cmux CLI ที่ %@"
+            "value": "ไม่พบลิงก์สัญลักษณ์ amux CLI ที่ %@"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ konumunda cmux CLI sembolik bağı bulunamadı."
+            "value": "%@ konumunda amux CLI sembolik bağı bulunamadı."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Символічне посилання cmux CLI не знайдено за адресою %@."
+            "value": "Символічне посилання amux CLI не знайдено за адресою %@."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "在 %@ 处未找到 cmux CLI 符号链接。"
+            "value": "在 %@ 处未找到 amux CLI 符号链接。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "在 %@ 找不到 cmux CLI 的符號連結。"
+            "value": "在 %@ 找不到 amux CLI 的符號連結。"
           }
         }
       }
@@ -48624,25 +48624,25 @@
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nije moguće deinstalirati cmux CLI"
+            "value": "Nije moguće deinstalirati amux CLI"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke afinstallere cmux CLI"
+            "value": "Kunne ikke afinstallere amux CLI"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI konnte nicht deinstalliert werden"
+            "value": "amux CLI konnte nicht deinstalliert werden"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Couldn't Uninstall cmux CLI"
+            "value": "Couldn't Uninstall amux CLI"
           }
         },
         "es": {
@@ -48666,19 +48666,19 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI をアンインストールできませんでした"
+            "value": "amux CLI をアンインストールできませんでした"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI를 제거할 수 없습니다"
+            "value": "amux CLI를 제거할 수 없습니다"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunne ikke avinstallere cmux CLI"
+            "value": "Kunne ikke avinstallere amux CLI"
           }
         },
         "pl": {
@@ -48696,37 +48696,37 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось удалить cmux CLI"
+            "value": "Не удалось удалить amux CLI"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ไม่สามารถถอนการติดตั้ง cmux CLI ได้"
+            "value": "ไม่สามารถถอนการติดตั้ง amux CLI ได้"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI Kaldırılamadı"
+            "value": "amux CLI Kaldırılamadı"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не вдалося видалити cmux CLI"
+            "value": "Не вдалося видалити amux CLI"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "无法卸载 cmux CLI"
+            "value": "无法卸载 amux CLI"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "無法解除安裝 cmux CLI"
+            "value": "無法解除安裝 amux CLI"
           }
         }
       }
@@ -48743,25 +48743,25 @@
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI deinstaliran"
+            "value": "amux CLI deinstaliran"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI afinstalleret"
+            "value": "amux CLI afinstalleret"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI deinstalliert"
+            "value": "amux CLI deinstalliert"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI Uninstalled"
+            "value": "amux CLI Uninstalled"
           }
         },
         "es": {
@@ -48785,19 +48785,19 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI がアンインストールされました"
+            "value": "amux CLI がアンインストールされました"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI 제거 완료"
+            "value": "amux CLI 제거 완료"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI avinstallert"
+            "value": "amux CLI avinstallert"
           }
         },
         "pl": {
@@ -48815,37 +48815,37 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI удален"
+            "value": "amux CLI удален"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "ถอนการติดตั้ง cmux CLI แล้ว"
+            "value": "ถอนการติดตั้ง amux CLI แล้ว"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI Kaldırıldı"
+            "value": "amux CLI Kaldırıldı"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI видалено"
+            "value": "amux CLI видалено"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI 已卸载"
+            "value": "amux CLI 已卸载"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux CLI 已解除安裝"
+            "value": "amux CLI 已解除安裝"
           }
         }
       }
@@ -55484,13 +55484,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The bundled cmux CLI is missing from this app build."
+            "value": "The bundled amux CLI is missing from this app build."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "このアプリビルドにはバンドルされた cmux CLI がありません。"
+            "value": "このアプリビルドにはバンドルされた amux CLI がありません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 앱 빌드에 번들된 amux CLI가 없습니다."
           }
         }
       }
@@ -87227,13 +87233,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The bundled cmux CLI is missing from this app build."
+            "value": "The bundled amux CLI is missing from this app build."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "このアプリビルドに同梱されている cmux CLI が見つかりません。"
+            "value": "このアプリビルドに同梱されている amux CLI が見つかりません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 앱 빌드에 번들된 amux CLI가 없습니다."
           }
         }
       }
@@ -102573,13 +102585,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Set up cmux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `cmux docs dock` if the cmux CLI is available. If it is not, read https://cmux.com/docs/dock.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is cmux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `cmux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/cmux/dock.json`.\n- If both exist, project `.cmux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
+            "value": "Set up cmux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://cmux.com/docs/dock.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is cmux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/cmux/dock.json`.\n- If both exist, project `.cmux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在のコンテキストに合わせて cmux Dock コントロールを設定してください。\n\n編集する前に機能を確認してください:\n1. cmux CLI が使える場合は `cmux docs dock` を実行してください。使えない場合は https://cmux.com/docs/dock を読んでください。\n2. リポジトリまたは現在のディレクトリを調べ、プロジェクト種別、スクリプト、パッケージマネージャー、開発サーバー、ログ、タスクランナー、テストコマンド、既存の TUI ツールを把握してください。\n3. どの Dock を作るべきか曖昧な場合は、ファイルを書く前に何を監視または操作したいかユーザーに確認してください。\n\nDock は cmux の右サイドバーにあるターミナルコントロール領域です。Dock 設定はトップレベルに `controls` 配列を持つ JSON です。各コントロールはユーザーのログインシェルを使い、Ghostty ベースの独立したターミナルセクションで command を実行します。プロジェクトダッシュボード、git/status、開発サーバーやビルド状態、テストウォッチャー、ログ tail、キュー、ローカルサービス、または有用な場合の `cmux feed tui --opentui` のようなカスタム TUI に向いています。\n\n設定を書く場所を選んでください:\n- リポジトリまたはプロジェクトディレクトリでは、チームで共有できるように `.cmux/dock.json` を作成または編集してください。\n- リポジトリ外の個人用デフォルトでは、`~/.config/cmux/dock.json` を作成または編集してください。\n- 両方がある場合、そのプロジェクトでは `.cmux/dock.json` がより具体的です。ネストしたプロジェクト設定はそのディレクトリツリーに適用されます。無関係なコントロールをグローバルに書かず、最も近い適切なプロジェクト設定を使ってください。\n- リポジトリがなく、明確なプロジェクトルートもない場合は、個人用 Dock でよいかユーザーに確認してからグローバル設定を使ってください。\n\nスキーマ:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nルール:\n- id は安定した小文字の一意な値にしてください。\n- サブディレクトリで実行する場合は `cwd` を使ってください。相対パスは設定ファイルの基準ディレクトリから解決されます。\n- `height` は固定の縦幅が必要なコントロールにだけ使ってください。\n- `env` はそのコントロールだけに必要な非秘密の値にだけ使ってください。\n- 共有するプロジェクト設定にシークレット、トークン、マシン固有の非公開パスを入れないでください。\n- 繰り返し起動しても安全で、ターミナル内で意味のあるコマンドを優先してください。\n- 存在しないスクリプトを作り上げないでください。先に package ファイル、Makefile、Procfile、README、設定ファイル、既存ツールを読んでください。\n- 共有プロジェクト Dock はチームメイトが使えるよう移植性を保ってください。個人用またはマシン固有のコントロールはグローバル Dock に入れてください。\n\n成果物:\n- 適切な dock.json を作成または更新してください。\n- ユーザーが置き換えを依頼していない限り、既存の有用なコントロールは残してください。\n- JSON がパースできることを検証してください。\n- 各コントロールの役割と、信頼する前にユーザーが確認すべきコマンドを要約してください。"
+            "value": "現在のコンテキストに合わせて cmux Dock コントロールを設定してください。\n\n編集する前に機能を確認してください:\n1. amux CLI が使える場合は `amux docs dock` を実行してください。使えない場合は https://cmux.com/docs/dock を読んでください。\n2. リポジトリまたは現在のディレクトリを調べ、プロジェクト種別、スクリプト、パッケージマネージャー、開発サーバー、ログ、タスクランナー、テストコマンド、既存の TUI ツールを把握してください。\n3. どの Dock を作るべきか曖昧な場合は、ファイルを書く前に何を監視または操作したいかユーザーに確認してください。\n\nDock は cmux の右サイドバーにあるターミナルコントロール領域です。Dock 設定はトップレベルに `controls` 配列を持つ JSON です。各コントロールはユーザーのログインシェルを使い、Ghostty ベースの独立したターミナルセクションで command を実行します。プロジェクトダッシュボード、git/status、開発サーバーやビルド状態、テストウォッチャー、ログ tail、キュー、ローカルサービス、または有用な場合の `amux feed tui --opentui` のようなカスタム TUI に向いています。\n\n設定を書く場所を選んでください:\n- リポジトリまたはプロジェクトディレクトリでは、チームで共有できるように `.cmux/dock.json` を作成または編集してください。\n- リポジトリ外の個人用デフォルトでは、`~/.config/cmux/dock.json` を作成または編集してください。\n- 両方がある場合、そのプロジェクトでは `.cmux/dock.json` がより具体的です。ネストしたプロジェクト設定はそのディレクトリツリーに適用されます。無関係なコントロールをグローバルに書かず、最も近い適切なプロジェクト設定を使ってください。\n- リポジトリがなく、明確なプロジェクトルートもない場合は、個人用 Dock でよいかユーザーに確認してからグローバル設定を使ってください。\n\nスキーマ:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nルール:\n- id は安定した小文字の一意な値にしてください。\n- サブディレクトリで実行する場合は `cwd` を使ってください。相対パスは設定ファイルの基準ディレクトリから解決されます。\n- `height` は固定の縦幅が必要なコントロールにだけ使ってください。\n- `env` はそのコントロールだけに必要な非秘密の値にだけ使ってください。\n- 共有するプロジェクト設定にシークレット、トークン、マシン固有の非公開パスを入れないでください。\n- 繰り返し起動しても安全で、ターミナル内で意味のあるコマンドを優先してください。\n- 存在しないスクリプトを作り上げないでください。先に package ファイル、Makefile、Procfile、README、設定ファイル、既存ツールを読んでください。\n- 共有プロジェクト Dock はチームメイトが使えるよう移植性を保ってください。個人用またはマシン固有のコントロールはグローバル Dock に入れてください。\n\n成果物:\n- 適切な dock.json を作成または更新してください。\n- ユーザーが置き換えを依頼していない限り、既存の有用なコントロールは残してください。\n- JSON がパースできることを検証してください。\n- 各コントロールの役割と、信頼する前にユーザーが確認すべきコマンドを要約してください。"
           }
         }
       }
@@ -207219,19 +207231,286 @@
         }
       }
     },
+    "socket.amux.paneNotSendable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "واجهة اللوحة الأمامية ليست وكيلًا تفاعليًا (مرر guarded=false للإرسال على أي حال)"
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prednji proces panela nije interaktivni agent (proslijedite guarded=false da ipak pošaljete)"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panelets forgrundsproces er ikke en interaktiv agent (send guarded=false for at sende alligevel)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Vordergrundprozess des Panes ist kein interaktiver Agent (mit guarded=false trotzdem senden)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pane foreground is not an interactive agent (pass guarded=false to send anyway)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El primer plano del panel no es un agente interactivo (pase guarded=false para enviar de todos modos)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le premier plan du panneau n'est pas un agent interactif (passez guarded=false pour envoyer quand même)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il primo piano del pannello non è un agente interattivo (passa guarded=false per inviare comunque)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ペインのフォアグラウンドが対話型エージェントではありません（guarded=false を渡すと強制送信できます）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pane 포그라운드가 대화형 에이전트가 아닙니다 (guarded=false를 전달하면 강제로 전송합니다)"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panelets forgrunn er ikke en interaktiv agent (send guarded=false for å sende likevel)"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pierwszy plan panelu nie jest interaktywnym agentem (przekaż guarded=false, aby mimo to wysłać)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O primeiro plano do painel não é um agente interativo (passe guarded=false para enviar mesmo assim)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Передний план панели не является интерактивным агентом (передайте guarded=false, чтобы всё равно отправить)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โปรเซสเบื้องหน้าของเพนไม่ใช่เอเจนต์แบบโต้ตอบ (ส่ง guarded=false เพื่อส่งต่อไป)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bölmenin ön planı etkileşimli bir ajan değil (yine de göndermek için guarded=false geçirin)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Передній план панелі не є інтерактивним агентом (передайте guarded=false, щоб надіслати попри це)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗格前台不是交互式代理（传入 guarded=false 可强制发送）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗格前台不是互動式代理（傳入 guarded=false 可強制傳送）"
+          }
+        }
+      }
+    },
     "socket.amux.remoteSetupActionInvalid": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "action must be inspect or wire"
+            "value": "action must be inspect, wire, sync, or unsync"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "action は inspect または wire である必要があります"
+            "value": "action は inspect、wire、sync、unsync のいずれかである必要があります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "action은 inspect, wire, sync, unsync 중 하나여야 합니다"
+          }
+        }
+      }
+    },
+    "socket.amux.localTmuxSyncActionInvalid": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "action must be status, sync, or unsync"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "action は status、sync、unsync のいずれかである必要があります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "action은 status, sync, unsync 중 하나여야 합니다"
+          }
+        }
+      }
+    },
+    "socket.amux.waitForInvalid": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يجب أن يكون for إما \"idle\" أو \"exit\""
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for mora biti \"idle\" ili \"exit\""
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for skal være \"idle\" eller \"exit\""
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for muss \"idle\" oder \"exit\" sein"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for must be \"idle\" or \"exit\""
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for debe ser \"idle\" o \"exit\""
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for doit être \"idle\" ou \"exit\""
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for deve essere \"idle\" o \"exit\""
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for は \"idle\" か \"exit\" である必要があります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for는 \"idle\" 또는 \"exit\"여야 합니다"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for må være \"idle\" eller \"exit\""
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for musi mieć wartość \"idle\" lub \"exit\""
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for deve ser \"idle\" ou \"exit\""
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for должно быть \"idle\" или \"exit\""
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for ต้องเป็น \"idle\" หรือ \"exit\""
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for \"idle\" veya \"exit\" olmalıdır"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for має бути \"idle\" або \"exit\""
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for 必须为 \"idle\" 或 \"exit\""
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "for 必須為 \"idle\" 或 \"exit\""
           }
         }
       }
@@ -234183,6 +234462,489 @@
           "stringUnit": {
             "state": "translated",
             "value": "ワークスペースをレイアウトとして保存…"
+          }
+        }
+      }
+    },
+    "amux.localSync.disabled.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local tmux Sync Off"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカル tmux 同期はオフです"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로컬 tmux 동기화 꺼짐"
+          }
+        }
+      }
+    },
+    "amux.localSync.disabled.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux will stop auto-syncing localhost tmux sessions. Open mirror workspaces stay open until you close them."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux は localhost の tmux セッションの自動同期を停止します。開いているミラー ワークスペースは、閉じるまで開いたままです。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "amux가 localhost tmux 세션 자동 동기화를 중지합니다. 열린 미러 워크스페이스는 직접 닫을 때까지 유지됩니다."
+          }
+        }
+      }
+    },
+    "amux.localSync.enabled.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local tmux Sync On"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカル tmux 同期はオンです"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로컬 tmux 동기화 켜짐"
+          }
+        }
+      }
+    },
+    "amux.localSync.noSessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync is on, but the localhost tmux server has no sessions yet."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期はオンですが、localhost の tmux サーバーにはまだセッションがありません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "동기화는 켜졌지만 localhost tmux 서버에 아직 세션이 없습니다."
+          }
+        }
+      }
+    },
+    "amux.localSync.synced.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found %lld localhost tmux session(s); %lld new workspace(s) were mirrored. tmux windows appear as amux tabs, and tmux panes stay split inside each tab."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "localhost の tmux セッションが %lld 個見つかり、%lld 個の新しいワークスペースをミラーしました。tmux ウィンドウは amux タブとして表示され、tmux ペインは各タブ内の分割として保持されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "localhost tmux 세션 %lld개를 찾았고 새 워크스페이스 %lld개를 미러했습니다. tmux window는 amux 탭으로 보이고, tmux pane은 각 탭 안의 split으로 유지됩니다."
+          }
+        }
+      }
+    },
+    "amux.localSync.failed.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local tmux Sync Failed"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカル tmux 同期に失敗しました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로컬 tmux 동기화 실패"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.pickHost": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an SSH config alias or enter a host to inspect. If tmux sessions exist, you can turn sync on for this host."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH config のエイリアスを選ぶか、検査するホストを入力してください。tmux セッションがあれば、このホストの同期をオンにできます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH config 별칭을 선택하거나 점검할 호스트를 입력하세요. tmux 세션이 있으면 이 호스트의 동기화를 켤 수 있습니다."
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.continue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "続ける"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계속"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.invalidHost": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a valid SSH host or ~/.ssh/config alias."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有効な SSH ホストまたは ~/.ssh/config エイリアスを入力してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "유효한 SSH 호스트 또는 ~/.ssh/config 별칭을 입력하세요."
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.syncNow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync tmux Sessions"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux セッションを同期"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 세션 동기화"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.disableSync": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn Off Sync"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期をオフにする"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "동기화 끄기"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.syncDisabled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync is off for this host. Existing mirror workspaces stay open until you close them."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このホストの同期はオフです。既存のミラー ワークスペースは、閉じるまで開いたままです。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 호스트의 동기화가 꺼졌습니다. 기존 미러 워크스페이스는 직접 닫을 때까지 유지됩니다."
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.tmuxNone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux sessions: none"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux セッション: なし"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 세션: 없음"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.tmuxFound": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux sessions: %lld (windows open as amux tabs; panes stay split inside each tab)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux セッション: %lld（ウィンドウは amux タブとして開き、ペインは各タブ内の分割として保持されます）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 세션: %lld개(window는 amux 탭으로 열리고 pane은 각 탭 안의 split으로 유지됩니다)"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.tmuxUnknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux sessions: could not inspect"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux セッション: 検査できませんでした"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 세션: 점검할 수 없음"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.syncOn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux sync: on for this host"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 同期: このホストでオン"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 동기화: 이 호스트에서 켜짐"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.syncOff": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux sync: off for this host"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 同期: このホストでオフ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 동기화: 이 호스트에서 꺼짐"
+          }
+        }
+      }
+    },
+    "command.amuxToggleLocalTmuxSync.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toggle: Sync Local tmux Sessions"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り替え: ローカル tmux セッションを同期"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "토글: 로컬 tmux 세션 동기화"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.authRequired.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH Authentication Required"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 認証が必要です"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 인증 필요"
+          }
+        }
+      }
+    },
+    "amux.remoteSetup.authRequired.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run this in a terminal to authenticate, then return to Remote Host Setup and sync again:\n\n%@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "認証するにはターミナルでこれを実行し、その後 Remote Host Setup に戻ってもう一度同期してください:\n\n%@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "터미널에서 다음 명령을 실행해 인증한 뒤 Remote Host Setup으로 돌아와 다시 동기화하세요:\n\n%@"
           }
         }
       }

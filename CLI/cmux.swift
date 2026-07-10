@@ -2803,6 +2803,14 @@ struct CMUXCLI {
         self.initialSIGPIPEInspectionPayload = initialSIGPIPEInspectionPayload
     }
 
+    private var invokedExecutableName: String {
+        URL(fileURLWithPath: args.first ?? "").lastPathComponent.lowercased()
+    }
+
+    private var isRunningAsAmuxCLI: Bool {
+        invokedExecutableName.hasPrefix("amux")
+    }
+
     private func captureSocketTransportError(telemetry: CLISocketSentryTelemetry, stage: String, error: Error, client: SocketClient) {
         if client.hasUnfinishedOperationTelemetry() {
             telemetry.captureError(stage: stage, error: error, data: client.operationTelemetryContext())
@@ -3181,6 +3189,19 @@ struct CMUXCLI {
         // Check for --help/-h on subcommands before resolving sockets,
         // so help text is available even when cmux is not running.
         let preSeparatorArgs = commandArgs.firstIndex(of: "--").map { commandArgs[..<$0] } ?? commandArgs[...]
+        if isRunningAsAmuxCLI,
+           preSeparatorArgs.contains(where: { $0 == "--help" || $0 == "-h" }) {
+            switch command.lowercased() {
+            case "sync":
+                print(Self.amuxSyncUsage)
+                return
+            case "ssh":
+                print(Self.amuxSSHUsage)
+                return
+            default:
+                break
+            }
+        }
         if command != "__tmux-compat",
            preSeparatorArgs.contains(where: { $0 == "--help" || $0 == "-h" }) {
             if dispatchSubcommandHelp(command: command, commandArgs: commandArgs) {
@@ -3190,6 +3211,11 @@ struct CMUXCLI {
         }
 
         if command == "help" { print(usage()); return }; if command == "remote-daemon-status" { try runRemoteDaemonStatus(commandArgs: commandArgs, jsonOutput: jsonOutput); return }
+        if command == "amux",
+           ["help", "--help", "-h"].contains(commandArgs.first?.lowercased() ?? "help") {
+            print(Self.amuxUsage)
+            return
+        }
         if command == "vm-pty-connect" { try runVMPtyConnect(commandArgs: commandArgs); return }
         if command == "docs" { try runDocsCommand(commandArgs: commandArgs, jsonOutput: jsonOutput); return }
         if command == "welcome" { printWelcome(); return }
@@ -3881,6 +3907,20 @@ struct CMUXCLI {
         case "ai-accounts":
             try runAIAccountsCommand(commandArgs: commandArgs, client: client, jsonOutput: jsonOutput)
 
+        case "sync" where isRunningAsAmuxCLI:
+            try runAmuxSync(
+                commandArgs: commandArgs,
+                client: client,
+                jsonOutput: jsonOutput
+            )
+
+        case "amux":
+            try runAmuxNamespace(
+                commandArgs: commandArgs,
+                client: client,
+                jsonOutput: jsonOutput
+            )
+
         case "mobile":
             let sub = commandArgs.first?.lowercased()
             let rest = Array(commandArgs.dropFirst())
@@ -4109,6 +4149,14 @@ struct CMUXCLI {
                 jsonOutput: jsonOutput,
                 idFormat: idFormat,
                 windowOverride: windowId
+            )
+
+        case "ssh" where isRunningAsAmuxCLI:
+            try runAmuxRemoteSetup(
+                commandName: "ssh",
+                commandArgs: commandArgs,
+                client: client,
+                jsonOutput: jsonOutput
             )
 
         case "ssh":
@@ -8496,6 +8544,212 @@ struct CMUXCLI {
         }
     }
 
+    private func runAmuxNamespace(
+        commandArgs: [String],
+        client: SocketClient,
+        jsonOutput: Bool
+    ) throws {
+        let subcommand = commandArgs.first?.lowercased() ?? "help"
+        let rest = Array(commandArgs.dropFirst())
+        switch subcommand {
+        case "help", "--help", "-h":
+            print(Self.amuxUsage)
+        case "sync":
+            try runAmuxSync(commandArgs: rest, client: client, jsonOutput: jsonOutput)
+        case "ssh", "remote-setup", "setup-remote":
+            try runAmuxRemoteSetup(commandName: subcommand, commandArgs: rest, client: client, jsonOutput: jsonOutput)
+        default:
+            throw CLIError(message: "Unknown amux subcommand '\(subcommand)'. Run: amux help")
+        }
+    }
+
+    private func runAmuxSync(
+        commandArgs: [String],
+        client: SocketClient,
+        jsonOutput: Bool
+    ) throws {
+        guard let target = commandArgs.first?.lowercased(), target == "tmux" else {
+            throw CLIError(message: "Usage: amux sync tmux [on|off|status] [--json]")
+        }
+        let actionToken = commandArgs.dropFirst().first { !$0.hasPrefix("-") }?.lowercased() ?? "on"
+        let action: String
+        switch actionToken {
+        case "on", "enable", "enabled", "sync":
+            action = "sync"
+        case "off", "disable", "disabled", "unsync":
+            action = "unsync"
+        case "status":
+            action = "status"
+        default:
+            throw CLIError(message: "Usage: amux sync tmux [on|off|status] [--json]")
+        }
+
+        let result = try client.sendV2(
+            method: "amux.local_tmux_sync",
+            params: ["action": action],
+            responseTimeout: 60
+        )
+        if jsonOutput {
+            print(jsonString(result))
+            return
+        }
+
+        let enabled = (result["enabled"] as? Bool) ?? false
+        let sessions = (result["tmux_sessions"] as? [[String: Any]]) ?? []
+        let mirroredNow = (result["mirrored"] as? Int) ?? 0
+        switch action {
+        case "sync":
+            let discovered = (result["discovered"] as? Int) ?? sessions.count
+            print("OK local tmux sync on (found \(discovered), mirrored \(mirroredNow))")
+        case "unsync":
+            print("OK local tmux sync off")
+        default:
+            let mirroredTotal = sessions.filter { ($0["mirrored"] as? Bool) == true }.count
+            print("local tmux sync: \(enabled ? "on" : "off")")
+            print("sessions: \(sessions.count) (\(mirroredTotal) mirrored)")
+        }
+    }
+
+    private func runAmuxRemoteSetup(
+        commandName: String,
+        commandArgs: [String],
+        client: SocketClient,
+        jsonOutput: Bool
+    ) throws {
+        var destination: String?
+        var port: Int?
+        var identityFile: String?
+        var action = "sync"
+        var activate = false
+
+        var index = 0
+        while index < commandArgs.count {
+            let arg = commandArgs[index]
+            switch arg {
+            case "--port":
+                guard index + 1 < commandArgs.count else {
+                    throw CLIError(message: "amux \(commandName): --port requires a value")
+                }
+                guard let parsed = Int(commandArgs[index + 1]), parsed > 0, parsed <= 65535 else {
+                    throw CLIError(message: "amux \(commandName): --port must be 1-65535")
+                }
+                port = parsed
+                index += 2
+            case "--identity":
+                guard index + 1 < commandArgs.count else {
+                    throw CLIError(message: "amux \(commandName): --identity requires a path")
+                }
+                identityFile = commandArgs[index + 1]
+                index += 2
+            case "--wire":
+                action = "wire"
+                index += 1
+            case "--inspect":
+                action = "inspect"
+                index += 1
+            case "--sync":
+                action = "sync"
+                index += 1
+            case "--unsync", "--no-sync":
+                action = "unsync"
+                index += 1
+            case "--focus", "--activate":
+                activate = true
+                index += 1
+            case "--no-focus":
+                activate = false
+                index += 1
+            default:
+                if arg.hasPrefix("-") {
+                    throw CLIError(
+                        message: "amux \(commandName): destination must be <user@host> or an ssh alias. Use --port/--identity for SSH flags."
+                    )
+                }
+                if destination == nil {
+                    destination = arg
+                    index += 1
+                } else {
+                    throw CLIError(message: "amux \(commandName): unexpected extra argument '\(arg)'")
+                }
+            }
+        }
+
+        guard let destination else {
+            throw CLIError(message: "Usage: amux \(commandName) <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>]")
+        }
+
+        var params: [String: Any] = [
+            "host": destination,
+            "action": action,
+            "activate": activate,
+        ]
+        if let port { params["port"] = port }
+        if let identityFile, !identityFile.isEmpty { params["identity_file"] = identityFile }
+
+        if !jsonOutput {
+            let verb = action == "sync" ? "syncing tmux sessions on" : "\(action) for"
+            print("amux \(verb) \(destination)…")
+        }
+
+        var didAuthenticate = false
+        while true {
+            let result = try client.sendV2(
+                method: "amux.remote_setup",
+                params: params,
+                responseTimeout: 130
+            )
+            if jsonOutput {
+                print(jsonString(result))
+                return
+            }
+
+            if let sync = result["sync"] as? [String: Any],
+               (sync["auth_required"] as? Bool) == true {
+                guard !didAuthenticate else {
+                    throw CLIError(message: "amux \(commandName): authentication did not open the connection to \(destination)")
+                }
+                guard let sshArgv = sync["ssh_argv"] as? [String], !sshArgv.isEmpty else {
+                    throw CLIError(message: "amux \(commandName): amux did not return an ssh command for authentication")
+                }
+                try runInteractiveAuthSSH(
+                    sshArgv: sshArgv,
+                    destination: destination,
+                    commandLabel: "amux \(commandName)",
+                    interactiveExample: "amux \(commandName) \(destination)"
+                )
+                didAuthenticate = true
+                print("Authenticated; retrying amux setup for \(destination)…")
+                continue
+            }
+
+            printAmuxRemoteSetupSummary(result, action: action)
+            return
+        }
+    }
+
+    private func printAmuxRemoteSetupSummary(_ result: [String: Any], action: String) {
+        let host = (result["host"] as? String) ?? "?"
+        let muxaInstalled = ((result["muxa_installed"] as? Bool) ?? false) ? "yes" : "no"
+        let muxadRunning = ((result["muxad_running"] as? Bool) ?? false) ? "yes" : "no"
+        let syncEnabled = ((result["tmux_sync_enabled"] as? Bool) ?? false) ? "on" : "off"
+        if let sync = result["sync"] as? [String: Any],
+           (sync["mirrored"] as? Bool) == true {
+            let windowId = (sync["window_id"] as? String) ?? ""
+            print("OK host=\(host) tmux-sync=on window=\(windowId)")
+        } else if action == "unsync" {
+            print("OK host=\(host) tmux-sync=off")
+        } else if action == "wire" {
+            print("OK host=\(host) hooks wired")
+        } else {
+            print("OK host=\(host)")
+        }
+        print("  muxa:       \(muxaInstalled)")
+        print("  muxad:      \(muxadRunning)")
+        print("  tmux sync:  \(syncEnabled)")
+        let sessions = (result["tmux_sessions"] as? [[String: Any]]) ?? []
+        print("  tmux sessions: \(sessions.count)")
+    }
+
     /// Runs an `ssh` argv interactively in the user's terminal so password /
     /// host-key / MFA / FIDO prompts work as in a normal SSH. The spawned ssh is
     /// made the terminal's foreground process group (Foundation otherwise spawns it
@@ -8505,13 +8759,19 @@ struct CMUXCLI {
     /// The argv is supplied by the app over the authenticated control socket, but
     /// as defense in depth the executable is required to be an `ssh` binary — the
     /// CLI never execs an arbitrary command handed back from a socket response.
-    private func runInteractiveAuthSSH(sshArgv: [String], destination: String) throws {
+    private func runInteractiveAuthSSH(
+        sshArgv: [String],
+        destination: String,
+        commandLabel: String = "ssh-tmux",
+        interactiveExample: String? = nil
+    ) throws {
         // Interactive auth needs a controlling tty to prompt on. In a non-tty
         // context (script, pipe, URL handler) ssh can't prompt and would hang or
         // fail opaquely, so refuse early with an actionable message.
         guard isatty(STDIN_FILENO) == 1 else {
+            let example = interactiveExample ?? "cmux ssh-tmux \(destination)"
             throw CLIError(
-                message: "ssh-tmux: \(destination) needs interactive authentication, which requires a terminal. Run `cmux ssh-tmux \(destination)` directly from an interactive shell."
+                message: "\(commandLabel): \(destination) needs interactive authentication, which requires a terminal. Run `\(example)` directly from an interactive shell."
             )
         }
         // The app builds this argv with a hardcoded /usr/bin/ssh; require exactly
@@ -8519,7 +8779,7 @@ struct CMUXCLI {
         // path so the CLI never execs an arbitrary command returned over the socket.
         let allowedSSHPaths: Set<String> = ["/usr/bin/ssh"]
         guard let executable = sshArgv.first, allowedSSHPaths.contains(executable) else {
-            throw CLIError(message: "ssh-tmux: refusing to run a non-standard ssh path for authentication")
+            throw CLIError(message: "\(commandLabel): refusing to run a non-standard ssh path for authentication")
         }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executable)
@@ -8541,7 +8801,7 @@ struct CMUXCLI {
         do {
             try cliRunProcess(process)
         } catch {
-            throw CLIError(message: "ssh-tmux: failed to launch ssh: \(String(describing: error))")
+            throw CLIError(message: "\(commandLabel): failed to launch ssh: \(String(describing: error))")
         }
         if originalForegroundProcessGroup > 0 {
             let childProcessGroup = getpgid(process.processIdentifier)
@@ -8556,7 +8816,7 @@ struct CMUXCLI {
                     _ = Darwin.kill(-childProcessGroup, SIGCONT)
                     process.terminate()
                     throw CLIError(
-                        message: "ssh-tmux: couldn't hand the terminal to ssh for \(destination); aborting to avoid a hang (\(String(describing: error)))"
+                        message: "\(commandLabel): couldn't hand the terminal to ssh for \(destination); aborting to avoid a hang (\(String(describing: error)))"
                     )
                 }
                 _ = Darwin.kill(-childProcessGroup, SIGCONT)
@@ -8571,7 +8831,7 @@ struct CMUXCLI {
         process.waitUntilExit()
         guard process.terminationStatus == 0 else {
             throw CLIError(
-                message: "ssh-tmux: ssh authentication to \(destination) failed (exit \(process.terminationStatus))"
+                message: "\(commandLabel): ssh authentication to \(destination) failed (exit \(process.terminationStatus))"
             )
         }
     }
@@ -11770,7 +12030,7 @@ struct CMUXCLI {
             "if [ ! -x \"$cmux_reconnect_cli\" ]; then cmux_reconnect_cli=\"$(command -v cmux 2>/dev/null || true)\"; fi;",
             "if [ -n \"${CMUX_WORKSPACE_ID:-}\" ]; then",
             "if [ -z \"$cmux_reconnect_socket\" ]; then printf '%s\\n' 'cmux: deferred SSH reconnect skipped, local cmux socket not found' >&2;",
-            "elif [ -z \"$cmux_reconnect_cli\" ] || [ ! -x \"$cmux_reconnect_cli\" ]; then printf '%s\\n' 'cmux: deferred SSH reconnect skipped, local cmux CLI not found' >&2;",
+            "elif [ -z \"$cmux_reconnect_cli\" ] || [ ! -x \"$cmux_reconnect_cli\" ]; then printf '%s\\n' 'amux: deferred SSH reconnect skipped, local amux CLI not found' >&2;",
             "else",
             "cmux_reconnect_token=\(quotedForegroundAuthToken);",
             "cmux_reconnect_payload=\"{\\\"workspace_id\\\":\\\"$CMUX_WORKSPACE_ID\\\",\\\"foreground_auth_token\\\":\\\"$cmux_reconnect_token\\\"}\";",
@@ -13962,6 +14222,8 @@ struct CMUXCLI {
     /// Return the help/usage text for a subcommand, or nil if the command is unknown.
     private func subcommandUsage(_ command: String) -> String? {
         switch command {
+        case "amux":
+            return Self.amuxUsage
         case "remotes", "remote":
             return Self.remotesUsage
         case "ai-accounts":
@@ -22727,10 +22989,10 @@ struct CMUXCLI {
             print("OK")
 
         case "popup":
-            throw CLIError(message: "popup is not supported yet in cmux CLI parity mode")
+            throw CLIError(message: "popup is not supported yet in amux CLI parity mode")
 
         case "bind-key", "unbind-key", "copy-mode":
-            throw CLIError(message: "\(command) is not supported yet in cmux CLI parity mode")
+            throw CLIError(message: "\(command) is not supported yet in amux CLI parity mode")
 
         case "set-buffer":
             let (nameArg, rem0) = parseOption(commandArgs, name: "--name")
@@ -34188,11 +34450,11 @@ export default CMUXSessionRestore;
 
     private func usage() -> String {
         return """
-        cmux - control cmux via Unix socket
+        amux - control amux via Unix socket
 
         Usage:
-          cmux <path>                Open a directory in a new workspace (launches cmux if needed)
-          cmux [global-options] <command> [options]
+          amux <path>                Open a directory in a new workspace (launches amux if needed)
+          amux [global-options] <command> [options]
 
         Targets:
           Commands that accept a window, workspace, pane, or surface take a UUID, a short ref (window:1/workspace:2/pane:3/surface:4), or an index.
@@ -34203,11 +34465,11 @@ export default CMUXSessionRestore;
           --password takes precedence, then CMUX_SOCKET_PASSWORD, then the password saved in Settings.
 
         Agent Help:
-          Change cmux settings with `cmux docs settings` and `cmux settings path`; add Dock controls with `cmux docs dock`.
+          Change cmux settings with `amux docs settings` and `amux settings path`; add Dock controls with `amux docs dock`.
           Before editing, back up any existing cmux.json file to a timestamped .bak copy.
           Use printed curl commands to fetch the latest docs/schema; prefer Ghostty config for terminal behavior Ghostty already supports.
           Ghostty config lives at ~/.config/ghostty/config (terminal transparency, blur, font, theme, keybinds, etc.).
-          `cmux reload-config` reloads BOTH Ghostty config and ~/.config/cmux/cmux.json, then refreshes terminals in place. No app restart needed.
+          `amux reload-config` reloads BOTH Ghostty config and ~/.config/cmux/cmux.json, then refreshes terminals in place. No app restart needed.
 
         Commands:
           welcome
@@ -34240,6 +34502,10 @@ export default CMUXSessionRestore;
           vm <new|ls|rm|exec|shell|ssh> [args...]    (alias: cloud)
           remotes <list|add|remove> [--route <host:port>] [--tag <tag>] [--json]    (alias: remote)
           ai-accounts <list|upload|remove> [--team <id>] [--json]
+          sync tmux [on|off|status]                     (amux CLI)
+          ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus]    (amux CLI)
+          amux sync tmux [on|off|status]                (compat namespace)
+          amux ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus]
           rpc <method> [json-params]
           identify [--workspace <id|ref|index>] [--surface <id|ref|index>] [--window <id|ref|index>] [--no-caller]
           list-windows

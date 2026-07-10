@@ -397,9 +397,9 @@ enum KeyboardShortcutSettings {
             case .triggerFlash:
                 return StoredShortcut(key: "h", command: true, shift: true, option: false, control: false)
             case .nextSidebarTab:
-                return StoredShortcut(key: "]", command: true, shift: false, option: false, control: true)
+                return StoredShortcut(key: "]", command: true, shift: true, option: false, control: false)
             case .prevSidebarTab:
-                return StoredShortcut(key: "[", command: true, shift: false, option: false, control: true)
+                return StoredShortcut(key: "[", command: true, shift: true, option: false, control: false)
             case .focusHistoryBack:
                 return StoredShortcut(key: "[", command: true, shift: false, option: false, control: false)
             case .focusHistoryForward:
@@ -477,9 +477,9 @@ enum KeyboardShortcutSettings {
                 // the canvas.* socket verbs; users opt into keys via Settings.
                 return .unbound
             case .nextSurface:
-                return StoredShortcut(key: "]", command: true, shift: true, option: false, control: false)
+                return StoredShortcut(key: "\t", command: false, shift: false, option: false, control: true)
             case .prevSurface:
-                return StoredShortcut(key: "[", command: true, shift: true, option: false, control: false)
+                return StoredShortcut(key: "\t", command: false, shift: true, option: false, control: true)
             case .selectSurfaceByNumber:
                 return StoredShortcut(key: "1", command: false, shift: false, option: false, control: true)
             case .newSurface:

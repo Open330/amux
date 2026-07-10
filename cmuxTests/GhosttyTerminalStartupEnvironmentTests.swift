@@ -669,6 +669,32 @@ struct GhosttyTerminalStartupEnvironmentTests {
     }
 
     @Test
+    func testMergedStartupEnvironmentAddsUTF8CTypeWhenGUIEnvironmentHasNoLocale() {
+        let merged = TerminalSurface.mergedStartupEnvironment(
+            base: [:],
+            protectedKeys: [],
+            additionalEnvironment: [:],
+            initialEnvironmentOverrides: [:],
+            ambientEnvironment: [:]
+        )
+        expectEqual(merged["LC_CTYPE"], TerminalSurface.managedUTF8LocaleFallback)
+    }
+
+    @Test
+    func testMergedStartupEnvironmentDoesNotAddCTypeWhenLangIsAlreadyUTF8() {
+        let merged = TerminalSurface.mergedStartupEnvironment(
+            base: [:],
+            protectedKeys: [],
+            additionalEnvironment: [:],
+            initialEnvironmentOverrides: [:],
+            ambientEnvironment: [
+                "LANG": "ko_KR.UTF-8",
+            ]
+        )
+        expectNil(merged["LC_CTYPE"])
+    }
+
+    @Test
     func testMergedStartupEnvironmentPreservesExplicitCLocale() {
         let merged = TerminalSurface.mergedStartupEnvironment(
             base: [:],

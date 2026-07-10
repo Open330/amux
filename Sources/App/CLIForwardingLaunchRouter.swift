@@ -8,7 +8,7 @@ enum CLIForwardingLaunchRouter {
     private static let guardKey = "CMUX_CLI_FORWARDED"
 
     /// If `argv` looks like a CLI invocation, exec the bundled CLI at
-    /// `Contents/Resources/bin/cmux` and never return. macOS-launch arguments
+    /// `Contents/Resources/bin/amux` and never return. macOS-launch arguments
     /// (`-psn_...`, other `-` flags) and `cmux://` URLs are left to the GUI.
     static func forwardToBundledCLIIfNeeded(
         arguments argv: [String] = CommandLine.arguments,
@@ -20,7 +20,7 @@ enum CLIForwardingLaunchRouter {
 
         guard let cliURL = bundledCLIURL(bundle: bundle, fileManager: fileManager) else {
             #if DEBUG
-            let resourcePath = bundle.resourceURL?.appendingPathComponent("bin/cmux").path ?? "<missing>"
+            let resourcePath = bundle.resourceURL?.appendingPathComponent("bin/amux").path ?? "<missing>"
             let executablePath = processExecutableURL()?.path ?? "<missing>"
             cliForwardingLogger.debug("bundled CLI not found for forwarding; bundleID=\(bundle.bundleIdentifier ?? "<missing>", privacy: .public) resourcePath=\(resourcePath, privacy: .public) executablePath=\(executablePath, privacy: .public)")
             #endif
@@ -72,9 +72,13 @@ enum CLIForwardingLaunchRouter {
         fileManager: FileManager = .default,
         executableURL: URL? = processExecutableURL()
     ) -> URL? {
-        let bundleCandidate = bundle.resourceURL?.appendingPathComponent("bin/cmux")
-        if let bundleCandidate, fileManager.isExecutableFile(atPath: bundleCandidate.path) {
-            return bundleCandidate
+        if let binURL = bundle.resourceURL?.appendingPathComponent("bin") {
+            for name in ["amux", "cmux"] {
+                let candidate = binURL.appendingPathComponent(name)
+                if fileManager.isExecutableFile(atPath: candidate.path) {
+                    return candidate
+                }
+            }
         }
 
         guard let executableURL else { return nil }
@@ -82,9 +86,12 @@ enum CLIForwardingLaunchRouter {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .appendingPathComponent("Resources")
-        let executableCandidate = resourcesURL.appendingPathComponent("bin/cmux")
-        if fileManager.isExecutableFile(atPath: executableCandidate.path) {
-            return executableCandidate
+        let binURL = resourcesURL.appendingPathComponent("bin")
+        for name in ["amux", "cmux"] {
+            let candidate = binURL.appendingPathComponent(name)
+            if fileManager.isExecutableFile(atPath: candidate.path) {
+                return candidate
+            }
         }
 
         return nil
@@ -119,21 +126,21 @@ enum CLIForwardingLaunchRouter {
     private static func localizedMissingBundledCLIError() -> String {
         String(
             localized: "cli.forwarding.error.missingBundledCLI",
-            defaultValue: "cmux could not run this command from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            defaultValue: "amux could not run this command from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
         )
     }
 
     private static func localizedArgumentAllocationError() -> String {
         String(
             localized: "cli.forwarding.error.allocateArguments",
-            defaultValue: "cmux could not start this command. Try again, or reinstall cmux if the problem continues."
+            defaultValue: "amux could not start this command. Try again, or reinstall amux if the problem continues."
         )
     }
 
     private static func localizedExecFailureError() -> String {
         String(
             localized: "cli.forwarding.error.execFailed",
-            defaultValue: "cmux could not start the command-line tool from the app bundle. Reinstall cmux or run the command from a standard cmux CLI installation."
+            defaultValue: "amux could not start the command-line tool from the app bundle. Reinstall amux or run the command from a standard amux CLI installation."
         )
     }
 

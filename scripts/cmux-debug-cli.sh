@@ -6,7 +6,7 @@ if [[ -z "${CMUX_TAG:-}" ]]; then
 CMUX_TAG is required.
 
 Usage:
-  CMUX_TAG=<tag> scripts/cmux-debug-cli.sh <cmux-command> [args...]
+  CMUX_TAG=<tag> scripts/cmux-debug-cli.sh <amux-command> [args...]
 
 Example:
   CMUX_TAG=codext scripts/cmux-debug-cli.sh list-workspaces
@@ -20,7 +20,7 @@ if [[ ! "$CMUX_TAG" =~ ^[A-Za-z0-9._-]+$ ]]; then
 fi
 
 if [[ $# -eq 0 ]]; then
-  echo "Usage: CMUX_TAG=$CMUX_TAG scripts/cmux-debug-cli.sh <cmux-command> [args...]" >&2
+  echo "Usage: CMUX_TAG=$CMUX_TAG scripts/cmux-debug-cli.sh <amux-command> [args...]" >&2
   exit 2
 fi
 
@@ -59,11 +59,16 @@ EOF
   exit 1
 fi
 
-cli_path="${HOME}/Library/Developer/Xcode/DerivedData/cmux-${tag_slug}/Build/Products/Debug/cmux DEV ${tag_slug}.app/Contents/Resources/bin/cmux"
+app_path="${HOME}/Library/Developer/Xcode/DerivedData/cmux-${tag_slug}/Build/Products/Debug/cmux DEV ${tag_slug}.app"
+cli_path="${app_path}/Contents/Resources/bin/amux"
+if [[ ! -x "$cli_path" ]]; then
+  cli_path="${app_path}/Contents/Resources/bin/cmux"
+fi
 if [[ ! -x "$cli_path" ]]; then
   cat >&2 <<EOF
-Tagged cmux CLI not found:
-  $cli_path
+Tagged amux CLI not found:
+  ${app_path}/Contents/Resources/bin/amux
+  ${app_path}/Contents/Resources/bin/cmux
 
 Build the tagged app first:
   ./scripts/reload.sh --tag $CMUX_TAG

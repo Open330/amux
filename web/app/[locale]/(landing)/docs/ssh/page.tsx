@@ -72,8 +72,7 @@ cmux://ssh?host=dev.example.com&host-key-policy=accept-new&no-focus=true`}</Code
       <CodeBlock lang="text">{`https://cmux.com/deeplink/prompt?text=Review%20this%20branch
 https://cmux.com/deeplink/rules?name=freestyle&text=Prefer%20commas,%20colons:%20and%20small%20PRs`}</CodeBlock>
       <p>{t("deepLinksIconDesc")}</p>
-      <CodeBlock lang="text">{`https://cmux.com/cmux-icon.svg
-https://cmux.com/logo.png`}</CodeBlock>
+      <CodeBlock lang="text">{`https://cmux.com/logo.png`}</CodeBlock>
       <p>{t("deepLinksButtonDesc")}</p>
       <CodeBlock lang="tsx">{`const params = new URLSearchParams({
   host: "workspace123.vm-ssh.freestyle.sh",

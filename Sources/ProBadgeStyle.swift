@@ -142,9 +142,9 @@ final class ProBadgeStyleStore {
     }
 }
 
-/// A narrow slice of the cmux logo chevron gradient
-/// (web/public/cmux-icon.svg: #12c7f5 -> #2d8cff@0.52 -> #6c5cff). The
-/// icon spreads that ramp across the whole chevron, so any local patch
+/// A narrow slice of the amux logo gradient
+/// (design/amux-logo.png: #26bee1 -> #2c8eed -> #2574dc). The
+/// icon spreads that ramp across the whole mark, so any local patch
 /// only shifts hue slightly; the badge samples t=0.35...0.75 of the ramp
 /// (#249FFC -> #4B75FF) to match that local subtlety instead of showing
 /// the full cyan->violet sweep in 40pt.
@@ -152,7 +152,7 @@ enum ProBadgePalette {
     static let logoGradient = LinearGradient(
         colors: [
             Color(red: 0x24 / 255, green: 0x9F / 255, blue: 0xFC / 255),
-            Color(red: 0x4B / 255, green: 0x75 / 255, blue: 0xFF / 255),
+            Color(red: 0x25 / 255, green: 0x74 / 255, blue: 0xDC / 255),
         ],
         startPoint: .leading,
         endPoint: .trailing

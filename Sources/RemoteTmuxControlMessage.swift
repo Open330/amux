@@ -38,9 +38,14 @@ enum RemoteTmuxControlMessage: Sendable, Equatable {
     /// `%window-renamed @<id> <name>` — a window was renamed.
     case windowRenamed(windowId: Int, name: String)
 
-    /// `%layout-change @<id> <layout> …` — a window's pane layout changed.
-    /// `layout` is the raw tmux layout string (parse with ``RemoteTmuxRawLayoutParser``).
-    case layoutChange(windowId: Int, layout: String)
+    /// `%layout-change @<id> <layout> <visible-layout> <flags>` — a window's
+    /// pane layout changed. `layout` is the raw tmux layout string (parse with
+    /// ``RemoteTmuxRawLayoutParser``); `visibleLayout` is what the window
+    /// actually SHOWS (a single full-window pane while zoomed) and `zoomed`
+    /// reflects the `Z` window flag. Rendering `layout` while zoomed is the
+    /// classic mangle: tmux streams the zoomed pane at full-window size into a
+    /// small split cell.
+    case layoutChange(windowId: Int, layout: String, visibleLayout: String?, zoomed: Bool)
 
     /// `%window-pane-changed @<id> %<pane>` — the active pane in a window changed.
     case windowPaneChanged(windowId: Int, paneId: Int)

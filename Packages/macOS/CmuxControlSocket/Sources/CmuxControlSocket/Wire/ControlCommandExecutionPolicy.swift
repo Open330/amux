@@ -132,6 +132,14 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         "amux.new_session",
         "amux.sessions",
         "amux.attach_session",
+        // The agent-driving pane primitives: pane_read runs one-shot tmux
+        // round trips and pane_wait long-polls (both park v2VmCall's
+        // semaphore), so they live on the worker lane. amux.pane_send takes
+        // only a quick v2MainSync hop and stays on the main lane, like
+        // amux.send_prompt.
+        "amux.pane_read",
+        "amux.pane_wait",
+        "amux.local_tmux_sync",
         // amux.remote_setup runs SSH round trips (inspect/provision the
         // remote muxa stack) through v2VmCall — worker lane.
         "amux.remote_setup",

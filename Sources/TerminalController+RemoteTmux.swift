@@ -39,10 +39,14 @@ extension TerminalController {
     /// at the trust boundary is defense in depth against ssh option injection
     /// (`-oProxyCommand=…` → local command execution).
     nonisolated static func remoteTmuxHost(from params: [String: Any]) -> RemoteTmuxHost? {
-        // `local: true` addresses the amux local engine — a fixed endpoint
-        // with no SSH fields, so none of the destination validation below
-        // applies (and a caller-supplied `host` string could never resolve to
-        // it: the local kind is part of the connection hash).
+        // `local_default: true` addresses the user's default localhost tmux
+        // server. `local: true` addresses the amux local engine — a fixed
+        // endpoint with no SSH fields, so none of the destination validation
+        // below applies (and a caller-supplied `host` string could never resolve
+        // to either local endpoint: the local kind is part of the connection hash).
+        if params["local_default"] as? Bool == true {
+            return .localDefault()
+        }
         if params["local"] as? Bool == true {
             return .amuxLocal()
         }
@@ -342,6 +346,221 @@ extension TerminalController {
                 )
             }
             return .ok(["sent": true, "workspace_id": workspace.id.uuidString])
+        }
+    }
+
+    /// Accepts a tmux pane param as an Int (`3`) or a sigil string (`"%3"`).
+    nonisolated static func v2TmuxPaneParam(_ raw: Any?) -> Int? {
+        if let number = raw as? Int { return number }
+        guard let string = raw as? String else { return nil }
+        let trimmed = string.trimmingCharacters(in: .whitespaces)
+        return Int(trimmed.hasPrefix("%") ? String(trimmed.dropFirst()) : trimmed)
+    }
+
+    /// Resolves the amux workspace a pane-driving RPC targets: `workspace_id`
+    /// when given (must exist), else the key window's selected workspace.
+    /// Main-actor; returns the id so worker-lane callers don't carry the
+    /// non-Sendable `Workspace` across the hop.
+    @MainActor
+    private func v2AmuxResolveWorkspaceId(_ params: [String: Any]) -> UUID? {
+        guard let appDelegate = AppDelegate.shared else { return nil }
+        v2RefreshKnownRefs()
+        if let workspaceId = v2UUID(params, "workspace_id") {
+            return appDelegate.amuxWorkspace(withId: workspaceId)?.workspace.id
+        }
+        return appDelegate.tabManager?.selectedTab?.id
+    }
+
+    /// `amux.pane_read` — agent-driving read of a mirrored pane's screen (plus
+    /// optional scrollback tail). Params: `workspace_id?`, `pane?` (`%N` or N),
+    /// `history_lines?` (0–5000, default 0 = visible screen only). Returns
+    /// `{workspace_id, pane, lines, history_size}`; `history_size` acts as an
+    /// incremental cursor (`history_size - lastSeen` bounds the new scrollback
+    /// since the caller's previous read). Worker lane (one-shot tmux round
+    /// trips). The read primitive of the agent-driving trio
+    /// (`pane_read` / `pane_wait` / `pane_send`).
+    nonisolated func v2AmuxPaneRead(id: Any?, params: [String: Any]) -> String {
+        let historyLines = min(max((params["history_lines"] as? Int) ?? 0, 0), 5000)
+        let paneParam = Self.v2TmuxPaneParam(params["pane"])
+        return v2VmCall(id: id, timeoutSeconds: 20) {
+            let resolved = await MainActor.run { () -> (UUID, RemoteTmuxController)? in
+                guard let appDelegate = AppDelegate.shared,
+                      let workspaceId = self.v2AmuxResolveWorkspaceId(params) else { return nil }
+                return (workspaceId, appDelegate.remoteTmuxController)
+            }
+            guard let (workspaceId, controller) = resolved else {
+                throw RemoteTmuxError.unreachable("workspace not found")
+            }
+            guard let read = await controller.readMirrorPane(
+                workspaceId: workspaceId, tmuxPane: paneParam, historyLines: historyLines
+            ) else {
+                throw RemoteTmuxError.unreachable("workspace has no live mirrored pane")
+            }
+            var lines = read.text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+            if lines.last == "" { lines.removeLast() }
+            return [
+                "workspace_id": workspaceId.uuidString,
+                "pane": read.pane,
+                "lines": lines,
+                "history_size": read.historySize,
+            ]
+        }
+    }
+
+    /// `amux.pane_wait` — blocks until a mirrored pane settles. Params:
+    /// `workspace_id?`, `pane?`, `for` = `"idle"` (default) | `"exit"`,
+    /// `timeout_ms` (1s–10min, default 60s), `quiet_ms` (default 1500).
+    ///
+    /// `idle` resolves when the pane stopped streaming output for `quiet_ms`
+    /// AND muxa (when it tracks an agent there) does not report
+    /// working/starting — the "agent finished its turn, safe to read/send"
+    /// barrier an orchestrating agent needs between `pane_send` and
+    /// `pane_read`. `exit` resolves when the pane closed or its foreground
+    /// fell back to a plain shell. Timing out is an `{result: "timeout"}`
+    /// success, not an error. Worker lane (long poll).
+    nonisolated func v2AmuxPaneWait(id: Any?, params: [String: Any]) -> String {
+        let waitFor = ((params["for"] as? String) ?? "idle").lowercased()
+        guard waitFor == "idle" || waitFor == "exit" else {
+            return v2Error(
+                id: id,
+                code: "invalid_params",
+                message: String(
+                    localized: "socket.amux.waitForInvalid",
+                    defaultValue: "for must be \"idle\" or \"exit\""
+                )
+            )
+        }
+        let timeoutMs = min(max((params["timeout_ms"] as? Int) ?? 60_000, 1_000), 600_000)
+        let quietMs = min(max((params["quiet_ms"] as? Int) ?? 1_500, 250), 30_000)
+        let paneParam = Self.v2TmuxPaneParam(params["pane"])
+        return v2VmCall(id: id, timeoutSeconds: Double(timeoutMs) / 1000 + 10) {
+            let resolved = await MainActor.run { () -> (UUID, RemoteTmuxController, AmuxAgentObservationHub)? in
+                guard let appDelegate = AppDelegate.shared,
+                      let workspaceId = self.v2AmuxResolveWorkspaceId(params) else { return nil }
+                return (workspaceId, appDelegate.remoteTmuxController, appDelegate.amuxAgentObservation)
+            }
+            guard let (workspaceId, controller, observation) = resolved else {
+                throw RemoteTmuxError.unreachable("workspace not found")
+            }
+            let clock = ContinuousClock()
+            let started = clock.now
+            let deadline = started.advanced(by: .milliseconds(timeoutMs))
+            var lockedPane = paneParam
+            var lastBytes: Int?
+            var quietSince: ContinuousClock.Instant?
+            func payload(_ result: String, pane: Int?, foreground: String?, agentState: String?) -> [String: Any] {
+                var dict: [String: Any] = [
+                    "workspace_id": workspaceId.uuidString,
+                    "result": result,
+                    "waited_ms": Int((clock.now - started).components.seconds * 1000)
+                        + Int((clock.now - started).components.attoseconds / 1_000_000_000_000_000),
+                ]
+                if let pane { dict["pane"] = pane }
+                if let foreground { dict["foreground"] = foreground }
+                if let agentState { dict["agent_state"] = agentState }
+                return dict
+            }
+            while clock.now < deadline {
+                let sample = await MainActor.run {
+                    () -> (RemoteTmuxController.MirrorPaneObservation?, String?) in
+                    let observed = controller.observeMirrorPane(workspaceId: workspaceId, tmuxPane: lockedPane)
+                    var agentState: String?
+                    if let pane = observed?.pane {
+                        agentState = observation.agents(inWorkspace: workspaceId)
+                            .first { AmuxAgentStatusService.paneNumber($0.pane) == pane }?
+                            .state.rawValue
+                    }
+                    return (observed, agentState)
+                }
+                guard let observed = sample.0 else {
+                    return payload("exit", pane: lockedPane, foreground: nil, agentState: sample.1)
+                }
+                if lockedPane == nil { lockedPane = observed.pane }
+                let foreground = observed.foreground?.command
+                if !observed.paneExists {
+                    return payload("exit", pane: observed.pane, foreground: foreground, agentState: sample.1)
+                }
+                if waitFor == "exit", let state = observed.foreground, !state.hasActiveCommand {
+                    return payload("exit", pane: observed.pane, foreground: foreground, agentState: sample.1)
+                }
+                let now = clock.now
+                if lastBytes != observed.outputBytes {
+                    lastBytes = observed.outputBytes
+                    quietSince = now
+                } else if quietSince == nil {
+                    quietSince = now
+                }
+                if waitFor == "idle" {
+                    let muxaBusy = sample.1 == "working" || sample.1 == "starting"
+                    let quietLongEnough = quietSince.map { now - $0 >= .milliseconds(quietMs) } ?? false
+                    if !muxaBusy, quietLongEnough {
+                        return payload("idle", pane: observed.pane, foreground: foreground, agentState: sample.1)
+                    }
+                }
+                try await Task.sleep(for: .milliseconds(250))
+            }
+            return payload("timeout", pane: lockedPane, foreground: nil, agentState: nil)
+        }
+    }
+
+    /// `amux.pane_send` — guarded agent-directed send into a mirrored pane.
+    /// Params: `text` (required), `workspace_id?`, `pane?`, `enter?` (default
+    /// true), `guarded?` (default true). With the guard on, the pane's
+    /// foreground must be an interactive (non-shell) app; a bare shell refuses
+    /// with `not_sendable` + the foreground command, so an agent-directed
+    /// prompt can never be executed as shell commands. Multi-line text rides
+    /// the bracketed tmux paste path (Enter queued after the paste flush).
+    /// NOT focus-intent.
+    nonisolated func v2AmuxPaneSend(params: [String: Any]) -> V2CallResult {
+        guard let text = params["text"] as? String, !text.isEmpty else {
+            return .err(
+                code: "invalid_params",
+                message: String(localized: "socket.amux.textRequired", defaultValue: "text is required"),
+                data: nil
+            )
+        }
+        let enter = (params["enter"] as? Bool) ?? true
+        let guarded = (params["guarded"] as? Bool) ?? true
+        let paneParam = Self.v2TmuxPaneParam(params["pane"])
+        return v2MainSync {
+            guard let appDelegate = AppDelegate.shared,
+                  let workspaceId = self.v2AmuxResolveWorkspaceId(params) else {
+                return .err(
+                    code: "not_found",
+                    message: String(localized: "socket.amux.workspaceNotFound", defaultValue: "Workspace not found"),
+                    data: nil
+                )
+            }
+            switch appDelegate.remoteTmuxController.guardedSendToMirror(
+                workspaceId: workspaceId, tmuxPane: paneParam, text: text, enter: enter, guarded: guarded
+            ) {
+            case let .sent(pane):
+                return .ok([
+                    "sent": true,
+                    "workspace_id": workspaceId.uuidString,
+                    "pane": pane,
+                ])
+            case .notMirror:
+                return .err(
+                    code: "not_mirror",
+                    message: String(
+                        localized: "socket.amux.notMirror",
+                        defaultValue: "Workspace is not a live tmux mirror"
+                    ),
+                    data: nil
+                )
+            case let .notSendable(pane, foreground):
+                var data: [String: Any] = ["pane": pane]
+                if let foreground { data["foreground"] = foreground }
+                return .err(
+                    code: "not_sendable",
+                    message: String(
+                        localized: "socket.amux.paneNotSendable",
+                        defaultValue: "Pane foreground is not an interactive agent (pass guarded=false to send anyway)"
+                    ),
+                    data: data
+                )
+            }
         }
     }
 

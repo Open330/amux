@@ -55,6 +55,13 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
         RemoteTmuxHost(destination: "amux-local", kind: .localAmux)
     }
 
+    /// The endpoint for the user's default local tmux server. This intentionally
+    /// does not use `-L amux` or `-f /dev/null`: it mirrors sessions the user
+    /// already manages from ordinary terminal shells.
+    static func localDefault() -> RemoteTmuxHost {
+        RemoteTmuxHost(destination: "localhost", kind: .localDefault)
+    }
+
     /// A human-readable (but lossy) slug for the destination, used only for
     /// debuggability in the control socket filename. It lowercases and maps
     /// every non-alphanumeric character to `-`, so distinct destinations can
@@ -89,7 +96,14 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
         // so every existing SSH host keeps its historical hash — those hashes
         // key ControlMaster socket filenames and persisted registries.
         var fingerprint = "\(destination)\u{1f}\(port.map(String.init) ?? "")\u{1f}\(identityFile ?? "")"
-        if kind == .localAmux { fingerprint += "\u{1f}local-amux" }
+        switch kind {
+        case .ssh:
+            break
+        case .localDefault:
+            fingerprint += "\u{1f}local-default"
+        case .localAmux:
+            fingerprint += "\u{1f}local-amux"
+        }
         var hash: UInt64 = 0xcbf2_9ce4_8422_2325 // FNV offset basis
         for byte in fingerprint.utf8 {
             hash ^= UInt64(byte)
@@ -392,6 +406,12 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
                 sessionName: sessionName,
                 createIfMissing: createIfMissing
             ))
+        case .localDefault:
+            var args = ["-q", "/dev/null", Self.localTmuxExecutablePath(), "-u", "-CC"]
+            args.append(contentsOf: createIfMissing
+                ? ["new-session", "-A", "-s", sessionName]
+                : ["attach-session", "-t", sessionName])
+            return ("/usr/bin/script", args)
         case .localAmux:
             var args = ["-q", "/dev/null", Self.localTmuxExecutablePath()]
             // `-f /dev/null` isolates the amux server from the user's

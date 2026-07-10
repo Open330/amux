@@ -371,21 +371,27 @@ import Testing
 
         connection.handleMessageForTesting(.commandResult(commandNumber: 1, lines: [], isError: false))
 
-        #expect(connection.pendingCommandKindsForTesting == [.listWindows])
+        // Draining the attach block queues the topology fetch AND the prefix-key
+        // query (the typed-input prefix router follows the server's real prefix).
+        #expect(connection.pendingCommandKindsForTesting == [.listWindows, .prefixKey])
     }
 
     @Test @MainActor func layoutChangePrunesRemovedPaneDiagnosticState() {
         let connection = RemoteTmuxControlConnection(host: RemoteTmuxHost(destination: "user@host"), sessionName: "work")
         connection.handleMessageForTesting(.layoutChange(
             windowId: 1,
-            layout: "abcd,120x40,0,0{60x40,0,0,4,59x40,61,0,5}"
+            layout: "abcd,120x40,0,0{60x40,0,0,4,59x40,61,0,5}",
+            visibleLayout: nil,
+            zoomed: false
         ))
         connection.handleMessageForTesting(.output(paneId: 4, data: Data("left".utf8)))
         connection.handleMessageForTesting(.output(paneId: 5, data: Data("right".utf8)))
         connection.handleMessageForTesting(.subscriptionChanged(name: "cmux_reflow_4", value: "0|zsh"))
         connection.handleMessageForTesting(.subscriptionChanged(name: "cmux_reflow_5", value: "1|vim"))
 
-        connection.handleMessageForTesting(.layoutChange(windowId: 1, layout: "f92f,80x24,0,0,4"))
+        connection.handleMessageForTesting(.layoutChange(
+            windowId: 1, layout: "f92f,80x24,0,0,4", visibleLayout: nil, zoomed: false
+        ))
 
         #expect(connection.snapshot().paneOutputByteCounts[4] == 4)
         #expect(connection.snapshot().paneOutputByteCounts[5] == nil)
@@ -395,12 +401,60 @@ import Testing
 
     @Test func pastePaneCommandsProtectOptionLookingText() throws {
         let commands = try #require(RemoteTmuxControlConnection.pastePaneCommands(paneId: 7, text: "-n not-an-option"))
-        #expect(commands.setBuffer == "set-buffer -b cmux-paste-7 -- '-n not-an-option'")
-        #expect(commands.pasteBuffer == "paste-buffer -p -d -b cmux-paste-7 -t %7")
+        // `--` ends option parsing, so the option-looking text needs no escaping
+        // of its leading dash.
+        #expect(commands == [
+            "set-buffer -b cmux-paste-7 -- \"-n not-an-option\"",
+            "paste-buffer -p -d -b cmux-paste-7 -t %7",
+        ])
     }
 
     @Test func pastePaneCommandsRejectEmptyText() {
         #expect(RemoteTmuxControlConnection.pastePaneCommands(paneId: 7, text: "") == nil)
+    }
+
+    @Test func pastePaneCommandsEscapeNewlinesAndTmuxMetacharacters() throws {
+        let commands = try #require(
+            RemoteTmuxControlConnection.pastePaneCommands(paneId: 3, text: "echo \"a\"\nrm b; #$HOME\\")
+        )
+        #expect(commands == [
+            "set-buffer -b cmux-paste-3 -- \"echo \\042a\\042\\012rm b\\073 \\043\\044HOME\\134\"",
+            "paste-buffer -p -d -b cmux-paste-3 -t %3",
+        ])
+    }
+
+    @Test func pastePaneCommandsChunkLargeTextWithAppendFlag() throws {
+        // 10 escaped bytes per chunk; "abcdefghijklmno" (15 unescaped bytes)
+        // must split into two ordered set-buffer lines, the second appending.
+        let commands = try #require(
+            RemoteTmuxControlConnection.pastePaneCommands(
+                paneId: 1, text: "abcdefghijklmno", maxEscapedChunkBytes: 10
+            )
+        )
+        #expect(commands == [
+            "set-buffer -b cmux-paste-1 -- \"abcdefghij\"",
+            "set-buffer -ab cmux-paste-1 -- \"klmno\"",
+            "paste-buffer -p -d -b cmux-paste-1 -t %1",
+        ])
+    }
+
+    @Test func pastePaneCommandsPreserveMultibyteUTF8AsOctalBytes() throws {
+        // "가" = 0xEA 0xB0 0x80 → three octal escapes, decoded back to the same
+        // bytes by tmux's double-quoted-string parser.
+        let commands = try #require(RemoteTmuxControlConnection.pastePaneCommands(paneId: 2, text: "가"))
+        #expect(commands.first == "set-buffer -b cmux-paste-2 -- \"\\352\\260\\200\"")
+    }
+
+    @Test func prefixKeyOptionParsing() {
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("C-b")?.byte == 0x02)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("C-a")?.byte == 0x01)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("C-a")?.name == "C-a")
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption(" C-z\n")?.byte == 0x1a)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("None") == nil)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("F12") == nil)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("M-a") == nil)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("`") == nil)
+        #expect(RemoteTmuxControlConnection.parsePrefixKeyOption("") == nil)
     }
 
     // MARK: - Interactive auth invocation (what `cmux ssh-tmux` runs in the tty)

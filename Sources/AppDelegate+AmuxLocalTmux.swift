@@ -1,6 +1,24 @@
 import AppKit
 import CmuxMuxa
 
+private struct AmuxRemoteTmuxSyncRecord: Codable, Equatable {
+    var destination: String
+    var port: Int?
+    var identityFile: String?
+    var enabled: Bool
+
+    var host: RemoteTmuxHost {
+        RemoteTmuxHost(destination: destination, port: port, identityFile: identityFile)
+    }
+
+    init(host: RemoteTmuxHost, enabled: Bool) {
+        self.destination = host.destination
+        self.port = host.port
+        self.identityFile = host.identityFile
+        self.enabled = enabled
+    }
+}
+
 extension AppDelegate {
     /// Builds the agent-observation hub: the local muxad status service plus
     /// a factory for per-SSH-host observers (socket forwarder + status
@@ -73,9 +91,12 @@ extension AppDelegate {
     /// Launch-time reconcile for the amux local engine: any session left on
     /// the dedicated local server (detach-by-default means the server
     /// outlives the app) is re-mirrored as a workspace, so a restart brings
-    /// the user's sessions back without a manual attach. A missing server or
-    /// empty session list is a silent no-op (`discoverMirrorSessions` with
-    /// `createIfEmpty: false` never creates sessions).
+    /// the user's sessions back without a manual attach.
+    ///
+    /// If the user opted into tmux sync, this also re-mirrors the user's
+    /// default localhost tmux server and any SSH hosts with per-host sync
+    /// enabled. Missing servers, empty session lists, and unreachable SSH hosts
+    /// are silent no-ops at launch.
     func reconcileLocalAmuxSessionsAtLaunch() {
         Task { @MainActor [weak self] in
             guard let self else { return }
@@ -85,6 +106,27 @@ extension AppDelegate {
                 #if DEBUG
                 cmuxDebugLog("amux: launch reconcile failed: \(error)")
                 #endif
+            }
+            if self.amuxLocalTmuxSessionSyncEnabled, let manager = self.tabManager {
+                do {
+                    _ = try await self.remoteTmuxController.mirrorLocalDefaultTmuxSessions(into: manager)
+                } catch {
+                    #if DEBUG
+                    cmuxDebugLog("amux: local default tmux sync failed: \(error)")
+                    #endif
+                }
+            }
+            for host in self.amuxRemoteTmuxSyncHosts() {
+                do {
+                    _ = try await self.remoteTmuxController.mirrorHostInNewWindow(
+                        host: host,
+                        activateWindow: false
+                    )
+                } catch {
+                    #if DEBUG
+                    cmuxDebugLog("amux: remote tmux sync failed for \(host.destination): \(error)")
+                    #endif
+                }
             }
         }
     }
@@ -156,6 +198,114 @@ extension AppDelegate {
     var amuxNewWorkspaceUsesTmux: Bool {
         get { UserDefaults.standard.bool(forKey: Self.newWorkspaceTmuxBackedDefaultsKey) }
         set { UserDefaults.standard.set(newValue, forKey: Self.newWorkspaceTmuxBackedDefaultsKey) }
+    }
+
+    /// Whether amux mirrors the user's default localhost tmux sessions into
+    /// workspaces. This is separate from ``amuxNewWorkspaceUsesTmux``: that
+    /// setting creates app-owned `-L amux` sessions, while this syncs sessions
+    /// the user already runs in ordinary tmux.
+    static let localTmuxSyncEnabledDefaultsKey = "amux.localTmux.syncEnabled"
+    var amuxLocalTmuxSessionSyncEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: Self.localTmuxSyncEnabledDefaultsKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Self.localTmuxSyncEnabledDefaultsKey) }
+    }
+
+    static let remoteTmuxSyncRecordsDefaultsKey = "amux.remoteTmux.syncRecords.v1"
+
+    private var amuxRemoteTmuxSyncRecords: [String: AmuxRemoteTmuxSyncRecord] {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: Self.remoteTmuxSyncRecordsDefaultsKey),
+                  let records = try? JSONDecoder().decode([String: AmuxRemoteTmuxSyncRecord].self, from: data)
+            else { return [:] }
+            return records
+        }
+        set {
+            guard let data = try? JSONEncoder().encode(newValue) else { return }
+            UserDefaults.standard.set(data, forKey: Self.remoteTmuxSyncRecordsDefaultsKey)
+        }
+    }
+
+    func amuxRemoteTmuxSyncEnabled(for host: RemoteTmuxHost) -> Bool {
+        amuxRemoteTmuxSyncRecords[host.connectionHash]?.enabled ?? false
+    }
+
+    func amuxSetRemoteTmuxSyncEnabled(_ enabled: Bool, for host: RemoteTmuxHost) {
+        guard host.kind == .ssh else { return }
+        var records = amuxRemoteTmuxSyncRecords
+        records[host.connectionHash] = AmuxRemoteTmuxSyncRecord(host: host, enabled: enabled)
+        amuxRemoteTmuxSyncRecords = records
+    }
+
+    func amuxRemoteTmuxSyncHosts() -> [RemoteTmuxHost] {
+        amuxRemoteTmuxSyncRecords.values
+            .filter(\.enabled)
+            .map(\.host)
+            .sorted { $0.destination.localizedCaseInsensitiveCompare($1.destination) == .orderedAscending }
+    }
+
+    /// Toggles sync for the user's default localhost tmux server. Turning sync
+    /// off stops future automatic mirrors; it deliberately leaves currently open
+    /// mirror workspaces alone so no tmux client/session is detached out from
+    /// under the user.
+    func amuxToggleLocalTmuxSessionSync() {
+        amuxLocalTmuxSessionSyncEnabled.toggle()
+        if amuxLocalTmuxSessionSyncEnabled {
+            amuxMirrorLocalDefaultTmuxSessions(presentResult: true)
+            return
+        }
+        let alert = NSAlert()
+        alert.messageText = String(
+            localized: "amux.localSync.disabled.title",
+            defaultValue: "Local tmux Sync Off"
+        )
+        alert.informativeText = String(
+            localized: "amux.localSync.disabled.body",
+            defaultValue: "amux will stop auto-syncing localhost tmux sessions. Open mirror workspaces stay open until you close them."
+        )
+        AmuxOnboarding.present(alert) { _ in }
+    }
+
+    /// Mirrors the user's default localhost tmux sessions into the key window's
+    /// workspace list. Existing mirrors are de-duplicated by tmux session id/name.
+    func amuxMirrorLocalDefaultTmuxSessions(presentResult: Bool = false) {
+        guard let manager = tabManager else { NSSound.beep(); return }
+        Task { @MainActor in
+            do {
+                let result = try await self.remoteTmuxController.mirrorLocalDefaultTmuxSessions(into: manager)
+                guard presentResult else { return }
+                let alert = NSAlert()
+                alert.messageText = String(
+                    localized: "amux.localSync.enabled.title",
+                    defaultValue: "Local tmux Sync On"
+                )
+                if result.discovered == 0 {
+                    alert.informativeText = String(
+                        localized: "amux.localSync.noSessions",
+                        defaultValue: "Sync is on, but the localhost tmux server has no sessions yet."
+                    )
+                } else {
+                    alert.informativeText = String(
+                        format: String(
+                            localized: "amux.localSync.synced.body",
+                            defaultValue: "Found %lld localhost tmux session(s); %lld new workspace(s) were mirrored. tmux windows appear as amux tabs, and tmux panes stay split inside each tab."
+                        ),
+                        Int64(result.discovered),
+                        Int64(result.mirrored)
+                    )
+                }
+                AmuxOnboarding.present(alert) { _ in }
+            } catch {
+                NSSound.beep()
+                guard presentResult else { return }
+                let alert = NSAlert()
+                alert.messageText = String(
+                    localized: "amux.localSync.failed.title",
+                    defaultValue: "Local tmux Sync Failed"
+                )
+                alert.informativeText = error.localizedDescription
+                AmuxOnboarding.present(alert) { _ in }
+            }
+        }
     }
 
     /// Creates a fresh amux tmux-backed workspace (the headline "new
@@ -332,31 +482,84 @@ extension AppDelegate {
         }
     }
 
-    /// Remote-host setup flow: pick an SSH host with a live mirror, inspect
-    /// its muxa observation stack (CLI, daemon, hooks, notifier), and offer
-    /// the hooks-only `muxa init` when something is missing. Palette
-    /// entrypoint; `amux.remote_setup` drives the same service headlessly.
+    private func amuxRemoteHostCandidates() -> [String] {
+        var seen = Set<String>()
+        var candidates: [String] = []
+        func append(_ destination: String) {
+            guard !destination.isEmpty, seen.insert(destination).inserted else { return }
+            candidates.append(destination)
+        }
+        for host in remoteTmuxController.activeSSHMirrorHosts() {
+            append(host.destination)
+        }
+        for record in amuxRemoteTmuxSyncRecords.values {
+            append(record.destination)
+        }
+        for alias in Self.amuxSSHConfigHostAliases() {
+            append(alias)
+        }
+        return candidates
+    }
+
+    nonisolated static func amuxSSHConfigHostAliases(configPath: String? = nil) -> [String] {
+        let path = configPath ?? FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".ssh/config").path
+        guard let contents = try? String(contentsOfFile: path, encoding: .utf8) else { return [] }
+        var aliases: [String] = []
+        var seen = Set<String>()
+        for line in contents.split(whereSeparator: \.isNewline) {
+            let noComment = line.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false).first ?? ""
+            let parts = noComment.split(whereSeparator: \.isWhitespace).map(String.init)
+            guard parts.first?.lowercased() == "host" else { continue }
+            for alias in parts.dropFirst() {
+                guard !alias.isEmpty,
+                      !alias.contains("*"),
+                      !alias.contains("?"),
+                      !alias.contains("!"),
+                      !alias.contains("%"),
+                      seen.insert(alias).inserted
+                else { continue }
+                aliases.append(alias)
+            }
+        }
+        return aliases.sorted {
+            $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+        }
+    }
+
+    /// Remote-host setup flow: pick an SSH host, inspect its muxa observation
+    /// stack (CLI, daemon, hooks, notifier), detect tmux sessions, and offer
+    /// per-host tmux sync. Palette entrypoint; `amux.remote_setup` drives the
+    /// same service headlessly.
     func amuxPresentRemoteHostSetup() {
-        let hosts = remoteTmuxController.activeSSHMirrorHosts()
-        guard !hosts.isEmpty else {
+        let candidates = amuxRemoteHostCandidates()
+        let picker = NSAlert()
+        picker.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
+        picker.informativeText = String(
+            localized: "amux.remoteSetup.pickHost",
+            defaultValue: "Choose an SSH config alias or enter a host to inspect. If tmux sessions exist, you can turn sync on for this host."
+        )
+        let combo = NSComboBox(frame: NSRect(x: 0, y: 0, width: 360, height: 26))
+        combo.completes = true
+        combo.usesDataSource = false
+        combo.addItems(withObjectValues: candidates)
+        combo.stringValue = candidates.first ?? ""
+        picker.accessoryView = combo
+        picker.addButton(withTitle: String(localized: "amux.remoteSetup.continue", defaultValue: "Continue"))
+        picker.addButton(withTitle: String(localized: "amux.remoteSetup.cancel", defaultValue: "Cancel"))
+        guard picker.runModal() == .alertFirstButtonReturn else { return }
+        let destination = combo.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let host = TerminalController.remoteTmuxHost(from: ["host": destination]), host.kind == .ssh else {
             let alert = NSAlert()
             alert.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
             alert.informativeText = String(
-                localized: "amux.remoteSetup.noHosts",
-                defaultValue: "No SSH host has a mirrored tmux session yet. Mirror a remote session first."
+                localized: "amux.remoteSetup.invalidHost",
+                defaultValue: "Enter a valid SSH host or ~/.ssh/config alias."
             )
             alert.runModal()
             return
         }
-        let picker = NSAlert()
-        picker.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
-        for host in hosts {
-            picker.addButton(withTitle: host.destination)
-        }
-        picker.addButton(withTitle: String(localized: "amux.remoteSetup.cancel", defaultValue: "Cancel"))
-        let index = picker.runModal().rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
-        guard index >= 0, index < hosts.count else { return }
-        amuxPresentRemoteHostSetupReport(host: hosts[index])
+        amuxPresentRemoteHostSetupReport(host: host)
     }
 
     /// Inspects `host` and presents the report, offering hook wiring.
@@ -365,28 +568,96 @@ extension AppDelegate {
             let setup = AmuxRemoteHostSetup()
             do {
                 let report = try await setup.inspect(host: host)
+                let tmuxSessions = try? await self.remoteTmuxController.listSessions(host: host)
+                let tmuxSyncEnabled = self.amuxRemoteTmuxSyncEnabled(for: host)
                 let alert = NSAlert()
                 alert.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
-                alert.informativeText = Self.amuxRemoteSetupReportText(host: host, report: report)
+                alert.informativeText = Self.amuxRemoteSetupReportText(
+                    host: host,
+                    report: report,
+                    tmuxSessions: tmuxSessions,
+                    tmuxSyncEnabled: tmuxSyncEnabled
+                )
                 let fullyWired = report.muxaVersion != nil && report.muxadRunning
                     && report.claudeHooksWired && report.codexHooksWired
-                if report.muxaVersion != nil, !fullyWired {
-                    alert.addButton(withTitle: String(
-                        localized: "amux.remoteSetup.wire",
-                        defaultValue: "Wire Agent Hooks"
+                enum Action {
+                    case sync
+                    case disableSync
+                    case wire
+                    case done
+                }
+                var actions: [(title: String, action: Action)] = []
+                if tmuxSessions?.isEmpty == false {
+                    actions.append((
+                        String(
+                            localized: "amux.remoteSetup.syncNow",
+                            defaultValue: "Sync tmux Sessions"
+                        ),
+                        .sync
                     ))
-                    alert.addButton(withTitle: String(localized: "amux.remoteSetup.cancel", defaultValue: "Cancel"))
-                    guard alert.runModal() == .alertFirstButtonReturn else { return }
-                    _ = try await setup.wireHooks(host: host)
+                    if tmuxSyncEnabled {
+                        actions.append((
+                            String(
+                                localized: "amux.remoteSetup.disableSync",
+                                defaultValue: "Turn Off Sync"
+                            ),
+                            .disableSync
+                        ))
+                    }
+                }
+                if report.muxaVersion != nil, !fullyWired {
+                    actions.append((
+                        String(
+                            localized: "amux.remoteSetup.wire",
+                            defaultValue: "Wire Agent Hooks"
+                        ),
+                        .wire
+                    ))
+                }
+                actions.append((
+                    String(localized: "amux.remoteSetup.done", defaultValue: "Done"),
+                    .done
+                ))
+                for action in actions {
+                    alert.addButton(withTitle: action.title)
+                }
+                let index = alert.runModal().rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+                guard index >= 0, index < actions.count else { return }
+                switch actions[index].action {
+                case .sync:
+                    let outcome = try await self.remoteTmuxController.mirrorHostInNewWindow(host: host, activateWindow: true)
+                    switch outcome {
+                    case .mirrored:
+                        self.amuxSetRemoteTmuxSyncEnabled(true, for: host)
+                    case .authRequired(let sshArgv):
+                        let auth = NSAlert()
+                        auth.messageText = String(
+                            localized: "amux.remoteSetup.authRequired.title",
+                            defaultValue: "SSH Authentication Required"
+                        )
+                        auth.informativeText = String(
+                            format: String(
+                                localized: "amux.remoteSetup.authRequired.body",
+                                defaultValue: "Run this in a terminal to authenticate, then return to Remote Host Setup and sync again:\n\n%@"
+                            ),
+                            sshArgv.joined(separator: " ")
+                        )
+                        auth.runModal()
+                    }
+                case .disableSync:
+                    self.amuxSetRemoteTmuxSyncEnabled(false, for: host)
                     let done = NSAlert()
                     done.messageText = String(localized: "amux.remoteSetup.title", defaultValue: "Remote Host Setup")
-                    done.informativeText = Self.amuxRemoteSetupReportText(
-                        host: host,
-                        report: try await setup.inspect(host: host)
+                    done.informativeText = String(
+                        localized: "amux.remoteSetup.syncDisabled",
+                        defaultValue: "Sync is off for this host. Existing mirror workspaces stay open until you close them."
                     )
                     done.runModal()
-                } else {
-                    alert.runModal()
+                case .wire:
+                    _ = try await setup.wireHooks(host: host)
+                    self.amuxPresentRemoteHostSetupReport(host: host)
+                case .done:
+                    break
                 }
             } catch {
                 let alert = NSAlert()
@@ -402,7 +673,12 @@ extension AppDelegate {
 
     /// The report body: localized labels, ✓/✗ status symbols, and the
     /// cargo-install hint when the muxa CLI is missing remotely.
-    static func amuxRemoteSetupReportText(host: RemoteTmuxHost, report: AmuxRemoteHostSetup.Report) -> String {
+    static func amuxRemoteSetupReportText(
+        host: RemoteTmuxHost,
+        report: AmuxRemoteHostSetup.Report,
+        tmuxSessions: [RemoteTmuxSession]? = nil,
+        tmuxSyncEnabled: Bool = false
+    ) -> String {
         func mark(_ ok: Bool) -> String { ok ? "✓" : "✗" }
         var lines = [
             host.destination,
@@ -420,6 +696,32 @@ extension AppDelegate {
                 mark(report.codexHooksWired)
             ),
         ]
+        let tmuxLine: String
+        if let tmuxSessions {
+            if tmuxSessions.isEmpty {
+                tmuxLine = String(
+                    localized: "amux.remoteSetup.tmuxNone",
+                    defaultValue: "tmux sessions: none"
+                )
+            } else {
+                tmuxLine = String(
+                    format: String(
+                        localized: "amux.remoteSetup.tmuxFound",
+                        defaultValue: "tmux sessions: %lld (windows open as amux tabs; panes stay split inside each tab)"
+                    ),
+                    Int64(tmuxSessions.count)
+                )
+            }
+        } else {
+            tmuxLine = String(
+                localized: "amux.remoteSetup.tmuxUnknown",
+                defaultValue: "tmux sessions: could not inspect"
+            )
+        }
+        lines.append(tmuxLine)
+        lines.append(tmuxSyncEnabled
+            ? String(localized: "amux.remoteSetup.syncOn", defaultValue: "tmux sync: on for this host")
+            : String(localized: "amux.remoteSetup.syncOff", defaultValue: "tmux sync: off for this host"))
         if report.muxaVersion == nil {
             lines.append(String(
                 localized: "amux.remoteSetup.muxaMissing",

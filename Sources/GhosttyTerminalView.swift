@@ -10070,13 +10070,26 @@ final class GhosttySurfaceScrollView: NSView {
 
         guard let delegate = AppDelegate.shared,
               let tabManager = delegate.tabManagerFor(tabId: tabId) ?? delegate.tabManager,
-              tabManager.selectedTabId == tabId else {
+              tabManager.selectedTabId == tabId,
+              let tab = tabManager.tabs.first(where: { $0.id == tabId }) else {
             scheduleAutomaticFirstResponderApply(reason: "ensureFocus.inactiveTab")
             return
         }
 
-        guard let tab = tabManager.tabs.first(where: { $0.id == tabId }),
-              let tabIdForSurface = tab.surfaceIdFromPanelId(surfaceId),
+        if tab.isCurrentRemoteTmuxMirrorChildFocusTarget(panelId: surfaceId) {
+            applyWorkspaceTerminalFocus(
+                window: window,
+                delegate: delegate,
+                targetTabManager: tabManager,
+                tabId: tabId,
+                surfaceId: surfaceId,
+                respectForeignFirstResponder: respectForeignFirstResponder,
+                reason: "ensureFocus.remoteTmuxMirrorChild"
+            )
+            return
+        }
+
+        guard let tabIdForSurface = tab.surfaceIdFromPanelId(surfaceId),
               let paneId = tab.bonsplitController.allPaneIds.first(where: { paneId in
                   tab.bonsplitController.tabs(inPane: paneId).contains(where: { $0.id == tabIdForSurface })
               }) else {
@@ -10090,6 +10103,26 @@ final class GhosttySurfaceScrollView: NSView {
             return
         }
 
+        applyWorkspaceTerminalFocus(
+            window: window,
+            delegate: delegate,
+            targetTabManager: tabManager,
+            tabId: tabId,
+            surfaceId: surfaceId,
+            respectForeignFirstResponder: respectForeignFirstResponder,
+            reason: "ensureFocus"
+        )
+    }
+
+    private func applyWorkspaceTerminalFocus(
+        window: NSWindow,
+        delegate: AppDelegate,
+        targetTabManager: TabManager,
+        tabId: UUID,
+        surfaceId: UUID,
+        respectForeignFirstResponder: Bool,
+        reason: String
+    ) {
         guard delegate.allowsTerminalKeyboardFocus(workspaceId: tabId, panelId: surfaceId, in: window) else {
 #if DEBUG
             dlog("focus.ensure.skip surface=\(surfaceView.terminalSurface?.id.uuidString.prefix(5) ?? "nil") reason=coordinatorRightSidebar")
@@ -10135,7 +10168,7 @@ final class GhosttySurfaceScrollView: NSView {
         if !window.isKeyWindow {
             guard shouldAllowEnsureFocusWindowActivation(
                 activeTabManager: delegate.tabManager,
-                targetTabManager: tabManager,
+                targetTabManager: targetTabManager,
                 keyWindow: NSApp.keyWindow,
                 mainWindow: NSApp.mainWindow,
                 targetWindow: window
@@ -10148,7 +10181,7 @@ final class GhosttySurfaceScrollView: NSView {
 #if DEBUG
         cmuxDebugLog(
             "focus.ensure.apply surface=\(surfaceView.terminalSurface?.id.uuidString.prefix(5) ?? "nil") " +
-            "tab=\(tabId.uuidString.prefix(5)) panel=\(surfaceId.uuidString.prefix(5)) " +
+            "tab=\(tabId.uuidString.prefix(5)) panel=\(surfaceId.uuidString.prefix(5)) reason=\(reason) " +
             "result=\(result ? 1 : 0) firstResponder=\(String(describing: window.firstResponder))"
         )
 #endif
@@ -10175,8 +10208,15 @@ final class GhosttySurfaceScrollView: NSView {
         guard let delegate = AppDelegate.shared,
               let tabManager = delegate.tabManagerFor(tabId: tabId) ?? delegate.tabManager,
               tabManager.selectedTabId == tabId,
-              let tab = tabManager.tabs.first(where: { $0.id == tabId }),
-              let tabIdForSurface = tab.surfaceIdFromPanelId(surfaceId),
+              let tab = tabManager.tabs.first(where: { $0.id == tabId }) else {
+            return false
+        }
+
+        if tab.isCurrentRemoteTmuxMirrorChildFocusTarget(panelId: surfaceId) {
+            return true
+        }
+
+        guard let tabIdForSurface = tab.surfaceIdFromPanelId(surfaceId),
               let paneId = tab.bonsplitController.allPaneIds.first(where: { paneId in
                   tab.bonsplitController.tabs(inPane: paneId).contains(where: { $0.id == tabIdForSurface })
               }) else {
@@ -11597,19 +11637,25 @@ extension GhosttyNSView: NSTextInputClient {
 #endif
         guard let surface = surface else { return }
 
+        var updatedPreedit = false
         if markedText.length > 0 {
             let str = markedText.string
-            let len = str.utf8CString.count
-            if len > 0 {
-                str.withCString { ptr in
-                    // Subtract 1 for the null terminator
-                    ghostty_surface_preedit(surface, ptr, UInt(len - 1))
+            if let data = str.data(using: .utf8), !data.isEmpty {
+                data.withUnsafeBytes { rawBuffer in
+                    guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: CChar.self) else { return }
+                    ghostty_surface_preedit(surface, baseAddress, UInt(rawBuffer.count))
+                    updatedPreedit = true
                 }
             }
         } else if clearIfNeeded {
             // If we had marked text before but don't now, we're no longer
             // in a preedit state so we can clear it.
             ghostty_surface_preedit(surface, nil, 0)
+            updatedPreedit = true
+        }
+
+        if updatedPreedit {
+            ghostty_surface_refresh(surface)
         }
     }
 

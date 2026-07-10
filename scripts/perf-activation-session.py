@@ -108,7 +108,7 @@ class CmuxPerfRunner:
         self.stdout_path = pathlib.Path(f"/tmp/cmux-perf-{self.tag_slug}-stdout.log")
         self.app_path = pathlib.Path(args.app_path).expanduser() if args.app_path else self.default_app_path()
         self.binary_path = self.app_path / "Contents/MacOS/cmux DEV"
-        self.cli_path = self.app_path / "Contents/Resources/bin/cmux"
+        self.cli_path = self.resolve_cli_path()
         self.fixture_root = self.make_fixture_root(args.fixture_root)
         self.proc: subprocess.Popen | None = None
         self.heavy_scrollback_surfaces: set[str] = set()
@@ -136,11 +136,17 @@ class CmuxPerfRunner:
             f"Build/Products/Debug/cmux DEV {self.tag_slug}.app"
         )
 
+    def resolve_cli_path(self) -> pathlib.Path:
+        amux_path = self.app_path / "Contents/Resources/bin/amux"
+        if amux_path.exists():
+            return amux_path
+        return self.app_path / "Contents/Resources/bin/cmux"
+
     def check_paths(self) -> None:
         if not self.binary_path.exists():
             raise PerfFailure(f"app binary not found: {self.binary_path}")
         if not self.cli_path.exists():
-            raise PerfFailure(f"cmux CLI not found: {self.cli_path}")
+            raise PerfFailure(f"amux CLI not found: {self.cli_path}")
 
     def log_tail(self, path: pathlib.Path, max_lines: int = 80) -> str:
         try:
