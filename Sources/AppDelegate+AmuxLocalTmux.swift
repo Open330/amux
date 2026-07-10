@@ -19,12 +19,6 @@ private struct AmuxRemoteTmuxSyncRecord: Codable, Equatable {
     }
 }
 
-private struct AmuxSessionSwitcherHostLoadResult: Sendable {
-    let host: RemoteTmuxHost
-    let sessions: [RemoteTmuxSession]
-    let failureDescription: String?
-}
-
 extension AppDelegate {
     /// Builds the agent-observation hub: the local muxad status service plus
     /// a factory for per-SSH-host observers (socket forwarder + status
@@ -284,77 +278,12 @@ extension AppDelegate {
         return hosts
     }
 
-    /// Loads sessions from every configured endpoint. Host probes run
-    /// concurrently, and failures are isolated so an unavailable SSH machine
-    /// never delays the other hosts serially or hides their sessions.
-    func amuxSessionSwitcherItems() async -> (
-        items: [AmuxSessionSwitcherItem],
-        failedHostCount: Int,
-        hostCount: Int
-    ) {
-        let hosts = amuxSessionSwitcherHosts()
-        var items: [AmuxSessionSwitcherItem] = []
-        var failedHostCount = 0
-
-        await withTaskGroup(of: AmuxSessionSwitcherHostLoadResult.self) { group in
-            for host in hosts {
-                group.addTask { [remoteTmuxController] in
-                    do {
-                        try Task.checkCancellation()
-                        let sessions = try await remoteTmuxController.listSessions(host: host)
-                        try Task.checkCancellation()
-                        return AmuxSessionSwitcherHostLoadResult(
-                            host: host,
-                            sessions: sessions,
-                            failureDescription: nil
-                        )
-                    } catch is CancellationError {
-                        return AmuxSessionSwitcherHostLoadResult(
-                            host: host,
-                            sessions: [],
-                            failureDescription: nil
-                        )
-                    } catch {
-                        return AmuxSessionSwitcherHostLoadResult(
-                            host: host,
-                            sessions: [],
-                            failureDescription: String(describing: error)
-                        )
-                    }
-                }
-            }
-
-            for await result in group {
-                guard !Task.isCancelled else {
-                    group.cancelAll()
-                    continue
-                }
-                if let failureDescription = result.failureDescription {
-                    failedHostCount += 1
-                    #if DEBUG
-                    cmuxDebugLog(
-                        "amux: session switcher could not list "
-                            + "\(result.host.destination): \(failureDescription)"
-                    )
-                    #endif
-                    continue
-                }
-                for session in result.sessions {
-                    items.append(
-                        AmuxSessionSwitcherItem(
-                            host: result.host,
-                            session: session,
-                            agents: amuxAgentObservation.agents(
-                                host: result.host,
-                                inTmuxSession: session.name
-                            )
-                        )
-                    )
-                }
-            }
-        }
-
-        return (AmuxSessionSwitcherItem.ordered(items), failedHostCount, hosts.count)
+    /// Builds the host-level loader injected into each window's switcher coordinator.
+    func makeAmuxSessionSwitcherLoader() -> AmuxSessionSwitcherLoader {
+        AmuxSessionSwitcherLoader(
+            remoteTmuxController: remoteTmuxController,
+            agentObservation: amuxAgentObservation
+        )
     }
 
     /// Toggles sync for the user's default localhost tmux server. Turning sync

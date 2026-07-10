@@ -21,7 +21,20 @@ struct AmuxSessionSwitcherItem: Identifiable, Equatable, Sendable {
     /// Orders sessions for triage: attention first, then active work, then idle
     /// sessions, with sessions that have no tracked agent last.
     static func ordered(_ items: [AmuxSessionSwitcherItem]) -> [AmuxSessionSwitcherItem] {
-        items.sorted { lhs, rhs in
+        items.sorted(by: itemPrecedes)
+    }
+
+    /// Orders open and available targets together without allowing current/open
+    /// preference to outrank a session whose agent needs attention.
+    static func ordered<Value>(
+        _ values: [Value],
+        item: KeyPath<Value, AmuxSessionSwitcherItem>,
+        isOpen: KeyPath<Value, Bool>,
+        isCurrent: KeyPath<Value, Bool>
+    ) -> [Value] {
+        values.sorted { lhsValue, rhsValue in
+            let lhs = lhsValue[keyPath: item]
+            let rhs = rhsValue[keyPath: item]
             let lhsAgent = lhs.primaryAgent
             let rhsAgent = rhs.primaryAgent
             let lhsTier = sessionTier(for: lhsAgent)
@@ -32,18 +45,45 @@ struct AmuxSessionSwitcherItem: Identifiable, Equatable, Sendable {
                 let lhsBlocked = lhsAgent?.stateEnteredDate ?? lhsAgent?.lastActivityDate ?? .distantFuture
                 let rhsBlocked = rhsAgent?.stateEnteredDate ?? rhsAgent?.lastActivityDate ?? .distantFuture
                 if lhsBlocked != rhsBlocked { return lhsBlocked < rhsBlocked }
-            } else {
-                let lhsActivity = lhs.mostRecentActivityDate ?? .distantPast
-                let rhsActivity = rhs.mostRecentActivityDate ?? .distantPast
-                if lhsActivity != rhsActivity { return lhsActivity > rhsActivity }
             }
+
+            let lhsCurrent = lhsValue[keyPath: isCurrent]
+            let rhsCurrent = rhsValue[keyPath: isCurrent]
+            if lhsCurrent != rhsCurrent { return lhsCurrent }
+
+            let lhsOpen = lhsValue[keyPath: isOpen]
+            let rhsOpen = rhsValue[keyPath: isOpen]
+            if lhsOpen != rhsOpen { return lhsOpen }
+
+            return itemPrecedes(lhs, rhs)
+        }
+    }
+
+    private static func itemPrecedes(
+        _ lhs: AmuxSessionSwitcherItem,
+        _ rhs: AmuxSessionSwitcherItem
+    ) -> Bool {
+        let lhsAgent = lhs.primaryAgent
+        let rhsAgent = rhs.primaryAgent
+        let lhsTier = sessionTier(for: lhsAgent)
+        let rhsTier = sessionTier(for: rhsAgent)
+        if lhsTier != rhsTier { return lhsTier < rhsTier }
+
+        if lhsTier == 0 {
+            let lhsBlocked = lhsAgent?.stateEnteredDate ?? lhsAgent?.lastActivityDate ?? .distantFuture
+            let rhsBlocked = rhsAgent?.stateEnteredDate ?? rhsAgent?.lastActivityDate ?? .distantFuture
+            if lhsBlocked != rhsBlocked { return lhsBlocked < rhsBlocked }
+        } else {
+            let lhsActivity = lhs.mostRecentActivityDate ?? .distantPast
+            let rhsActivity = rhs.mostRecentActivityDate ?? .distantPast
+            if lhsActivity != rhsActivity { return lhsActivity > rhsActivity }
+        }
 
             let hostOrder = lhs.host.destination.localizedCaseInsensitiveCompare(rhs.host.destination)
             if hostOrder != .orderedSame { return hostOrder == .orderedAscending }
             let nameOrder = lhs.session.name.localizedCaseInsensitiveCompare(rhs.session.name)
             if nameOrder != .orderedSame { return nameOrder == .orderedAscending }
             return lhs.id < rhs.id
-        }
     }
 
     static func orderedAgents(_ agents: [MuxaAgent]) -> [MuxaAgent] {

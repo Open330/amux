@@ -31,19 +31,10 @@ struct AmuxSessionSwitcherPresentation {
         }
     }
 
-    func kindLabel(isOpen: Bool, agents: [MuxaAgent]) -> String {
-        let kind = isOpen
+    func kindLabel(isOpen: Bool, agents _: [MuxaAgent]) -> String {
+        isOpen
             ? String(localized: "amux.sessionSwitcher.kind.open", defaultValue: "Open tmux")
             : String(localized: "amux.sessionSwitcher.kind.available", defaultValue: "Available tmux")
-        guard let agent = AmuxSessionSwitcherItem.orderedAgents(agents).first else { return kind }
-        return String(
-            format: String(
-                localized: "amux.sessionSwitcher.kindWithState",
-                defaultValue: "%1$@ · %2$@"
-            ),
-            kind,
-            agentStateLabel(agent.state)
-        )
     }
 
     func agentStateLabel(_ state: MuxaAgentState) -> String {
@@ -72,14 +63,14 @@ struct AmuxSessionSwitcherPresentation {
         session: RemoteTmuxSession?,
         agents: [MuxaAgent]
     ) -> String {
-        var parts = [hostLabel(host)]
+        var parts: [String] = []
         if let agent = AmuxSessionSwitcherItem.orderedAgents(agents).first {
             parts.append(
                 "\(AmuxAgentAlarmPolicy.displayName(for: agent.kind)) · "
                     + agentStateLabel(agent.state)
             )
         }
-        if let session {
+        if let session, session.windowCount > 0 {
             let windowCount = session.windowCount
             let format = windowCount == 1
                 ? String(localized: "amux.sessionSwitcher.windowCount.one", defaultValue: "%lld window")
@@ -90,7 +81,33 @@ struct AmuxSessionSwitcherPresentation {
                 parts.append(activityDate.formatted(.relative(presentation: .named)))
             }
         }
-        return parts.joined(separator: " • ")
+        return (parts.isEmpty ? [hostLabel(host)] : parts).joined(separator: " • ")
+    }
+
+    func statusText(
+        loadingHosts: [RemoteTmuxHost],
+        failedHosts: [RemoteTmuxHost]
+    ) -> String? {
+        var parts: [String] = []
+        if !loadingHosts.isEmpty {
+            parts.append(String(
+                format: String(
+                    localized: "amux.sessionSwitcher.status.loadingHosts",
+                    defaultValue: "Loading: %@"
+                ),
+                loadingHosts.map(hostLabel).joined(separator: ", ")
+            ))
+        }
+        if !failedHosts.isEmpty {
+            parts.append(String(
+                format: String(
+                    localized: "amux.sessionSwitcher.status.unavailableHosts",
+                    defaultValue: "Unavailable: %@"
+                ),
+                failedHosts.map(hostLabel).joined(separator: ", ")
+            ))
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " • ")
     }
 
     func searchKeywords(
