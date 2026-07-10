@@ -5469,8 +5469,12 @@ struct ContentView: View {
                             command: workspaceCommand,
                             item: sessionItem,
                             isOpen: true,
-                            isCurrent: context.windowId == windowId
-                                && context.selectedWorkspaceId == workspace.id
+                            isCurrent: Self.amuxSessionSwitcherIsCurrent(
+                                candidateWindowID: context.windowId,
+                                contentWindowID: self.windowId,
+                                selectedWorkspaceID: context.selectedWorkspaceId,
+                                candidateWorkspaceID: workspace.id
+                            )
                         )
                     )
                 } else {
@@ -5592,6 +5596,16 @@ struct ContentView: View {
         }
 
         return entries
+    }
+
+    nonisolated static func amuxSessionSwitcherIsCurrent(
+        candidateWindowID: UUID,
+        contentWindowID: UUID,
+        selectedWorkspaceID: UUID?,
+        candidateWorkspaceID: UUID
+    ) -> Bool {
+        candidateWindowID == contentWindowID
+            && selectedWorkspaceID == candidateWorkspaceID
     }
 
     private func commandPaletteAmuxSessionItem(

@@ -162,6 +162,25 @@ struct AmuxSessionSwitcherItemTests {
         #expect(ordered.map(\.item.session.name) == ["attention", "current", "other-open"])
     }
 
+    @Test func onlySelectedWorkspaceInContentWindowIsCurrent() {
+        let contentWindowID = UUID()
+        let otherWindowID = UUID()
+        let workspaceID = UUID()
+
+        #expect(ContentView.amuxSessionSwitcherIsCurrent(
+            candidateWindowID: contentWindowID,
+            contentWindowID: contentWindowID,
+            selectedWorkspaceID: workspaceID,
+            candidateWorkspaceID: workspaceID
+        ))
+        #expect(!ContentView.amuxSessionSwitcherIsCurrent(
+            candidateWindowID: otherWindowID,
+            contentWindowID: contentWindowID,
+            selectedWorkspaceID: workspaceID,
+            candidateWorkspaceID: workspaceID
+        ))
+    }
+
     @MainActor
     @Test func hostListKeepsLocalEndpointsFirstAndDeduplicatesSSHHosts() {
         let alpha = RemoteTmuxHost(destination: "alpha")
