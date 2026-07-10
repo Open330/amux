@@ -1296,9 +1296,15 @@ final class RemoteTmuxController {
     func handleSessionEndedRemotely(
         host: RemoteTmuxHost,
         sessionName: String,
-        workspaceId: UUID
+        workspaceId: UUID,
+        forceCloseWorkspace: Bool = false
     ) {
-        tearDownMirrorAndCloseWorkspace(host: host, sessionName: sessionName, workspaceId: workspaceId)
+        tearDownMirrorAndCloseWorkspace(
+            host: host,
+            sessionName: sessionName,
+            workspaceId: workspaceId,
+            forceCloseWorkspace: forceCloseWorkspace
+        )
     }
 
     /// Removes a mirror + its control connection, then closes or converts the local
@@ -1306,7 +1312,8 @@ final class RemoteTmuxController {
     private func tearDownMirrorAndCloseWorkspace(
         host: RemoteTmuxHost,
         sessionName: String,
-        workspaceId: UUID
+        workspaceId: UUID,
+        forceCloseWorkspace: Bool = false
     ) {
         let key = Self.connectionKey(host: host, sessionName: sessionName)
         let mirrorWorkspace = sessionMirrors[key]?.mirroredWorkspace
@@ -1375,7 +1382,9 @@ final class RemoteTmuxController {
         #endif
         if (mirrorWorkspace ?? AppDelegate.shared?.tabManagerFor(tabId: workspaceId)?
             .tabs.first(where: { $0.id == workspaceId }))?
-            .handleRemoteTmuxSessionEndedKeepingWorkspaceOpenIfNeeded() == true { return }
+            .handleRemoteTmuxSessionEndedKeepingWorkspaceOpenIfNeeded(
+                forceCloseWorkspace: forceCloseWorkspace
+            ) == true { return }
         switch action {
         case let .closeDedicatedWindow(windowId):
             // Tear down the whole dedicated window (true detach UX). Uses
@@ -1577,7 +1586,12 @@ final class RemoteTmuxController {
     func detach(host: RemoteTmuxHost, sessionName: String) {
         let key = Self.connectionKey(host: host, sessionName: sessionName)
         if let workspaceId = sessionMirrors[key]?.mirroredWorkspaceId {
-            tearDownMirrorAndCloseWorkspace(host: host, sessionName: sessionName, workspaceId: workspaceId)
+            tearDownMirrorAndCloseWorkspace(
+                host: host,
+                sessionName: sessionName,
+                workspaceId: workspaceId,
+                forceCloseWorkspace: true
+            )
             return
         }
         if let mirror = sessionMirrors.removeValue(forKey: key) {

@@ -3371,8 +3371,10 @@ final class Workspace: Identifiable, ObservableObject {
         return shouldClose
     }
 
-    func handleRemoteTmuxSessionEndedKeepingWorkspaceOpenIfNeeded() -> Bool {
-        guard remoteTmuxKeepWorkspaceOpenAfterSessionEnd else { return false }
+    func handleRemoteTmuxSessionEndedKeepingWorkspaceOpenIfNeeded(
+        forceCloseWorkspace: Bool = false
+    ) -> Bool {
+        guard !forceCloseWorkspace, remoteTmuxKeepWorkspaceOpenAfterSessionEnd else { return false }
         remoteTmuxKeepWorkspaceOpenAfterSessionEnd = false; isRemoteTmuxMirror = false
         let panelIds = remoteTmuxKeepWorkspaceOpenTabIds.compactMap { panelIdFromSurfaceId($0) }
         remoteTmuxKeepWorkspaceOpenTabIds.removeAll(); remoteTmuxWindowMirrors.removeAll()
@@ -5152,7 +5154,11 @@ final class Workspace: Identifiable, ObservableObject {
     }
 
     /// Ephemeral remote tmux mirror; excluded from cmux session restore.
-    var isRemoteTmuxMirror: Bool = false
+    var isRemoteTmuxMirror: Bool = false {
+        didSet {
+            if oldValue != isRemoteTmuxMirror { objectWillChange.send() }
+        }
+    }
 
     /// Per-window multi-pane renderers, keyed by mirrored window-tab panel id.
     private(set) var remoteTmuxWindowMirrors: [UUID: RemoteTmuxWindowMirror] = [:]

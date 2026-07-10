@@ -160,6 +160,7 @@ import Testing
         presentationKey: SidebarWorkspaceSnapshotBuilder.PresentationKey? = nil,
         title: String = "workspace",
         customDescription: String? = nil,
+        runtimeKind: SidebarWorkspaceSnapshotBuilder.RuntimeKind = .localShell,
         isPinned: Bool = false,
         customColorHex: String? = nil,
         remoteConnectionStatusText: String = "Disconnected",
@@ -173,6 +174,7 @@ import Testing
             presentationKey: presentationKey ?? Self.presentationKey(),
             title: title,
             customDescription: customDescription,
+            runtimeKind: runtimeKind,
             isPinned: isPinned,
             customColorHex: customColorHex,
             remoteWorkspaceSidebarText: nil,
@@ -195,6 +197,27 @@ import Testing
             listeningPorts: listeningPorts,
             finderDirectoryPath: finderDirectoryPath,
             mediaActivity: mediaActivity
+        )
+    }
+
+    @Test func workspaceRuntimeKindsSeparateTmuxAndShellWorkspaces() {
+        #expect(
+            SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: true,
+                isRemoteWorkspace: false
+            ) == .tmuxSession
+        )
+        #expect(
+            SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: false,
+                isRemoteWorkspace: true
+            ) == .sshShell
+        )
+        #expect(
+            SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: false,
+                isRemoteWorkspace: false
+            ) == .localShell
         )
     }
 

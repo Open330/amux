@@ -13303,6 +13303,18 @@ private struct ExtensionSidebarBrowserStackEmptyArea: View {
 // Do NOT add @EnvironmentObject or new @Binding without updating ==.
 // Do NOT remove .equatable() from the ForEach call site in VerticalTabsSidebar.
 struct SidebarWorkspaceSnapshotBuilder {
+    enum RuntimeKind: Equatable {
+        case tmuxSession
+        case sshShell
+        case localShell
+
+        static func resolve(isRemoteTmuxMirror: Bool, isRemoteWorkspace: Bool) -> Self {
+            if isRemoteTmuxMirror { return .tmuxSession }
+            if isRemoteWorkspace { return .sshShell }
+            return .localShell
+        }
+    }
+
     struct PresentationKey: Equatable {
         let showsWorkspaceDescription: Bool
         let usesVerticalBranchLayout: Bool
@@ -13333,6 +13345,7 @@ struct SidebarWorkspaceSnapshotBuilder {
         let presentationKey: PresentationKey
         let title: String
         let customDescription: String?
+        let runtimeKind: RuntimeKind
         let isPinned: Bool
         let customColorHex: String?
         let remoteWorkspaceSidebarText: String?
@@ -13827,6 +13840,23 @@ struct TabItemView: View, Equatable {
             SidebarTrailingAccessoryWidthPolicy().closeButtonWidth,
             scaledCloseButtonHitSize
         )
+        let runtimeKindPresentation: (label: String, symbol: String) = switch workspaceSnapshot.runtimeKind {
+        case .tmuxSession:
+            (
+                String(localized: "sidebar.workspace.runtime.tmux", defaultValue: "tmux session"),
+                "rectangle.split.2x1"
+            )
+        case .sshShell:
+            (
+                String(localized: "sidebar.workspace.runtime.ssh", defaultValue: "SSH shell"),
+                "network"
+            )
+        case .localShell:
+            (
+                String(localized: "sidebar.workspace.runtime.local", defaultValue: "Local shell"),
+                "apple.terminal"
+            )
+        }
 
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .top, spacing: 8) {
@@ -13846,6 +13876,14 @@ struct TabItemView: View, Equatable {
                         .foregroundColor(activeSecondaryColor(0.8))
                         .safeHelp(protectedWorkspaceTooltip)
                 }
+
+                Label(runtimeKindPresentation.label, systemImage: runtimeKindPresentation.symbol)
+                    .labelStyle(.titleAndIcon)
+                    .font(magnifiedFont(scaledFontSize(8.5), weight: .medium))
+                    .foregroundColor(activeSecondaryColor(0.68))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .safeHelp(runtimeKindPresentation.label)
 
                 // Chrome-style media-activity glyphs: a noisy or capturing
                 // background browser pane is surfaced on its workspace row,
@@ -14996,6 +15034,10 @@ struct TabItemView: View, Equatable {
             presentationKey: workspaceSnapshotPresentationKey,
             title: tab.title,
             customDescription: settings.showsWorkspaceDescription ? sidebarVisibleCustomDescription : nil,
+            runtimeKind: SidebarWorkspaceSnapshotBuilder.RuntimeKind.resolve(
+                isRemoteTmuxMirror: tab.isRemoteTmuxMirror,
+                isRemoteWorkspace: tab.isRemoteWorkspace
+            ),
             isPinned: tab.isPinned,
             customColorHex: tab.customColor,
             remoteWorkspaceSidebarText: remoteWorkspaceSidebarText,

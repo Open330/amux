@@ -147,12 +147,16 @@ final class RemoteTmuxSessionMirror {
     /// The remote session ended for good (its last tmux window was killed, it was
     /// killed out-of-band, or a reconnect found it gone) — hand off to the controller
     /// to remove the mirror and close the now-dead workspace. A transient transport
-    /// loss does NOT reach here (the connection reconnects); deliberate detach / quit
-    /// / window close suppress `onExit`. So this only runs for genuine remote ends.
+    /// loss does NOT reach here (the connection reconnects). Controller-driven
+    /// detach / quit / window close suppress `onExit`; an in-terminal prefix+d
+    /// arrives as `%exit` and is identified by `clientDetachRequested`.
     private func handleConnectionExited() {
         guard let workspaceId = mirroredWorkspaceId else { return }
         AppDelegate.shared?.remoteTmuxController.handleSessionEndedRemotely(
-            host: host, sessionName: sessionName, workspaceId: workspaceId
+            host: host,
+            sessionName: sessionName,
+            workspaceId: workspaceId,
+            forceCloseWorkspace: connection.clientDetachRequested
         )
     }
 
