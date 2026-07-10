@@ -1,5 +1,6 @@
 import XCTest
 import AppKit
+import Carbon
 import ObjectiveC.runtime
 import CmuxTerminal
 
@@ -15,6 +16,35 @@ private var ghosttyPasteActionSwizzled = false
 private var ghosttyPasteActionHook: ((GhosttyNSView, Any?) -> Void)?
 private var ghosttyPasteAsPlainTextActionSwizzled = false
 private var ghosttyPasteAsPlainTextActionHook: ((GhosttyNSView, Any?) -> Void)?
+
+@MainActor
+final class GhosttyKeyboardInputSourceObserverTests: XCTestCase {
+    func testLocalAndDistributedInputSourceChangesRefreshKeyboardMapping() {
+        let localCenter = NotificationCenter()
+        let distributedCenter = NotificationCenter()
+        var refreshCount = 0
+        let observer = GhosttyKeyboardInputSourceObserver(
+            localCenter: localCenter,
+            distributedCenter: distributedCenter
+        ) {
+            refreshCount += 1
+        }
+
+        localCenter.post(
+            name: NSTextInputContext.keyboardSelectionDidChangeNotification,
+            object: nil
+        )
+        distributedCenter.post(
+            name: Notification.Name(
+                rawValue: kTISNotifySelectedKeyboardInputSourceChanged as String
+            ),
+            object: nil
+        )
+
+        XCTAssertEqual(refreshCount, 2)
+        withExtendedLifetime(observer) {}
+    }
+}
 
 private extension GhosttyNSView {
     @objc func cmuxUnitTest_interpretKeyEvents(_ eventArray: [NSEvent]) {

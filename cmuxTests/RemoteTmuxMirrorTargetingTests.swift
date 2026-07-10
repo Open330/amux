@@ -144,6 +144,36 @@ struct RemoteTmuxMirrorTargetingTests {
         #expect(!manager.tabs.contains { $0.isRemoteTmuxMirror })
     }
 
+    @Test func prefixDetachExitRemovesMirrorWorkspace() throws {
+        let previousDelegate = AppDelegate.shared
+        let app = AppDelegate()
+        defer { AppDelegate.shared = previousDelegate }
+
+        let manager = TabManager()
+        let host = RemoteTmuxHost.amuxLocal()
+        let connection = RemoteTmuxControlConnection(
+            host: host,
+            sessionName: "detach-me",
+            sessionId: 18
+        )
+        app.remoteTmuxController.cacheConnection(connection)
+        try app.remoteTmuxController.mirrorSession(
+            host: host,
+            sessionName: "detach-me",
+            sessionId: 18,
+            into: manager
+        )
+        let mirror = try #require(manager.tabs.first { $0.isRemoteTmuxMirror })
+
+        connection.handleClientDetachExitForTesting()
+
+        #expect(!manager.tabs.contains { $0.id == mirror.id })
+        #expect(app.remoteTmuxController.connection(
+            host: host,
+            sessionName: "detach-me"
+        ) == nil)
+    }
+
     @Test func mirrorTargetTabManagerPrefersDedicatedWindowWhenResolvable() {
         let dedicatedId = UUID()
         let dedicated = TabManager()
