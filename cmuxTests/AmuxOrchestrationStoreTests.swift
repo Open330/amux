@@ -89,6 +89,29 @@ struct AmuxOrchestrationStoreTests {
         #expect(messages.map(\.id) == [sent.id])
     }
 
+    @Test func persistedCoordinationStateIsOwnerOnly() async throws {
+        let fixture = makeFixture()
+        defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let store = AmuxOrchestrationStore(storageURL: fixture.file)
+
+        _ = try await store.sendMessage(
+            type: .status,
+            sender: "worker-a",
+            recipients: ["coordinator"],
+            groups: [],
+            taskID: nil,
+            body: "contains private work context",
+            metadata: [:]
+        )
+
+        let fileAttributes = try FileManager.default.attributesOfItem(atPath: fixture.file.path)
+        let directoryAttributes = try FileManager.default.attributesOfItem(
+            atPath: fixture.file.deletingLastPathComponent().path
+        )
+        #expect((fileAttributes[.posixPermissions] as? NSNumber)?.intValue == 0o600)
+        #expect((directoryAttributes[.posixPermissions] as? NSNumber)?.intValue == 0o700)
+    }
+
     @Test func dependenciesAndDecisionGatesBlockTaskStart() async throws {
         let fixture = makeFixture()
         defer { try? FileManager.default.removeItem(at: fixture.root) }

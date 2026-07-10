@@ -281,13 +281,29 @@ actor AmuxOrchestrationStore {
     private func append(_ record: Record) throws {
         do {
             let directory = storageURL.deletingLastPathComponent()
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(
+                at: directory,
+                withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o700]
+            )
+            try FileManager.default.setAttributes(
+                [.posixPermissions: 0o700],
+                ofItemAtPath: directory.path
+            )
             var data = try encoder.encode(record)
             data.append(0x0A)
             if !FileManager.default.fileExists(atPath: storageURL.path) {
                 try data.write(to: storageURL, options: .atomic)
+                try FileManager.default.setAttributes(
+                    [.posixPermissions: 0o600],
+                    ofItemAtPath: storageURL.path
+                )
                 return
             }
+            try FileManager.default.setAttributes(
+                [.posixPermissions: 0o600],
+                ofItemAtPath: storageURL.path
+            )
             let handle = try FileHandle(forWritingTo: storageURL)
             defer { try? handle.close() }
             try handle.seekToEnd()
