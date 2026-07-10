@@ -13864,8 +13864,8 @@ struct TabItemView: View, Equatable {
             )
         }
         let runtimeChipForegroundColor = usesInvertedActiveForeground
-            ? activeSecondaryColor(0.9)
-            : runtimeKindPresentation.tint
+            ? activePrimaryTextColor
+            : Color.primary
         let runtimeChipFillColor = usesInvertedActiveForeground
             ? activeSecondaryColor(0.12)
             : runtimeKindPresentation.tint.opacity(0.12)
