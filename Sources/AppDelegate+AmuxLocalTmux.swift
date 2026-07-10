@@ -19,6 +19,12 @@ private struct AmuxRemoteTmuxSyncRecord: Codable, Equatable {
     }
 }
 
+private struct AmuxSessionSwitcherHostLoadResult: Sendable {
+    let host: RemoteTmuxHost
+    let sessions: [RemoteTmuxSession]
+    let failureDescription: String?
+}
+
 extension AppDelegate {
     /// Builds the agent-observation hub: the local muxad status service plus
     /// a factory for per-SSH-host observers (socket forwarder + status
@@ -251,6 +257,106 @@ extension AppDelegate {
             .sorted { $0.destination.localizedCaseInsensitiveCompare($1.destination) == .orderedAscending }
     }
 
+    /// Every tmux endpoint included in the unified session switcher. Open SSH
+    /// mirrors remain discoverable even when automatic sync is disabled.
+    func amuxSessionSwitcherHosts() -> [RemoteTmuxHost] {
+        Self.amuxSessionSwitcherHosts(
+            remoteSyncHosts: amuxRemoteTmuxSyncHosts(),
+            activeSSHHosts: remoteTmuxController.activeSSHMirrorHosts()
+        )
+    }
+
+    static func amuxSessionSwitcherHosts(
+        remoteSyncHosts: [RemoteTmuxHost],
+        activeSSHHosts: [RemoteTmuxHost]
+    ) -> [RemoteTmuxHost] {
+        var seen: Set<String> = []
+        var hosts: [RemoteTmuxHost] = []
+        let remoteHosts = (remoteSyncHosts + activeSSHHosts).sorted {
+            let destinationOrder = $0.destination.localizedCaseInsensitiveCompare($1.destination)
+            if destinationOrder != .orderedSame { return destinationOrder == .orderedAscending }
+            return $0.id < $1.id
+        }
+        for host in [RemoteTmuxHost.amuxLocal(), .localDefault()] + remoteHosts
+        where seen.insert(host.id).inserted {
+            hosts.append(host)
+        }
+        return hosts
+    }
+
+    /// Loads sessions from every configured endpoint. Host probes run
+    /// concurrently, and failures are isolated so an unavailable SSH machine
+    /// never delays the other hosts serially or hides their sessions.
+    func amuxSessionSwitcherItems() async -> (
+        items: [AmuxSessionSwitcherItem],
+        failedHostCount: Int,
+        hostCount: Int
+    ) {
+        let hosts = amuxSessionSwitcherHosts()
+        var items: [AmuxSessionSwitcherItem] = []
+        var failedHostCount = 0
+
+        await withTaskGroup(of: AmuxSessionSwitcherHostLoadResult.self) { group in
+            for host in hosts {
+                group.addTask { [remoteTmuxController] in
+                    do {
+                        try Task.checkCancellation()
+                        let sessions = try await remoteTmuxController.listSessions(host: host)
+                        try Task.checkCancellation()
+                        return AmuxSessionSwitcherHostLoadResult(
+                            host: host,
+                            sessions: sessions,
+                            failureDescription: nil
+                        )
+                    } catch is CancellationError {
+                        return AmuxSessionSwitcherHostLoadResult(
+                            host: host,
+                            sessions: [],
+                            failureDescription: nil
+                        )
+                    } catch {
+                        return AmuxSessionSwitcherHostLoadResult(
+                            host: host,
+                            sessions: [],
+                            failureDescription: String(describing: error)
+                        )
+                    }
+                }
+            }
+
+            for await result in group {
+                guard !Task.isCancelled else {
+                    group.cancelAll()
+                    continue
+                }
+                if let failureDescription = result.failureDescription {
+                    failedHostCount += 1
+                    #if DEBUG
+                    cmuxDebugLog(
+                        "amux: session switcher could not list "
+                            + "\(result.host.destination): \(failureDescription)"
+                    )
+                    #endif
+                    continue
+                }
+                for session in result.sessions {
+                    items.append(
+                        AmuxSessionSwitcherItem(
+                            host: result.host,
+                            session: session,
+                            agents: amuxAgentObservation.agents(
+                                host: result.host,
+                                inTmuxSession: session.name
+                            )
+                        )
+                    )
+                }
+            }
+        }
+
+        return (AmuxSessionSwitcherItem.ordered(items), failedHostCount, hosts.count)
+    }
+
     /// Toggles sync for the user's default localhost tmux server. Turning sync
     /// off stops future automatic mirrors; it deliberately leaves currently open
     /// mirror workspaces alone so no tmux client/session is detached out from
@@ -385,6 +491,39 @@ extension AppDelegate {
         } catch {
             #if DEBUG
             cmuxDebugLog("amux: attach detached session \(name) failed: \(error)")
+            #endif
+            return false
+        }
+    }
+
+    /// Mirrors a discovered detached session into `manager`, preserving tmux's
+    /// stable numeric session id for de-duplication, and selects the workspace.
+    @discardableResult
+    func amuxAttachSession(
+        host: RemoteTmuxHost,
+        session: RemoteTmuxSession,
+        in manager: TabManager
+    ) -> Bool {
+        do {
+            try remoteTmuxController.mirrorSession(
+                host: host,
+                sessionName: session.name,
+                sessionId: RemoteTmuxController.tmuxSessionNumericId(session.id),
+                into: manager
+            )
+            if let workspace = remoteTmuxController.mirrorWorkspace(
+                hostId: host.id,
+                sessionName: session.name
+            ) {
+                let owner = amuxWorkspace(withId: workspace.id)?.manager ?? manager
+                owner.selectWorkspace(workspace)
+            }
+            return true
+        } catch {
+            #if DEBUG
+            cmuxDebugLog(
+                "amux: attach session \(session.name) on \(host.destination) failed: \(error)"
+            )
             #endif
             return false
         }

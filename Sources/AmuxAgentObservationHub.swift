@@ -104,6 +104,22 @@ final class AmuxAgentObservationHub {
         return []
     }
 
+    /// Tracked agents for a detached tmux session on `host`. Local observation
+    /// is scoped to the dedicated amux server; SSH rows come from that host's
+    /// active observer. The user's default local tmux server cannot be joined
+    /// safely because muxad does not report which local server socket produced a
+    /// session name.
+    func agents(host: RemoteTmuxHost, inTmuxSession tmuxSession: String) -> [MuxaAgent] {
+        switch host.kind {
+        case .localAmux:
+            return localService.agents(inTmuxSession: tmuxSession)
+        case .localDefault:
+            return []
+        case .ssh:
+            return remoteObservers[host.id]?.service.agents(inTmuxSession: tmuxSession) ?? []
+        }
+    }
+
     /// The tmux pane of `workspaceId`'s most relevant agent, asking each
     /// daemon in turn (a workspace mirrors exactly one host, so at most one
     /// service resolves it).
