@@ -28,10 +28,10 @@ EOF
 
 stable_app="$TMP_DIR/cmux.app"
 nightly_app="$TMP_DIR/cmux NIGHTLY.app"
-dev_app="$TMP_DIR/cmux DEV dog.app"
+dev_app="$TMP_DIR/amux DEV dog.app"
 make_app "$stable_app" "com.cmuxterm.app" "cmux"
 make_app "$nightly_app" "com.cmuxterm.app.nightly" "cmux NIGHTLY"
-make_app "$dev_app" "com.cmuxterm.app.debug.dog" "cmux DEV dog"
+make_app "$dev_app" "com.open330.amux.debug.dog" "amux DEV dog"
 
 plist_buddy="$TMP_DIR/plistbuddy"
 cat > "$plist_buddy" <<'EOF'
@@ -107,7 +107,7 @@ cat > "$ps_file" <<EOF
 EOF
 
 dry_run="$("$SCRIPT" --dry-run --test-ps-file "$ps_file" --channel dev --tag dog --duration 7 --out "$TMP_DIR/out")"
-if [[ "$dry_run" != *"Target: pid=303 channel=dev bundle=com.cmuxterm.app.debug.dog name=cmux DEV dog"* ]]; then
+if [[ "$dry_run" != *"Target: pid=303 channel=dev bundle=com.open330.amux.debug.dog name=amux DEV dog"* ]]; then
   echo "FAIL: dev tag selector did not choose the tagged dev process" >&2
   echo "$dry_run" >&2
   exit 1
@@ -151,7 +151,7 @@ fi
 list_output="$("$SCRIPT" --list-targets --test-ps-file "$ps_file")"
 if [[ "$list_output" != *"pid=101 channel=stable bundle=com.cmuxterm.app"* ]] ||
    [[ "$list_output" != *"pid=202 channel=nightly bundle=com.cmuxterm.app.nightly"* ]] ||
-   [[ "$list_output" != *"pid=303 channel=dev bundle=com.cmuxterm.app.debug.dog"* ]]; then
+   [[ "$list_output" != *"pid=303 channel=dev bundle=com.open330.amux.debug.dog"* ]]; then
   echo "FAIL: --list-targets did not show stable/nightly/dev discrimination" >&2
   echo "$list_output" >&2
   exit 1
@@ -223,15 +223,15 @@ if [ ! -f "$timeout_out/system-info.txt" ] ||
   exit 1
 fi
 if ! grep -Fq "System:" "$timeout_out/summary.md" ||
-   ! grep -Fq "App: ~/cmux DEV dog.app" "$timeout_out/summary.md" ||
+   ! grep -Fq "App: ~/amux DEV dog.app" "$timeout_out/summary.md" ||
    ! grep -Fq "Keyboard/input source: U.S." "$timeout_out/summary.md" ||
    ! grep -Fq "More details: system-info.txt" "$timeout_out/summary.md"; then
   echo "FAIL: summary did not preview system info" >&2
   cat "$timeout_out/summary.md" >&2
   exit 1
 fi
-if grep -Fq "$TMP_DIR/cmux DEV dog.app" "$timeout_out/summary.md" ||
-   grep -Fq "$TMP_DIR/cmux DEV dog.app" "$timeout_out/system-info.txt"; then
+if grep -Fq "$TMP_DIR/amux DEV dog.app" "$timeout_out/summary.md" ||
+   grep -Fq "$TMP_DIR/amux DEV dog.app" "$timeout_out/system-info.txt"; then
   echo "FAIL: system info leaked an unredacted home path" >&2
   cat "$timeout_out/summary.md" >&2
   cat "$timeout_out/system-info.txt" >&2
@@ -323,11 +323,11 @@ if ! grep -Fq "all profiling templates failed" /tmp/cmux-profile-all-failed.log 
   exit 1
 fi
 
-submit_output="$("$ROOT_DIR/Resources/bin/submit-cmux-profile" --dry-run --profile "$timeout_out" --target-name "cmux DEV dog" --target-pid 303 --channel dev --bundle-id com.cmuxterm.app.debug.dog --reply-to "user@example.com")"
-if [[ "$submit_output" != *"Recipient: founders@manaflow.com"* ]] ||
+submit_output="$(CMUX_PROFILE_FEEDBACK_EMAIL=profiles@example.com "$ROOT_DIR/Resources/bin/submit-cmux-profile" --dry-run --profile "$timeout_out" --target-name "amux DEV dog" --target-pid 303 --channel dev --bundle-id com.open330.amux.debug.dog --reply-to "user@example.com")"
+if [[ "$submit_output" != *"Recipient: profiles@example.com"* ]] ||
    [[ "$submit_output" != *"Reply-to: user@example.com"* ]] ||
-   [[ "$submit_output" != *"Subject: cmux profiling capture: cmux DEV dog"* ]]; then
-  echo "FAIL: submit helper dry run did not describe the founders draft" >&2
+   [[ "$submit_output" != *"Subject: amux profiling capture: amux DEV dog"* ]]; then
+  echo "FAIL: submit helper dry run did not describe the configured draft" >&2
   echo "$submit_output" >&2
   exit 1
 fi
@@ -335,9 +335,21 @@ fi
 archive_path="$(printf '%s\n' "$submit_output" | sed -n 's/^Archive: //p')"
 mkdir -p "$(dirname "$archive_path")"
 printf 'keep me' > "$archive_path"
-"$ROOT_DIR/Resources/bin/submit-cmux-profile" --dry-run --profile "$timeout_out" --target-name "cmux DEV dog" >/dev/null
+CMUX_PROFILE_FEEDBACK_EMAIL=profiles@example.com "$ROOT_DIR/Resources/bin/submit-cmux-profile" --dry-run --profile "$timeout_out" --target-name "amux DEV dog" >/dev/null
 if [ "$(cat "$archive_path")" != "keep me" ]; then
   echo "FAIL: submit helper dry run modified an existing archive" >&2
+  exit 1
+fi
+
+if CMUX_PROFILE_FEEDBACK_EMAIL= "$ROOT_DIR/Resources/bin/submit-cmux-profile" \
+  --profile "$timeout_out" \
+  --target-name "amux DEV dog" >/tmp/cmux-profile-missing-recipient.log 2>&1; then
+  echo "FAIL: submit helper should reject an unconfigured recipient" >&2
+  exit 1
+fi
+if ! grep -Fq "a recipient is required" /tmp/cmux-profile-missing-recipient.log; then
+  echo "FAIL: missing recipient error was not actionable" >&2
+  cat /tmp/cmux-profile-missing-recipient.log >&2
   exit 1
 fi
 
@@ -421,10 +433,11 @@ fi
 
 CMUX_PROFILE_OSASCRIPT="$cancel_bin" CMUX_PROFILE_OPEN="$open_bin" CMUX_PROFILE_DITTO="$ditto_bin" "$ROOT_DIR/Resources/bin/submit-cmux-profile" \
   --profile "$timeout_out" \
-  --target-name "cmux DEV dog" \
+  --target-name "amux DEV dog" \
   --target-pid 303 \
   --channel dev \
-  --bundle-id com.cmuxterm.app.debug.dog
+  --bundle-id com.open330.amux.debug.dog \
+  --recipient profiles@example.com
 
 sleep_osascript="$TMP_DIR/sleep-osascript"
 sleep_osascript_pid="$TMP_DIR/sleep-osascript.pid"
@@ -438,10 +451,11 @@ EOF
 chmod +x "$sleep_osascript"
 CMUX_PROFILE_OSASCRIPT="$sleep_osascript" CMUX_PROFILE_DITTO="$ditto_bin" "$ROOT_DIR/Resources/bin/submit-cmux-profile" \
   --profile "$timeout_out" \
-  --target-name "cmux DEV dog" \
+  --target-name "amux DEV dog" \
   --target-pid 303 \
   --channel dev \
-  --bundle-id com.cmuxterm.app.debug.dog \
+  --bundle-id com.open330.amux.debug.dog \
+  --recipient profiles@example.com \
   --send &
 sleep_helper_pid="$!"
 for _ in $(seq 1 50); do
@@ -476,10 +490,11 @@ fi
 
 if CMUX_PROFILE_OSASCRIPT="$cancel_bin" CMUX_PROFILE_OPEN="$open_bin" CMUX_PROFILE_DITTO="$ditto_bin" "$ROOT_DIR/Resources/bin/submit-cmux-profile" \
   --profile "$timeout_out" \
-  --target-name "cmux DEV dog" \
+  --target-name "amux DEV dog" \
   --target-pid 303 \
   --channel dev \
-  --bundle-id com.cmuxterm.app.debug.dog \
+  --bundle-id com.open330.amux.debug.dog \
+  --recipient profiles@example.com \
   --send >/tmp/cmux-profile-send-cancel.log 2>&1; then
   echo "FAIL: submit helper send mode should fail when Mail send is canceled" >&2
   exit 1
@@ -511,18 +526,18 @@ printf '%s' "profile note" > "$note_file"
 
 HOME="$TMP_DIR" CMUX_PROFILE_FEEDBACK_EMAIL=wrong@example.com CMUX_PROFILE_LOCALE=ja_JP CMUX_PROFILE_OSASCRIPT="$capture_osascript" CMUX_PROFILE_DITTO="$ditto_bin" "$ROOT_DIR/Resources/bin/submit-cmux-profile" \
   --profile "$timeout_out" \
-  --target-name "cmux DEV dog" \
+  --target-name "amux DEV dog" \
   --target-pid 303 \
   --channel dev \
-  --bundle-id com.cmuxterm.app.debug.dog \
-  --recipient founders@manaflow.com \
+  --bundle-id com.open330.amux.debug.dog \
+  --recipient profiles@example.com \
   --reply-to-file "$reply_to_file" \
   --note-file "$note_file" \
   --send
-if ! grep -Fq "cmuxプロファイルを送信" "$captured_args" ||
+if ! grep -Fq "amuxプロファイルを送信" "$captured_args" ||
    ! grep -Fq "下書きを開く" "$captured_args" ||
-   ! grep -Fq "cmuxプロファイリングキャプチャ" "$captured_args" ||
-   ! grep -Fq "founders@manaflow.com" "$captured_args" ||
+   ! grep -Fq "amuxプロファイリングキャプチャ" "$captured_args" ||
+   ! grep -Fq "profiles@example.com" "$captured_args" ||
    grep -Fq "wrong@example.com" "$captured_args" ||
    ! grep -Fq "user@example.com" "$captured_args" ||
    ! grep -Fq "profile note" "$captured_args" ||
