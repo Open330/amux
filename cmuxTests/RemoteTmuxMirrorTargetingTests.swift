@@ -62,15 +62,14 @@ struct RemoteTmuxMirrorTargetingTests {
         )
         #expect(renameRace.isEmpty)
 
-        // A NEW session reusing a mirrored session's stale pre-rename name stays
-        // undiscovered until the rename event re-keys the mirror (deliberate: the
-        // name-keyed attach pipeline would drop it anyway; see the helper's doc).
+        // A NEW session reusing a mirrored session's stale pre-rename name is a
+        // distinct attach target because its stable id differs.
         let reusedOldName = RemoteTmuxController.unmirroredSessions(
             [session("0", id: "$5")],
             mirroredSessionIds: [0],
             mirroredNames: ["0"]
         )
-        #expect(reusedOldName.isEmpty)
+        #expect(reusedOldName.map(\.name) == ["0"])
 
         // Mid-attach mirrors have no sessionId yet; the name fallback covers them.
         let midAttach = RemoteTmuxController.unmirroredSessions(
@@ -151,6 +150,38 @@ struct RemoteTmuxMirrorTargetingTests {
 
         #expect(missing === fallback)
         #expect(unresolved === fallback)
+    }
+
+    @Test func sessionSwitcherAttachUsesHostDedicatedWindow() throws {
+        let previousDelegate = AppDelegate.shared
+        let app = AppDelegate()
+        defer { AppDelegate.shared = previousDelegate }
+
+        let host = RemoteTmuxHost(destination: "builder@example.com")
+        let dedicatedManager = TabManager()
+        let fallbackManager = TabManager()
+        let dedicatedWindowId = app.registerMainWindowContextForTesting(tabManager: dedicatedManager)
+        defer {
+            app.remoteTmuxController.detachAll()
+            app.unregisterMainWindowContextForTesting(windowId: dedicatedWindowId)
+        }
+        app.remoteTmuxController.bindDedicatedWindowForTesting(host: host, windowId: dedicatedWindowId)
+        cacheConnection(
+            controller: app.remoteTmuxController,
+            host: host,
+            sessionName: "agent-work"
+        )
+
+        let attached = app.amuxAttachSession(
+            host: host,
+            session: session("agent-work", id: "$9"),
+            in: fallbackManager
+        )
+
+        #expect(attached)
+        #expect(dedicatedManager.tabs.contains { $0.isRemoteTmuxMirror && $0.title == "agent-work" })
+        #expect(!fallbackManager.tabs.contains { $0.isRemoteTmuxMirror })
+        #expect(dedicatedManager.selectedWorkspace?.title == "agent-work")
     }
 
     @Test func workspaceCloseDetachesByDefaultOnSSH() {
