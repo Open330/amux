@@ -139,6 +139,11 @@ public enum ControlCommandExecutionPolicy: Sendable, Equatable {
         // amux.send_prompt.
         "amux.pane_read",
         "amux.pane_wait",
+        // amux.agents probes the login shell (a process wait) and
+        // amux.launch_agent creates sessions / retries sends through
+        // v2VmCall — worker lane both.
+        "amux.agents",
+        "amux.launch_agent",
         "amux.local_tmux_sync",
         // amux.remote_setup runs SSH round trips (inspect/provision the
         // remote muxa stack) through v2VmCall — worker lane.

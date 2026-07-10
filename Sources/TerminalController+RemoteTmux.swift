@@ -564,6 +564,104 @@ extension TerminalController {
         }
     }
 
+    /// `amux.agents` — detect which catalog agent CLIs are installed (probed
+    /// under the user's login shell so Homebrew/nvm paths resolve). No params.
+    /// Returns `{agents: [{agent, name, installed, path?}]}`. Worker lane.
+    nonisolated func v2AmuxAgents(id: Any?, params _: [String: Any]) -> String {
+        v2VmCall(id: id, timeoutSeconds: 20) {
+            let paths = await AmuxAgentCatalog.detectInstalled()
+            return ["agents": AmuxAgentCatalog.detectionRows(paths: paths)]
+        }
+    }
+
+    /// `amux.launch_agent` — start a catalog agent in an amux pane. Params:
+    /// `agent` (required, catalog id), `prompt?`, `workspace_id?` (default:
+    /// create a NEW amux session). The launch line is typed into the pane's
+    /// shell behind the inverse sendability guard (a pane running an
+    /// interactive app refuses with `pane_busy`). For agents that take no
+    /// startup prompt the response carries `followup_prompt` — deliver it
+    /// with `amux.pane_wait for=idle` + `amux.pane_send` once the TUI owns
+    /// the pane. Worker lane.
+    nonisolated func v2AmuxLaunchAgent(id: Any?, params: [String: Any]) -> String {
+        guard let agentId = (params["agent"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              let entry = AmuxAgentCatalog.entry(id: agentId) else {
+            return v2Error(
+                id: id,
+                code: "invalid_params",
+                message: String(
+                    localized: "socket.amux.agentUnknown",
+                    defaultValue: "agent must be one of the amux agent catalog ids (see amux.agents)"
+                )
+            )
+        }
+        let prompt = (params["prompt"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let paneParam = Self.v2TmuxPaneParam(params["pane"])
+        return v2VmCall(id: id, timeoutSeconds: 60) {
+            var sessionName: String?
+            let resolved: (UUID, RemoteTmuxController)?
+            if params["workspace_id"] != nil {
+                resolved = await MainActor.run { () -> (UUID, RemoteTmuxController)? in
+                    guard let appDelegate = AppDelegate.shared,
+                          let workspaceId = self.v2AmuxResolveWorkspaceId(params) else { return nil }
+                    return (workspaceId, appDelegate.remoteTmuxController)
+                }
+            } else {
+                // No target → a fresh amux session (the orca "new worktree +
+                // agent" analogue: new tmux session + agent in its first pane).
+                guard let (controller, manager) = await MainActor.run(body: {
+                    AppDelegate.shared.flatMap { app in app.tabManager.map { (app.remoteTmuxController, $0) } }
+                }) else {
+                    throw RemoteTmuxError.unreachable("app not ready")
+                }
+                let name = try await controller.createLocalAmuxWorkspace(into: manager)
+                sessionName = name
+                resolved = await MainActor.run {
+                    controller.localMirrorWorkspace(sessionName: name).map { ($0.id, controller) }
+                }
+            }
+            guard let (workspaceId, controller) = resolved else {
+                throw RemoteTmuxError.unreachable("workspace not found")
+            }
+            let launchLine = entry.launchLine(prompt: prompt)
+            // A just-created mirror needs a beat before its pane resolves;
+            // retry briefly on .notMirror instead of failing the launch.
+            var lastOutcome: RemoteTmuxController.ShellMirrorSendOutcome = .notMirror
+            for _ in 0..<20 {
+                lastOutcome = await MainActor.run {
+                    controller.sendShellCommandToMirror(
+                        workspaceId: workspaceId, tmuxPane: paneParam, command: launchLine
+                    )
+                }
+                if case .notMirror = lastOutcome {
+                    try await Task.sleep(for: .milliseconds(250))
+                    continue
+                }
+                break
+            }
+            switch lastOutcome {
+            case let .sent(pane):
+                var result: [String: Any] = [
+                    "workspace_id": workspaceId.uuidString,
+                    "pane": pane,
+                    "agent": entry.id,
+                    "launched": launchLine,
+                ]
+                if let sessionName { result["session"] = sessionName }
+                if let prompt, !prompt.isEmpty, entry.promptInjection == .typeAfterStart {
+                    result["followup_prompt"] = prompt
+                }
+                return result
+            case .notMirror:
+                throw RemoteTmuxError.unreachable("workspace has no live mirrored pane")
+            case let .paneBusy(pane, foreground):
+                throw RemoteTmuxError.commandFailed(
+                    exitCode: -1,
+                    stderr: "pane %\(pane) is busy (foreground: \(foreground ?? "unknown"))"
+                )
+            }
+        }
+    }
+
     /// `amux.new_session` — create a fresh amux tmux-backed workspace (new
     /// `-L amux` session + mirror). No params. Worker lane (awaits tmux).
     /// Returns `{session, workspace_id}`.

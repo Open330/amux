@@ -1405,6 +1405,10 @@ class TerminalController {
             return v2AmuxSessions(id: request.id, params: request.params)
         case "amux.attach_session":
             return v2AmuxAttachSession(id: request.id, params: request.params)
+        case "amux.agents":
+            return v2AmuxAgents(id: request.id, params: request.params)
+        case "amux.launch_agent":
+            return v2AmuxLaunchAgent(id: request.id, params: request.params)
         case "amux.pane_read":
             return v2AmuxPaneRead(id: request.id, params: request.params)
         case "amux.pane_wait":

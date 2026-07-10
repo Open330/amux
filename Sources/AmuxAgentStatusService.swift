@@ -62,12 +62,27 @@ final class AmuxAgentStatusService {
         streamTask = Task { [weak self] in
             await self?.run()
         }
+        // Freshness tick: a `working` badge whose agent went silent (missed
+        // hook, crashed CLI) would otherwise show "working" forever — there is
+        // no transition to re-render on. Re-projecting once a minute lets
+        // ``statusEntry(for:now:)``'s staleness decay demote it.
+        freshnessTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(60))
+                guard let self else { return }
+                self.applyToWorkspaces()
+            }
+        }
     }
 
     func stop() {
         streamTask?.cancel()
         streamTask = nil
+        freshnessTask?.cancel()
+        freshnessTask = nil
     }
+
+    private var freshnessTask: Task<Void, Never>?
 
     private func run() async {
         while !Task.isCancelled {
@@ -238,13 +253,23 @@ final class AmuxAgentStatusService {
         workspacesWithEntry = updated
     }
 
+    /// How long a silent `working` state stays believable. Past this the
+    /// agent is shown as idle: with no fresh activity the "working" claim is
+    /// stale (a missed hook or dead CLI), and a perpetual working badge
+    /// teaches the user to ignore the sidebar. Attention states (waiting /
+    /// error) never decay — they stay actionable however old they are.
+    static let workingStaleAfter: TimeInterval = 30 * 60
+
     /// One summary row for a session's live agents, `nil` when there is
     /// nothing worth showing (all idle/starting).
-    static func statusEntry(for agents: [MuxaAgent]) -> SidebarStatusEntry? {
+    static func statusEntry(for agents: [MuxaAgent], now: Date = Date()) -> SidebarStatusEntry? {
         var working = 0, waiting = 0, errors = 0
         for agent in agents {
             switch agent.state {
-            case .working: working += 1
+            case .working:
+                let freshness = agent.lastActivityDate ?? agent.stateEnteredDate
+                let isStale = freshness.map { now.timeIntervalSince($0) > Self.workingStaleAfter } ?? false
+                if !isStale { working += 1 }
             case .waitingInput, .waitingChoice: waiting += 1
             case .error: errors += 1
             case .starting, .idle, .stopped, .unknown: break

@@ -772,6 +772,37 @@ final class RemoteTmuxController {
         return .sent(pane: pane)
     }
 
+    /// The outcome of a shell-directed send (see
+    /// ``sendShellCommandToMirror(workspaceId:tmuxPane:command:)``).
+    enum ShellMirrorSendOutcome {
+        case sent(pane: Int)
+        case notMirror
+        /// The pane's foreground is an interactive app — typing a launch
+        /// command into a running TUI would corrupt its input, so the caller
+        /// must pick another pane or wait.
+        case paneBusy(pane: Int, foreground: String?)
+    }
+
+    /// Types `command` (plus Enter) into `workspaceId`'s mirrored pane with
+    /// the INVERSE of the agent-send guard: the pane must NOT be running an
+    /// interactive app (an unclassified pane is allowed — a freshly created
+    /// session is a shell whose classification may not have landed yet). The
+    /// launch primitive behind `amux.launch_agent`.
+    func sendShellCommandToMirror(
+        workspaceId: UUID, tmuxPane: Int?, command: String
+    ) -> ShellMirrorSendOutcome {
+        guard let mirror = sessionMirrors.values.first(where: { $0.mirroredWorkspaceId == workspaceId }),
+              let pane = mirror.promptTargetPane(preferring: tmuxPane) else { return .notMirror }
+        let connection = mirror.connection
+        if let state = connection.paneForegroundStates[pane], state.hasActiveCommand {
+            return .paneBusy(pane: pane, foreground: state.command)
+        }
+        var data = Data(command.utf8)
+        data.append(0x0d)
+        guard connection.sendKeys(paneId: pane, data: data) else { return .notMirror }
+        return .sent(pane: pane)
+    }
+
     /// Focuses tmux pane `%tmuxPane` inside `workspaceId`'s mirror (selects
     /// the window-tab and, for multipane windows, the pane). No-op when the
     /// workspace isn't a mirror or the pane left its layout.

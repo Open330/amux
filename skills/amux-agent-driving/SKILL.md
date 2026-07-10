@@ -45,6 +45,17 @@ Params: `history_lines?` (0–5000, default 0 = visible screen only), `workspace
 - Returns `{lines, history_size, pane}`. `history_size` is an incremental cursor: store it, and on the next read `history_size - previous` bounds how many NEW scrollback lines appeared; pass that as `history_lines` to fetch exactly the new output.
 - TUIs redraw in place, so for agent TUIs prefer reading the visible screen (default) right after `pane_wait` returns `idle`.
 
+## amux.agents / amux.launch_agent — spawn agents
+
+```bash
+amux rpc amux.agents '{}'                       # which agent CLIs are installed (login-shell PATH)
+amux rpc amux.launch_agent '{"agent": "claude", "prompt": "fix the failing test"}'
+```
+
+- Without `workspace_id`, `launch_agent` creates a NEW amux session and types the launch line into its first pane; with `workspace_id` it targets that workspace's prompt pane.
+- A pane already running an interactive app refuses with `pane_busy` — never launches into a running TUI.
+- If the response carries `followup_prompt` (agents with no startup-prompt support), deliver it yourself: `pane_wait for=idle` then `pane_send`.
+
 ## Recipes
 
 Dispatch a prompt and capture the agent's answer:

@@ -207214,6 +207214,125 @@
         }
       }
     },
+    "socket.amux.agentUnknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يجب أن يكون agent أحد معرفات كتالوج وكلاء amux (انظر amux.agents)"
+          }
+        },
+        "bs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent mora biti jedan od ID-ova amux kataloga agenata (vidi amux.agents)"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent skal være et af amux-agentkatalogets id'er (se amux.agents)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent muss eine der amux-Agentenkatalog-IDs sein (siehe amux.agents)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent must be one of the amux agent catalog ids (see amux.agents)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent debe ser uno de los ids del catálogo de agentes de amux (ver amux.agents)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent doit être l'un des ids du catalogue d'agents amux (voir amux.agents)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent deve essere uno degli id del catalogo agenti amux (vedi amux.agents)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent は amux エージェントカタログの id である必要があります（amux.agents を参照）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent는 amux 에이전트 카탈로그 id 중 하나여야 합니다 (amux.agents 참조)"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent må være en av amux-agentkatalogens id-er (se amux.agents)"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent musi być jednym z identyfikatorów katalogu agentów amux (zob. amux.agents)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent deve ser um dos ids do catálogo de agentes do amux (veja amux.agents)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent должен быть одним из id каталога агентов amux (см. amux.agents)"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent ต้องเป็นหนึ่งใน id ของแคตตาล็อกเอเจนต์ amux (ดู amux.agents)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent, amux ajan kataloğu kimliklerinden biri olmalıdır (bkz. amux.agents)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent має бути одним з id каталогу агентів amux (див. amux.agents)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent 必须是 amux 代理目录 id 之一（参见 amux.agents）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "agent 必須是 amux 代理目錄 id 之一（參見 amux.agents）"
+          }
+        }
+      }
+    },
     "socket.amux.appNotReady": {
       "extractionState": "manual",
       "localizations": {

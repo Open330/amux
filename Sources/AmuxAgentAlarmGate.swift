@@ -44,3 +44,50 @@ final class AmuxAgentAlarmGate {
         return alarm
     }
 }
+
+/// Holds each "finished" alarm behind a short quiet window, delivering it only
+/// if the agent STAYS idle — a goal/mission agent that flashes idle between
+/// milestones (or a jittery hook stream) otherwise fires a false "finished"
+/// notification per milestone. Attention/error alarms are latency-sensitive
+/// and pass through immediately; only the `working → idle` finished edge is
+/// debounced (orca uses the same 1.5s window for its hook-done completions).
+@MainActor
+final class AmuxAgentFinishedAlarmDebounce {
+    /// How long the agent must stay idle before "finished" is believed.
+    static let quietWindow: Duration = .milliseconds(1500)
+
+    private var pendingBySessionId: [String: Task<Void, Never>] = [:]
+
+    /// Routes `alarm` (already gate-approved, with its resolved workspace):
+    /// finished edges are scheduled behind the quiet window; everything else
+    /// delivers immediately. Every transition — alarming or not — also feeds
+    /// the cancellation side: an agent that resumes working (or enters any
+    /// non-idle state) within the window swallows its pending finished alarm.
+    func route(
+        transition: MuxaTransition,
+        alarm: AmuxAgentAlarm?,
+        deliver: @escaping @MainActor () -> Void
+    ) {
+        let sessionId = transition.agent.sessionId
+        if transition.to != .idle, let pending = pendingBySessionId.removeValue(forKey: sessionId) {
+            // The idle was a milestone flash, not the end of the turn.
+            pending.cancel()
+        }
+        guard alarm != nil else { return }
+        guard transition.to == .idle else {
+            deliver()
+            return
+        }
+        pendingBySessionId[sessionId]?.cancel()
+        pendingBySessionId[sessionId] = Task { @MainActor [weak self] in
+            do {
+                try await Task.sleep(for: Self.quietWindow)
+            } catch {
+                return
+            }
+            guard let self, self.pendingBySessionId[sessionId] != nil else { return }
+            self.pendingBySessionId[sessionId] = nil
+            deliver()
+        }
+    }
+}

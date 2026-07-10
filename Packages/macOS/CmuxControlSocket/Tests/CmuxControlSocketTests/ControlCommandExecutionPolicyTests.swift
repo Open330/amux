@@ -42,6 +42,8 @@ struct ControlCommandExecutionPolicyTests {
             // everythingElseRunsOnTheMainActor below.
             "amux.pane_read",
             "amux.pane_wait",
+            "amux.agents",
+            "amux.launch_agent",
             // JavaScript-evaluating browser methods block on page JS and must
             // not hold the main actor (see socketWorkerMethods rationale).
             "browser.eval", "browser.wait", "browser.snapshot", "browser.click",

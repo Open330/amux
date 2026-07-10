@@ -30,14 +30,22 @@ extension AppDelegate {
         // unique, and a single episode memory keeps local + remote sinks
         // consistent.
         let alarmGate = AmuxAgentAlarmGate()
+        let finishedDebounce = AmuxAgentFinishedAlarmDebounce()
         let onTransition: @MainActor (MuxaTransition, Workspace?) -> Void = { [weak self] transition, workspace in
             // The gate sees every pass (joined or not) so episode memory
             // stays fresh, but only a joined attention pass consumes the
             // episode — an unjoined one must alarm on a later joinable pass.
-            guard let self,
-                  let alarm = alarmGate.alarm(for: transition, joined: workspace != nil),
-                  let workspace else { return }
-            self.amuxDeliverAgentAlarm(alarm, workspace: workspace)
+            let alarm = alarmGate.alarm(for: transition, joined: workspace != nil)
+            // The debounce sees every transition too (its cancellation side):
+            // a "finished" alarm only survives if the agent stays idle through
+            // the quiet window — milestone idle-flashes are swallowed.
+            finishedDebounce.route(
+                transition: transition,
+                alarm: (workspace != nil) ? alarm : nil
+            ) { [weak self] in
+                guard let self, let alarm, let workspace else { return }
+                self.amuxDeliverAgentAlarm(alarm, workspace: workspace)
+            }
         }
         let localService = AmuxAgentStatusService(
             workspaceForSession: { [weak self] sessionName in

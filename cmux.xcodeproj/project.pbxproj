@@ -76,6 +76,7 @@
 		962E5E3EC3D456BBCD419DFF /* AmuxAgentAlarmGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */; };
 		52AD40A1F31F245A72A92F9E /* AmuxAgentAlarmPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */; };
 		22281B0DF8F14335041509F8 /* AmuxAgentAlarmPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD19910C49AA84AD7A2EA6B /* AmuxAgentAlarmPolicyTests.swift */; };
+		552234CCFEBD47539825A928 /* AmuxAgentCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B577065F53E42E2B1DA5927 /* AmuxAgentCatalog.swift */; };
 		27B00B5B8F6B98F75A211AB9 /* AmuxAgentObservationHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */; };
 		1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */; };
 		CBE9ED114E0851AC45E68AA2 /* AmuxChoiceParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633B3B33234501085E3589FE /* AmuxChoiceParser.swift */; };
@@ -1588,6 +1589,7 @@
 		D0A591AB9A0A79F1B330F813 /* AmuxAgentAlarmGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmGateTests.swift"; sourceTree = "<group>"; };
 		B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmPolicy.swift"; sourceTree = "<group>"; };
 		7AD19910C49AA84AD7A2EA6B /* AmuxAgentAlarmPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentAlarmPolicyTests.swift"; sourceTree = "<group>"; };
+		6B577065F53E42E2B1DA5927 /* AmuxAgentCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentCatalog.swift"; sourceTree = "<group>"; };
 		6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentObservationHub.swift"; sourceTree = "<group>"; };
 		FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxAgentStatusService.swift"; sourceTree = "<group>"; };
 		633B3B33234501085E3589FE /* AmuxChoiceParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AmuxChoiceParser.swift"; sourceTree = "<group>"; };
@@ -3863,6 +3865,7 @@
 					FCBCA2F8FD0979D0A0220ACE /* AmuxAgentStatusService.swift */,
 					B2680ACD6796886000A02DBD /* AmuxAgentAlarmPolicy.swift */,
 						85FF5B60B86FE20F1D5D0ED2 /* AmuxAgentAlarmGate.swift */,
+				6B577065F53E42E2B1DA5927 /* AmuxAgentCatalog.swift */,
 						1F57627EDD1E39B2DC5EDE8B /* AmuxRemoteHostSetup.swift */,
 						12505CF574482E459415080C /* TerminalController+AmuxObservation.swift */,
 						6B043F5076DAEA5D7D7A2EFC /* AmuxAgentObservationHub.swift */,
@@ -4932,6 +4935,7 @@
 				REE0CA0000000000000000E2 /* AIAccountsClient.swift in Sources */,
 				7117F37027C225DF26F04C57 /* AmuxAgentAlarmGate.swift in Sources */,
 				52AD40A1F31F245A72A92F9E /* AmuxAgentAlarmPolicy.swift in Sources */,
+				552234CCFEBD47539825A928 /* AmuxAgentCatalog.swift in Sources */,
 					27B00B5B8F6B98F75A211AB9 /* AmuxAgentObservationHub.swift in Sources */,
 					1501F27F8F13705D6A45FE8B /* AmuxAgentStatusService.swift in Sources */,
 					CBE9ED114E0851AC45E68AA2 /* AmuxChoiceParser.swift in Sources */,
