@@ -64,15 +64,32 @@ struct SessionSnapshotRepositoryTests {
         #expect(backup.path == dir.appendingPathComponent("cmux/session-com.cmux_odd_id-previous.json").path)
     }
 
-    @Test("nil and blank bundle identifiers fall back to com.cmuxterm.app")
+    @Test("nil and blank bundle identifiers fall back to com.open330.amux")
     func bundleIdentifierFallback() throws {
         let dir = try makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: dir) }
         for identifier in [nil, "  "] as [String?] {
             let repository = makeRepository(appSupport: dir, bundleIdentifier: identifier)
             let primary = try #require(repository.defaultSnapshotFileURL())
-            #expect(primary.lastPathComponent == "session-com.cmuxterm.app.json")
+            #expect(primary.lastPathComponent == "session-com.open330.amux.json")
         }
+    }
+
+    @Test("stable amux loads and migrates the legacy cmux session snapshot")
+    func stableIdentityMigratesLegacySnapshot() throws {
+        let dir = try makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let repository = makeRepository(appSupport: dir, bundleIdentifier: "com.open330.amux")
+        let legacyURL = dir
+            .appendingPathComponent("cmux", isDirectory: true)
+            .appendingPathComponent("session-com.cmuxterm.app.json", isDirectory: false)
+        let snapshot = makeSnapshot(windowNames: ["legacy"])
+
+        #expect(repository.save(snapshot, fileURL: legacyURL))
+        #expect(repository.load(fileURL: nil) == snapshot)
+        let canonicalURL = try #require(repository.defaultSnapshotFileURL())
+        #expect(canonicalURL.lastPathComponent == "session-com.open330.amux.json")
+        #expect(FileManager.default.fileExists(atPath: canonicalURL.path))
     }
 
     @Test("missing file, corrupt data, version drift, and empty windows are not loadable")
