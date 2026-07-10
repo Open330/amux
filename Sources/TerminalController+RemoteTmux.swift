@@ -910,7 +910,7 @@ extension TerminalController {
                 guard appDelegate.amuxAttachSession(
                     named: name,
                     in: manager,
-                    activateWindow: false
+                    focusWorkspace: false
                 ) else {
                     throw RemoteTmuxError.commandFailed(exitCode: -1, stderr: "attach failed")
                 }

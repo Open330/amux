@@ -413,14 +413,14 @@ extension AppDelegate {
     func amuxAttachSession(
         named name: String,
         in manager: TabManager,
-        activateWindow: Bool = true
+        focusWorkspace: Bool = true
     ) -> Bool {
         amuxAttachSession(
             host: .amuxLocal(),
             sessionName: name,
             sessionId: nil,
             in: manager,
-            activateWindow: activateWindow
+            focusWorkspace: focusWorkspace
         )
     }
 
@@ -429,7 +429,7 @@ extension AppDelegate {
         sessionName: String,
         sessionId: Int?,
         in manager: TabManager,
-        activateWindow: Bool
+        focusWorkspace: Bool
     ) -> Bool {
         do {
             guard let targetManager = remoteTmuxController.sessionAttachTargetTabManager(
@@ -447,9 +447,9 @@ extension AppDelegate {
             } ?? remoteTmuxController.mirrorWorkspace(hostId: host.id, sessionName: sessionName)
             if let workspace {
                 let owner = amuxWorkspace(withId: workspace.id)?.manager ?? targetManager
-                owner.selectWorkspace(workspace)
-                Self.activateWindowAfterSessionAttach(
-                    ifRequested: activateWindow,
+                Self.focusWorkspaceAfterSessionAttach(
+                    ifRequested: focusWorkspace,
+                    workspace: workspace,
                     owner: owner,
                     bringForward: { $0.window?.makeKeyAndOrderFront(nil) }
                 )
@@ -470,23 +470,25 @@ extension AppDelegate {
         host: RemoteTmuxHost,
         session: RemoteTmuxSession,
         in manager: TabManager,
-        activateWindow: Bool = true
+        focusWorkspace: Bool = true
     ) -> Bool {
         amuxAttachSession(
             host: host,
             sessionName: session.name,
             sessionId: RemoteTmuxController.tmuxSessionNumericId(session.id),
             in: manager,
-            activateWindow: activateWindow
+            focusWorkspace: focusWorkspace
         )
     }
 
-    static func activateWindowAfterSessionAttach(
-        ifRequested activateWindow: Bool,
+    static func focusWorkspaceAfterSessionAttach(
+        ifRequested focusWorkspace: Bool,
+        workspace: Workspace,
         owner: TabManager,
         bringForward: (TabManager) -> Void
     ) {
-        guard activateWindow else { return }
+        guard focusWorkspace else { return }
+        owner.selectWorkspace(workspace)
         bringForward(owner)
     }
 

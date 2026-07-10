@@ -177,24 +177,58 @@ struct RemoteTmuxMirrorTargetingTests {
         #expect(unresolved === fallback)
     }
 
-    @Test func backgroundSessionAttachDoesNotActivateWindow() {
+    @Test func backgroundSessionAttachFocusSeamPreservesSelectionAndWindow() {
         let manager = TabManager()
+        let originalWorkspaceId = manager.selectedWorkspace?.id
+        let attachedWorkspace = manager.addWorkspace(select: false)
         var activatedManagers: [TabManager] = []
 
-        AppDelegate.activateWindowAfterSessionAttach(
+        AppDelegate.focusWorkspaceAfterSessionAttach(
             ifRequested: false,
+            workspace: attachedWorkspace,
             owner: manager,
             bringForward: { activatedManagers.append($0) }
         )
+        #expect(manager.selectedWorkspace?.id == originalWorkspaceId)
         #expect(activatedManagers.isEmpty)
 
-        AppDelegate.activateWindowAfterSessionAttach(
+        AppDelegate.focusWorkspaceAfterSessionAttach(
             ifRequested: true,
+            workspace: attachedWorkspace,
             owner: manager,
             bringForward: { activatedManagers.append($0) }
         )
+        #expect(manager.selectedWorkspace?.id == attachedWorkspace.id)
         #expect(activatedManagers.count == 1)
         #expect(activatedManagers.first === manager)
+    }
+
+    @Test func socketStyleBackgroundAttachCreatesMirrorWithoutChangingSelection() {
+        let previousDelegate = AppDelegate.shared
+        let app = AppDelegate()
+        defer { AppDelegate.shared = previousDelegate }
+
+        let host = RemoteTmuxHost.amuxLocal()
+        let manager = TabManager()
+        let originalWorkspaceId = manager.selectedWorkspace?.id
+        cacheConnection(
+            controller: app.remoteTmuxController,
+            host: host,
+            sessionName: "background-agent",
+            sessionId: 27
+        )
+        defer { app.remoteTmuxController.detachAll() }
+
+        let attached = app.amuxAttachSession(
+            host: host,
+            session: session("background-agent", id: "$27"),
+            in: manager,
+            focusWorkspace: false
+        )
+
+        #expect(attached)
+        #expect(manager.selectedWorkspace?.id == originalWorkspaceId)
+        #expect(manager.tabs.contains { $0.isRemoteTmuxMirror && $0.title == "background-agent" })
     }
 
     @Test func sessionSwitcherAttachUsesHostDedicatedWindow() throws {
