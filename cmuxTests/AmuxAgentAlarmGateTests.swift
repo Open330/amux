@@ -1,5 +1,6 @@
 import CmuxMuxa
-import XCTest
+import Foundation
+import Testing
 
 #if canImport(cmux_DEV)
 @testable import cmux_DEV
@@ -8,7 +9,8 @@ import XCTest
 #endif
 
 @MainActor
-final class AmuxAgentAlarmGateTests: XCTestCase {
+@Suite(.serialized)
+struct AmuxAgentAlarmGateTests {
     private func transition(
         from: CmuxMuxa.MuxaAgentState,
         to: CmuxMuxa.MuxaAgentState,
@@ -26,70 +28,58 @@ final class AmuxAgentAlarmGateTests: XCTestCase {
         )
     }
 
-    func testAttentionEpisodeAlarmsExactlyOnce() {
+    @Test func attentionEpisodeAlarmsExactlyOnce() {
         let gate = AmuxAgentAlarmGate()
         // Missed-join entry edge scenario: the first transition the sink
-        // sees is a same-state tick refresh — it must alarm...
-        XCTAssertNotNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true))
-        // ...and every subsequent tick refresh of the same episode is quiet.
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true))
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true))
+        // sees is a same-state tick refresh - it must alarm.
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true) != nil)
+        // Every subsequent tick refresh of the same episode is quiet.
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true) == nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true) == nil)
     }
 
-    func testLeavingAttentionRearmsTheAgent() {
+    @Test func leavingAttentionRearmsTheAgent() {
         let gate = AmuxAgentAlarmGate()
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true))
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true))
-        // Answering the prompt puts the agent back to work…
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .working), joined: true))
-        // …so the next blocked episode alarms again.
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true))
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true) == nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .working), joined: true) == nil)
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true) != nil)
     }
 
-    func testDistinctAttentionStatesEachAlarm() {
+    @Test func distinctAttentionStatesEachAlarm() {
         let gate = AmuxAgentAlarmGate()
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true))
-        XCTAssertNotNil(gate.alarm(for: transition(from: .waitingInput, to: .error), joined: true))
-        XCTAssertNil(gate.alarm(for: transition(from: .error, to: .error), joined: true))
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .error), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .error, to: .error), joined: true) == nil)
     }
 
-    func testFinishedEdgePassesThroughUngated() {
+    @Test func finishedEdgePassesThroughUngated() {
         let gate = AmuxAgentAlarmGate()
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .idle), joined: true))
-        // The finished alarm is edge-gated at the policy level; an idle
-        // refresh stays quiet.
-        XCTAssertNil(gate.alarm(for: transition(from: .idle, to: .idle), joined: true))
-        // A new turn can finish again.
-        XCTAssertNil(gate.alarm(for: transition(from: .idle, to: .working), joined: true))
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .idle), joined: true))
+        #expect(gate.alarm(for: transition(from: .working, to: .idle), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .idle, to: .idle), joined: true) == nil)
+        #expect(gate.alarm(for: transition(from: .idle, to: .working), joined: true) == nil)
+        #expect(gate.alarm(for: transition(from: .working, to: .idle), joined: true) != nil)
     }
 
-    func testUnjoinedAttentionPassDoesNotConsumeTheEpisode() {
+    @Test func unjoinedAttentionPassDoesNotConsumeTheEpisode() {
         let gate = AmuxAgentAlarmGate()
-        // The entry edge arrives before the workspace join resolves (young
-        // pane / pre-subscribe snapshot): quiet, and NOT consumed…
-        XCTAssertNil(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: false))
-        // …so the first joinable pass (a synthetic same-state refresh from
-        // applyToWorkspaces) still alarms.
-        XCTAssertNotNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true))
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true))
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: false) == nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput), joined: true) == nil)
     }
 
-    func testUnjoinedQuietPassStillRearms() {
+    @Test func unjoinedQuietPassStillRearms() {
         let gate = AmuxAgentAlarmGate()
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true))
-        // The agent resumes while its join is momentarily unresolvable —
-        // memory must still re-arm…
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .working), joined: false))
-        // …so the next blocked episode alarms.
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true))
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .working), joined: false) == nil)
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput), joined: true) != nil)
     }
 
-    func testAgentsAreIndependent() {
+    @Test func agentsAreIndependent() {
         let gate = AmuxAgentAlarmGate()
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput, sessionId: "a"), joined: true))
-        XCTAssertNotNil(gate.alarm(for: transition(from: .working, to: .waitingInput, sessionId: "b"), joined: true))
-        XCTAssertNil(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput, sessionId: "a"), joined: true))
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput, sessionId: "a"), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .working, to: .waitingInput, sessionId: "b"), joined: true) != nil)
+        #expect(gate.alarm(for: transition(from: .waitingInput, to: .waitingInput, sessionId: "a"), joined: true) == nil)
     }
 
     // MARK: - Finished-alarm quiet window
@@ -98,39 +88,37 @@ final class AmuxAgentAlarmGateTests: XCTestCase {
         AmuxAgentAlarm(title: "t", body: "b", cooldownKey: "k", cooldownInterval: 20)
     }
 
-    func testFinishedAlarmDeliversAfterQuietWindow() async throws {
+    @Test func finishedAlarmDeliversAfterQuietWindow() async throws {
         let debounce = AmuxAgentFinishedAlarmDebounce()
         var delivered = 0
         debounce.route(transition: transition(from: .working, to: .idle), alarm: finishedAlarm()) {
             delivered += 1
         }
-        XCTAssertEqual(delivered, 0, "finished must be held for the quiet window")
+        #expect(delivered == 0, "finished must be held for the quiet window")
         try await Task.sleep(for: AmuxAgentFinishedAlarmDebounce.quietWindow + .milliseconds(300))
-        XCTAssertEqual(delivered, 1)
+        #expect(delivered == 1)
     }
 
-    func testMilestoneIdleFlashIsSwallowedWhenAgentResumes() async throws {
+    @Test func milestoneIdleFlashIsSwallowedWhenAgentResumes() async throws {
         let debounce = AmuxAgentFinishedAlarmDebounce()
         var delivered = 0
         debounce.route(transition: transition(from: .working, to: .idle), alarm: finishedAlarm()) {
             delivered += 1
         }
-        // The agent resumes within the window: the "finished" was a milestone
-        // flash and must never surface.
         debounce.route(transition: transition(from: .idle, to: .working), alarm: nil) {
-            XCTFail("a quiet transition never delivers")
+            Issue.record("a quiet transition never delivers")
         }
         try await Task.sleep(for: AmuxAgentFinishedAlarmDebounce.quietWindow + .milliseconds(300))
-        XCTAssertEqual(delivered, 0)
+        #expect(delivered == 0)
     }
 
-    func testNonFinishedAlarmsDeliverImmediately() {
+    @Test func nonFinishedAlarmsDeliverImmediately() {
         let debounce = AmuxAgentFinishedAlarmDebounce()
         var delivered = 0
         debounce.route(transition: transition(from: .working, to: .waitingInput), alarm: finishedAlarm()) {
             delivered += 1
         }
-        XCTAssertEqual(delivered, 1, "attention alarms are latency-sensitive and skip the window")
+        #expect(delivered == 1, "attention alarms are latency-sensitive and skip the window")
     }
 
     // MARK: - Working-badge freshness decay
@@ -140,89 +128,92 @@ final class AmuxAgentAlarmGateTests: XCTestCase {
         return formatter.string(from: Date().addingTimeInterval(-secondsAgo))
     }
 
-    func testStaleWorkingAgentDecaysOutOfTheBadge() {
+    @Test func staleWorkingAgentDecaysOutOfTheBadge() {
         let stale = CmuxMuxa.MuxaAgent(
             kind: .claudeCode, sessionId: "s1", state: .working,
             lastActivityAt: rfc3339(secondsAgo: AmuxAgentStatusService.workingStaleAfter + 60)
         )
-        XCTAssertNil(
-            AmuxAgentStatusService.statusEntry(for: [stale]),
+        #expect(
+            AmuxAgentStatusService.statusEntry(for: [stale]) == nil,
             "a silent working agent past the staleness window shows nothing"
         )
         let fresh = CmuxMuxa.MuxaAgent(
             kind: .claudeCode, sessionId: "s2", state: .working,
             lastActivityAt: rfc3339(secondsAgo: 30)
         )
-        XCTAssertNotNil(AmuxAgentStatusService.statusEntry(for: [fresh]))
+        #expect(AmuxAgentStatusService.statusEntry(for: [fresh]) != nil)
     }
 
-    func testAttentionStatesNeverDecay() {
+    @Test func attentionStatesNeverDecay() {
         let oldWaiting = CmuxMuxa.MuxaAgent(
             kind: .codex, sessionId: "s3", state: .waitingInput,
             lastActivityAt: rfc3339(secondsAgo: AmuxAgentStatusService.workingStaleAfter * 4)
         )
-        let entry = AmuxAgentStatusService.statusEntry(for: [oldWaiting])
-        XCTAssertNotNil(entry, "waiting/error stay actionable however old they are")
+        #expect(
+            AmuxAgentStatusService.statusEntry(for: [oldWaiting]) != nil,
+            "waiting/error stay actionable however old they are"
+        )
     }
 
-    func testWorkingWithoutTimestampsDoesNotDecay() {
+    @Test func workingWithoutTimestampsDoesNotDecay() {
         let untimestamped = CmuxMuxa.MuxaAgent(kind: .claudeCode, sessionId: "s4", state: .working)
-        XCTAssertNotNil(
-            AmuxAgentStatusService.statusEntry(for: [untimestamped]),
-            "no freshness evidence means no decay — never hide a live agent on missing data"
+        #expect(
+            AmuxAgentStatusService.statusEntry(for: [untimestamped]) != nil,
+            "no freshness evidence means no decay - never hide a live agent on missing data"
         )
     }
 }
 
-/// The agent catalog (detect/launch manifest behind `amux.agents` /
-/// `amux.launch_agent`).
-final class AmuxAgentCatalogTests: XCTestCase {
-    func testArgvLaunchLineQuotesThePrompt() throws {
-        let claude = try XCTUnwrap(AmuxAgentCatalog.entry(id: "claude"))
-        XCTAssertEqual(
-            claude.launchLine(prompt: "fix the CI's failing test"),
-            "claude 'fix the CI'\\''s failing test'"
+/// The agent catalog behind `amux.agents` and `amux.launch_agent`.
+@Suite
+struct AmuxAgentCatalogTests {
+    @Test func argvLaunchLineQuotesThePrompt() throws {
+        let claude = try #require(AmuxAgentCatalog.entry(id: "claude"))
+        #expect(
+            claude.launchLine(prompt: "fix the CI's failing test")
+                == "claude 'fix the CI'\\''s failing test'"
         )
-        XCTAssertEqual(claude.launchLine(prompt: nil), "claude")
+        #expect(claude.launchLine(prompt: nil) == "claude")
     }
 
-    func testFlagLaunchLineUsesTheFlag() throws {
-        let opencode = try XCTUnwrap(AmuxAgentCatalog.entry(id: "opencode"))
-        XCTAssertEqual(
-            opencode.launchLine(prompt: "hello"),
-            "opencode --prompt 'hello'"
-        )
+    @Test func flagLaunchLinesUseInteractiveAgentFlags() throws {
+        let opencode = try #require(AmuxAgentCatalog.entry(id: "opencode"))
+        #expect(opencode.launchLine(prompt: "hello") == "opencode --prompt 'hello'")
+
+        let gemini = try #require(AmuxAgentCatalog.entry(id: "gemini"))
+        #expect(gemini.launchLine(prompt: "hello") == "gemini --prompt-interactive 'hello'")
     }
 
-    func testTypeAfterStartLaunchLineOmitsThePrompt() throws {
-        let aider = try XCTUnwrap(AmuxAgentCatalog.entry(id: "aider"))
-        XCTAssertEqual(aider.launchLine(prompt: "hello"), "aider")
+    @Test func stdinAfterStartAgentsDoNotPutThePromptInArgv() throws {
+        for id in ["aider", "grok", "qwen"] {
+            let entry = try #require(AmuxAgentCatalog.entry(id: id))
+            #expect(entry.launchLine(prompt: "hello") == entry.detectCommands[0], "\(id)")
+        }
     }
 
-    func testEntryLookupIsCaseInsensitive() {
-        XCTAssertNotNil(AmuxAgentCatalog.entry(id: "Claude"))
-        XCTAssertNil(AmuxAgentCatalog.entry(id: "no-such-agent"))
+    @Test func entryLookupIsCaseInsensitive() {
+        #expect(AmuxAgentCatalog.entry(id: "Claude") != nil)
+        #expect(AmuxAgentCatalog.entry(id: "no-such-agent") == nil)
     }
 
-    func testDetectionOutputParsing() {
+    @Test func detectionOutputParsing() {
         let output = """
         claude=/opt/homebrew/bin/claude
         codex=
         gemini=/usr/local/bin/gemini
         """
         let paths = AmuxAgentCatalog.parseDetectionOutput(output)
-        XCTAssertEqual(paths["claude"], "/opt/homebrew/bin/claude")
-        XCTAssertNil(paths["codex"])
-        XCTAssertEqual(paths["gemini"], "/usr/local/bin/gemini")
+        #expect(paths["claude"] == "/opt/homebrew/bin/claude")
+        #expect(paths["codex"] == nil)
+        #expect(paths["gemini"] == "/usr/local/bin/gemini")
     }
 
-    func testDetectionRowsUseAliasHits() {
-        // cursor resolves through its second alias when the first is absent.
+    @Test func genericAgentCommandDoesNotImpersonateCursor() throws {
+        let cursorEntry = try #require(AmuxAgentCatalog.entry(id: "cursor"))
+        #expect(cursorEntry.detectCommands == ["cursor-agent"])
+
         let rows = AmuxAgentCatalog.detectionRows(paths: ["agent": "/usr/local/bin/agent"])
-        let cursor = rows.first { ($0["agent"] as? String) == "cursor" }
-        XCTAssertEqual(cursor?["installed"] as? Bool, true)
-        XCTAssertEqual(cursor?["path"] as? String, "/usr/local/bin/agent")
-        let claude = rows.first { ($0["agent"] as? String) == "claude" }
-        XCTAssertEqual(claude?["installed"] as? Bool, false)
+        let cursor = try #require(rows.first { ($0["agent"] as? String) == "cursor" })
+        #expect(cursor["installed"] as? Bool == false)
     }
 }
