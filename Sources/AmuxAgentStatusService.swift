@@ -178,6 +178,28 @@ final class AmuxAgentStatusService {
             }
     }
 
+    /// Every tracked agent carrying `tmuxSession`, including agents whose
+    /// session is currently detached and therefore cannot resolve to a workspace.
+    func agents(inTmuxSession tmuxSession: String) -> [MuxaAgent] {
+        agentsBySessionId.values
+            .filter { $0.tmuxSession == tmuxSession }
+            .sorted { lhs, rhs in
+                switch (lhs.state.needsAttention, rhs.state.needsAttention) {
+                case (true, false): return true
+                case (false, true): return false
+                case (true, true):
+                    let l = lhs.stateEnteredDate ?? lhs.lastActivityDate ?? .distantFuture
+                    let r = rhs.stateEnteredDate ?? rhs.lastActivityDate ?? .distantFuture
+                    if l != r { return l < r }
+                case (false, false):
+                    let l = lhs.lastActivityDate ?? lhs.startedDate ?? .distantPast
+                    let r = rhs.lastActivityDate ?? rhs.startedDate ?? .distantPast
+                    if l != r { return l > r }
+                }
+                return lhs.sessionId < rhs.sessionId
+            }
+    }
+
     /// The tmux pane of `workspaceId`'s most relevant agent — blocked agents
     /// first (longest wait first), then the most recently active — the
     /// preferred headless-prompt target. `nil` when no tracked agent

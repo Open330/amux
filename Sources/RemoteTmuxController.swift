@@ -623,6 +623,15 @@ final class RemoteTmuxController {
             .workspace
     }
 
+    /// The host and tmux session backing `workspaceId`, used by host-aware
+    /// navigation surfaces without exposing the live mirror object.
+    func mirrorDescriptor(workspaceId: UUID) -> (host: RemoteTmuxHost, sessionName: String)? {
+        guard let mirror = sessionMirrors.values.first(where: {
+            $0.mirroredWorkspaceId == workspaceId
+        }) else { return nil }
+        return (mirror.host, mirror.sessionName)
+    }
+
     /// The workspace whose mirrored session on host `hostId` currently
     /// contains tmux pane `%paneId` — the pane-id join fallback, host-scoped
     /// (pane ids are only unique per tmux server).

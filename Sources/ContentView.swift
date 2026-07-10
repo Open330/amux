@@ -937,6 +937,13 @@ struct ContentView: View {
     @State private var commandPaletteRestoreTimeoutWorkItem: DispatchWorkItem?
     @State private var commandPalettePendingTextSelectionBehavior: CommandPaletteTextSelectionBehavior?
     @State private var commandPaletteSearchTask: Task<Void, Never>?
+    @State private var commandPaletteAmuxSessionLoadTask: Task<Void, Never>?
+    @State private var commandPaletteAmuxSessionSwitcherActive = false
+    @State private var commandPaletteAmuxSessionsLoading = false
+    @State private var commandPaletteAmuxSessionItems: [AmuxSessionSwitcherItem] = []
+    @State private var commandPaletteAmuxSessionsFailedHostCount = 0
+    @State private var commandPaletteAmuxSessionsHostCount = 0
+    @State private var commandPaletteAmuxSessionsRevision: UInt64 = 0
     @State private var commandPaletteSearchRequestID: UInt64 = 0
     @State private var commandPaletteResolvedSearchRequestID: UInt64 = 0
     @State private var commandPaletteResolvedSearchScope: CommandPaletteListScope?
@@ -966,6 +973,7 @@ struct ContentView: View {
     @FocusState private var isCommandPaletteSearchFocused: Bool
     @FocusState private var isCommandPaletteRenameFocused: Bool
     private let windowChrome = AppWindowChromeComposition()
+    private let amuxSessionSwitcherPresentation = AmuxSessionSwitcherPresentation()
 
     private struct CommandPaletteRestoreFocusTarget {
         let workspaceId: UUID
@@ -3491,7 +3499,8 @@ struct ContentView: View {
             commandPaletteSelectionAnchorCommandID = nil
             commandPaletteScrollTargetIndex = nil
             commandPaletteScrollTargetAnchor = nil
-            if Self.commandPaletteShouldResetVisibleResultsForQueryTransition(
+            if !commandPaletteAmuxSessionSwitcherActive,
+               Self.commandPaletteShouldResetVisibleResultsForQueryTransition(
                 oldQuery: oldValue,
                 newQuery: newValue,
                 hasVisibleResults: commandPaletteVisibleResultsScope != nil
@@ -4572,7 +4581,8 @@ struct ContentView: View {
     }
 
     private var commandPaletteListScope: CommandPaletteListScope {
-        Self.commandPaletteListScope(for: commandPaletteQuery)
+        if commandPaletteAmuxSessionSwitcherActive { return .switcher }
+        return Self.commandPaletteListScope(for: commandPaletteQuery)
     }
 
     private var commandPaletteCurrentSearchFingerprint: Int {
@@ -4604,13 +4614,20 @@ struct ContentView: View {
     }
 
     private var commandPaletteSwitcherIncludesSurfaceEntries: Bool {
-        Self.commandPaletteSwitcherIncludesSurfaceEntries(
+        guard !commandPaletteAmuxSessionSwitcherActive else { return false }
+        return Self.commandPaletteSwitcherIncludesSurfaceEntries(
             searchAllSurfaces: commandPaletteSearchAllSurfaces,
             query: commandPaletteQuery
         )
     }
 
     private var commandPaletteSearchPlaceholder: String {
+        if commandPaletteAmuxSessionSwitcherActive {
+            return String(
+                localized: "amux.sessionSwitcher.searchPlaceholder",
+                defaultValue: "Search tmux sessions"
+            )
+        }
         switch commandPaletteListScope {
         case .commands:
             return String(localized: "commandPalette.search.commandsPlaceholder", defaultValue: "Type a command")
@@ -4622,6 +4639,31 @@ struct ContentView: View {
     }
 
     private var commandPaletteEmptyStateText: String {
+        if commandPaletteAmuxSessionSwitcherActive {
+            if commandPaletteAmuxSessionsLoading {
+                return String(
+                    localized: "amux.sessionSwitcher.loading",
+                    defaultValue: "Loading tmux sessions…"
+                )
+            }
+            if !commandPaletteQueryForMatching.isEmpty {
+                return String(
+                    localized: "amux.sessionSwitcher.noMatch",
+                    defaultValue: "No tmux sessions match your search."
+                )
+            }
+            if commandPaletteAmuxSessionsHostCount > 0,
+               commandPaletteAmuxSessionsFailedHostCount == commandPaletteAmuxSessionsHostCount {
+                return String(
+                    localized: "amux.sessionSwitcher.loadFailed",
+                    defaultValue: "Could not load tmux sessions."
+                )
+            }
+            return String(
+                localized: "amux.sessionSwitcher.empty",
+                defaultValue: "No tmux sessions are available."
+            )
+        }
         switch commandPaletteListScope {
         case .commands:
             return String(localized: "commandPalette.search.commandsEmpty", defaultValue: "No commands match your search.")
@@ -4716,11 +4758,15 @@ struct ContentView: View {
             stateQuery: commandPaletteQuery,
             observedQuery: query
         )
-        let scope = Self.commandPaletteListScope(for: effectiveQuery)
-        let includeSurfaces = Self.commandPaletteSwitcherIncludesSurfaceEntries(
-            searchAllSurfaces: commandPaletteSearchAllSurfaces,
-            query: effectiveQuery
-        )
+        let scope = commandPaletteAmuxSessionSwitcherActive
+            ? CommandPaletteListScope.switcher
+            : Self.commandPaletteListScope(for: effectiveQuery)
+        let includeSurfaces = commandPaletteAmuxSessionSwitcherActive
+            ? false
+            : Self.commandPaletteSwitcherIncludesSurfaceEntries(
+                searchAllSurfaces: commandPaletteSearchAllSurfaces,
+                query: effectiveQuery
+            )
         let terminalOpenTargets = resolveCommandPaletteTerminalOpenTargets(for: scope)
         if commandPaletteTerminalOpenTargetAvailability != terminalOpenTargets {
             commandPaletteTerminalOpenTargetAvailability = terminalOpenTargets
@@ -4802,7 +4848,7 @@ struct ContentView: View {
                 commandPaletteSearchIndexBuildTask = nil
                 guard index != nil else { return }
                 if isCommandPalettePresented,
-                   Self.commandPaletteListScope(for: commandPaletteQuery) == scope {
+                   commandPaletteListScope == scope {
                     scheduleCommandPaletteResultsRefresh(
                         query: commandPaletteQuery,
                         preservePendingActivation: true
@@ -4870,7 +4916,9 @@ struct ContentView: View {
         return CommandPaletteCommandListRenderState(
             resultsVersion: commandPaletteVisibleResultsVersion,
             emptyStateText: commandPaletteEmptyStateText,
-            listIdentity: Self.commandPaletteListIdentity(for: commandPaletteQuery),
+            listIdentity: commandPaletteAmuxSessionSwitcherActive
+                ? "amux_sessions"
+                : Self.commandPaletteListIdentity(for: commandPaletteQuery),
             rows: rows,
             selectedIndex: selectedIndex,
             shouldShowEmptyState: commandPaletteShouldShowEmptyState,
@@ -4900,7 +4948,9 @@ struct ContentView: View {
             stateQuery: commandPaletteQuery,
             observedQuery: query
         )
-        let scope = Self.commandPaletteListScope(for: effectiveQuery)
+        let scope = commandPaletteAmuxSessionSwitcherActive
+            ? CommandPaletteListScope.switcher
+            : Self.commandPaletteListScope(for: effectiveQuery)
         let matchingQuery = Self.commandPaletteQueryForMatching(
             query: effectiveQuery,
             scope: scope
@@ -5013,7 +5063,7 @@ struct ContentView: View {
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
-                let currentScope = Self.commandPaletteListScope(for: commandPaletteQuery)
+                let currentScope = commandPaletteListScope
                 let currentMatchingQuery = Self.commandPaletteQueryForMatching(
                     query: commandPaletteQuery,
                     scope: currentScope
@@ -5062,7 +5112,7 @@ struct ContentView: View {
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
-                let currentScope = Self.commandPaletteListScope(for: commandPaletteQuery)
+                let currentScope = commandPaletteListScope
                 let currentMatchingQuery = Self.commandPaletteQueryForMatching(
                     query: commandPaletteQuery,
                     scope: currentScope
@@ -5173,7 +5223,15 @@ struct ContentView: View {
                 }
             )
         }
-        return CommandPaletteSwitcherFingerprintContext.fingerprint(windowContexts: fingerprintContexts)
+        var hasher = Hasher()
+        hasher.combine(
+            CommandPaletteSwitcherFingerprintContext.fingerprint(windowContexts: fingerprintContexts)
+        )
+        hasher.combine(commandPaletteAmuxSessionSwitcherActive)
+        if commandPaletteAmuxSessionSwitcherActive {
+            hasher.combine(commandPaletteAmuxSessionsRevision)
+        }
+        return hasher.finalize()
     }
 
     private static func commandPaletteHighlightedTitleText(_ title: String, matchedIndices: Set<Int>) -> Text {
@@ -5257,11 +5315,13 @@ struct ContentView: View {
             }
             return partial + workspaceCount + surfaceCount
         }
-        entries.reserveCapacity(estimatedCount)
+        entries.reserveCapacity(estimatedCount + commandPaletteAmuxSessionItems.count)
         var nextRank = 0
 
         for context in windowContexts {
-            let workspaces = commandPaletteOrderedSwitcherWorkspaces(for: context)
+            let workspaces = commandPaletteOrderedSwitcherWorkspaces(for: context).filter {
+                !commandPaletteAmuxSessionSwitcherActive || $0.isRemoteTmuxMirror
+            }
             guard !workspaces.isEmpty else { continue }
 
             let windowId = context.windowId
@@ -5269,6 +5329,15 @@ struct ContentView: View {
             let windowKeywords = commandPaletteWindowKeywords(windowLabel: context.windowLabel)
             for workspace in workspaces {
                 let workspaceName = workspaceDisplayName(workspace)
+                let mirrorDescriptor = commandPaletteAmuxSessionSwitcherActive
+                    ? AppDelegate.shared?.remoteTmuxController.mirrorDescriptor(workspaceId: workspace.id)
+                    : nil
+                let agents = commandPaletteAmuxSessionSwitcherActive
+                    ? (AppDelegate.shared?.amuxAgentObservation.agents(inWorkspace: workspace.id) ?? [])
+                    : []
+                let displayedWorkspaceName = mirrorDescriptor.map {
+                    amuxSessionSwitcherPresentation.rowTitle(name: workspaceName, host: $0.host)
+                } ?? workspaceName
                 let workspaceCommandId = "switcher.workspace.\(workspace.id.uuidString.lowercased())"
                 let workspaceKeywords = CommandPaletteSwitcherSearchIndexer(
                     baseKeywords: [
@@ -5277,7 +5346,13 @@ struct ContentView: View {
                         "go",
                         "open",
                         workspaceName
-                    ] + windowKeywords,
+                    ] + windowKeywords + (mirrorDescriptor.map {
+                        amuxSessionSwitcherPresentation.searchKeywords(
+                            host: $0.host,
+                            sessionName: $0.sessionName,
+                            agents: agents
+                        )
+                    } ?? []),
                     metadata: commandPaletteWorkspaceSearchMetadata(for: workspace),
                     detail: .workspace
                 ).keywords
@@ -5286,10 +5361,21 @@ struct ContentView: View {
                     CommandPaletteCommand(
                         id: workspaceCommandId,
                         rank: nextRank,
-                        title: workspaceName,
-                        subtitle: Self.commandPaletteSwitcherSubtitle(base: String(localized: "commandPalette.switcher.workspaceLabel", defaultValue: "Workspace"), windowLabel: context.windowLabel),
+                        title: displayedWorkspaceName,
+                        subtitle: mirrorDescriptor.map {
+                            Self.commandPaletteSwitcherSubtitle(
+                                base: amuxSessionSwitcherPresentation.subtitle(
+                                    host: $0.host,
+                                    session: nil,
+                                    agents: agents
+                                ),
+                                windowLabel: context.windowLabel
+                            )
+                        } ?? Self.commandPaletteSwitcherSubtitle(base: String(localized: "commandPalette.switcher.workspaceLabel", defaultValue: "Workspace"), windowLabel: context.windowLabel),
                         shortcutHint: nil,
-                        kindLabel: String(localized: "commandPalette.kind.workspace", defaultValue: "Workspace"),
+                        kindLabel: commandPaletteAmuxSessionSwitcherActive
+                            ? amuxSessionSwitcherPresentation.kindLabel(isOpen: true, agents: agents)
+                            : String(localized: "commandPalette.kind.workspace", defaultValue: "Workspace"),
                         keywords: workspaceKeywords,
                         dismissOnRun: true,
                         action: {
@@ -5303,7 +5389,7 @@ struct ContentView: View {
                 )
                 nextRank += 1
 
-                guard includeSurfaces else { continue }
+                guard includeSurfaces, !commandPaletteAmuxSessionSwitcherActive else { continue }
 
                 for panelId in commandPaletteOrderedSwitcherPanels(for: workspace) {
                     guard let panel = workspace.panels[panelId] else { continue }
@@ -5349,6 +5435,54 @@ struct ContentView: View {
                     )
                     nextRank += 1
                 }
+            }
+        }
+
+        if commandPaletteAmuxSessionSwitcherActive {
+            let controller = AppDelegate.shared?.remoteTmuxController
+            let availableItems = commandPaletteAmuxSessionItems.filter { item in
+                guard let controller else { return true }
+                return !controller.unmirroredSessions([item.session], host: item.host).isEmpty
+            }
+            for item in availableItems {
+                let commandId = "switcher.tmux.available.\(item.id)"
+                entries.append(
+                    CommandPaletteCommand(
+                        id: commandId,
+                        rank: nextRank,
+                        title: amuxSessionSwitcherPresentation.rowTitle(
+                            name: item.session.name,
+                            host: item.host
+                        ),
+                        subtitle: amuxSessionSwitcherPresentation.subtitle(
+                            host: item.host,
+                            session: item.session,
+                            agents: item.agents
+                        ),
+                        shortcutHint: nil,
+                        kindLabel: amuxSessionSwitcherPresentation.kindLabel(
+                            isOpen: false,
+                            agents: item.agents
+                        ),
+                        keywords: amuxSessionSwitcherPresentation.searchKeywords(
+                            host: item.host,
+                            sessionName: item.session.name,
+                            agents: item.agents
+                        ),
+                        dismissOnRun: true,
+                        action: {
+                            guard AppDelegate.shared?.amuxAttachSession(
+                                host: item.host,
+                                session: item.session,
+                                in: tabManager
+                            ) == true else {
+                                NSSound.beep()
+                                return
+                            }
+                        }
+                    )
+                )
+                nextRank += 1
             }
         }
 
@@ -6824,9 +6958,10 @@ struct ContentView: View {
         contributions.append(
             CommandPaletteCommandContribution(
                 commandId: "palette.amuxAttachDetached",
-                title: constant(String(localized: "command.amuxAttachDetached.title", defaultValue: "Attach Detached tmux Session…")),
+                title: constant(String(localized: "command.amuxSessionSwitcher.title", defaultValue: "Open tmux Session…")),
                 subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
                 keywords: ["amux", "tmux", "detached", "attach", "session", "reattach"],
+                dismissOnRun: false,
                 when: { _ in true }
             )
         )
@@ -7964,7 +8099,7 @@ struct ContentView: View {
             AppDelegate.shared?.amuxCreateWorkspace()
         }
         registry.register(commandId: "palette.amuxAttachDetached") {
-            AppDelegate.shared?.amuxPresentDetachedSessionPicker()
+            beginAmuxSessionSwitcher()
         }
         registry.register(commandId: "palette.amuxCloseAndKill") {
             guard let workspace = tabManager.selectedWorkspace,
@@ -8730,6 +8865,55 @@ struct ContentView: View {
         handleCommandPaletteListRequest(scope: .switcher)
     }
 
+    private func beginAmuxSessionSwitcher() {
+        commandPaletteAmuxSessionLoadTask?.cancel()
+        commandPaletteAmuxSessionItems = []
+        commandPaletteAmuxSessionsFailedHostCount = 0
+        commandPaletteAmuxSessionsHostCount = 0
+        commandPaletteAmuxSessionsLoading = true
+        commandPaletteAmuxSessionsRevision &+= 1
+
+        if isCommandPalettePresented {
+            resetCommandPaletteListState(
+                initialQuery: "",
+                amuxSessionSwitcherActive: true
+            )
+        } else {
+            presentCommandPalette(
+                initialQuery: "",
+                amuxSessionSwitcherActive: true
+            )
+        }
+
+        commandPaletteAmuxSessionLoadTask = Task { @MainActor in
+            guard let appDelegate = AppDelegate.shared else {
+                guard !Task.isCancelled,
+                      isCommandPalettePresented,
+                      commandPaletteAmuxSessionSwitcherActive else { return }
+                commandPaletteAmuxSessionsLoading = false
+                commandPaletteAmuxSessionsFailedHostCount = 1
+                commandPaletteAmuxSessionsHostCount = 1
+                commandPaletteAmuxSessionsRevision &+= 1
+                scheduleCommandPaletteResultsRefresh(forceSearchCorpusRefresh: true)
+                return
+            }
+
+            let result = await appDelegate.amuxSessionSwitcherItems()
+            guard !Task.isCancelled,
+                  isCommandPalettePresented,
+                  commandPaletteAmuxSessionSwitcherActive else { return }
+            commandPaletteAmuxSessionItems = result.items
+            commandPaletteAmuxSessionsFailedHostCount = result.failedHostCount
+            commandPaletteAmuxSessionsHostCount = result.hostCount
+            commandPaletteAmuxSessionsLoading = false
+            commandPaletteAmuxSessionsRevision &+= 1
+            commandPaletteAmuxSessionLoadTask = nil
+            scheduleCommandPaletteResultsRefresh(forceSearchCorpusRefresh: true)
+            syncCommandPaletteOverlayCommandListState()
+            syncCommandPaletteDebugStateForObservedWindow()
+        }
+    }
+
     private func handleCommandPaletteListRequest(scope: CommandPaletteListScope) {
         let initialQuery = (scope == .commands) ? Self.commandPaletteCommandsPrefix : ""
         guard isCommandPalettePresented else {
@@ -8884,7 +9068,10 @@ struct ContentView: View {
         )
     }
 
-    private func presentCommandPalette(initialQuery: String) {
+    private func presentCommandPalette(
+        initialQuery: String,
+        amuxSessionSwitcherActive: Bool = false
+    ) {
         refreshCachedDefaultTerminalStatus(refreshSearchCorpusIfPresented: false)
         if let panelContext = focusedPanelContext {
             commandPaletteRestoreFocusTarget = CommandPaletteRestoreFocusTarget(
@@ -8898,10 +9085,26 @@ struct ContentView: View {
         isCommandPalettePresented = true
         commandPaletteForkableAgentActivePanelKey = nil
         refreshCommandPaletteUsageHistory()
-        resetCommandPaletteListState(initialQuery: initialQuery)
+        resetCommandPaletteListState(
+            initialQuery: initialQuery,
+            amuxSessionSwitcherActive: amuxSessionSwitcherActive
+        )
     }
 
-    private func resetCommandPaletteListState(initialQuery: String) {
+    private func resetCommandPaletteListState(
+        initialQuery: String,
+        amuxSessionSwitcherActive: Bool = false
+    ) {
+        if !amuxSessionSwitcherActive {
+            commandPaletteAmuxSessionLoadTask?.cancel()
+            commandPaletteAmuxSessionLoadTask = nil
+            commandPaletteAmuxSessionItems = []
+            commandPaletteAmuxSessionsFailedHostCount = 0
+            commandPaletteAmuxSessionsHostCount = 0
+            commandPaletteAmuxSessionsLoading = false
+            commandPaletteAmuxSessionsRevision &+= 1
+        }
+        self.commandPaletteAmuxSessionSwitcherActive = amuxSessionSwitcherActive
         commandPaletteMode = .commands
         commandPaletteQuery = initialQuery
         commandPaletteRenameDraft = ""
@@ -8944,6 +9147,14 @@ struct ContentView: View {
         cancelCommandPaletteSearch()
         cancelCommandPaletteSearchIndexBuild()
         cancelCommandPaletteForkableAgentAvailabilityProbe()
+        commandPaletteAmuxSessionLoadTask?.cancel()
+        commandPaletteAmuxSessionLoadTask = nil
+        commandPaletteAmuxSessionSwitcherActive = false
+        commandPaletteAmuxSessionsLoading = false
+        commandPaletteAmuxSessionItems = []
+        commandPaletteAmuxSessionsFailedHostCount = 0
+        commandPaletteAmuxSessionsHostCount = 0
+        commandPaletteAmuxSessionsRevision &+= 1
         commandPaletteForkableAgentActivePanelKey = nil
         commandPaletteSearchRequestID &+= 1
         isCommandPalettePresented = false
