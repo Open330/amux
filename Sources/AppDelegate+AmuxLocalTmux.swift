@@ -372,41 +372,6 @@ extension AppDelegate {
         }
     }
 
-    /// Presents a picker of detached amux sessions (sessions on the local
-    /// server not currently mirrored) and mirrors + selects the chosen one.
-    /// No detached sessions → a brief informational alert.
-    func amuxPresentDetachedSessionPicker() {
-        guard let manager = tabManager else { NSSound.beep(); return }
-        Task { @MainActor in
-            let sessions = (try? await self.remoteTmuxController.localAmuxSessions()) ?? []
-            let detached = sessions.filter { !$0.mirrored }.map(\.session.name)
-            let alert = NSAlert()
-            guard !detached.isEmpty else {
-                alert.messageText = String(
-                    localized: "amux.detached.none.title",
-                    defaultValue: "No Detached Sessions"
-                )
-                alert.informativeText = String(
-                    localized: "amux.detached.none.body",
-                    defaultValue: "Every amux tmux session is already open as a workspace."
-                )
-                alert.runModal()
-                return
-            }
-            alert.messageText = String(
-                localized: "amux.detached.pick.title",
-                defaultValue: "Attach Detached Session"
-            )
-            for name in detached {
-                alert.addButton(withTitle: name)
-            }
-            alert.addButton(withTitle: String(localized: "amux.detached.cancel", defaultValue: "Cancel"))
-            let index = alert.runModal().rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
-            guard index >= 0, index < detached.count else { return }
-            self.amuxAttachSession(named: detached[index], in: manager)
-        }
-    }
-
     /// Mirrors the detached amux session `name` into `manager` and selects
     /// it. Returns `false` when the mirror could not be created.
     @discardableResult

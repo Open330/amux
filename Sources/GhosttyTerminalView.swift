@@ -648,6 +648,7 @@ class GhosttyApp {
         startUptime: ProcessInfo.processInfo.systemUptime
     )
     private var appObservers: [NSObjectProtocol] = []
+    private var keyboardInputSourceObserver: GhosttyKeyboardInputSourceObserver?
     private var bellAudioSound: NSSound?
     private var backgroundEventCounter: UInt64 = 0
     private var defaultBackgroundUpdateScope: GhosttyDefaultBackgroundUpdateScope = .unscoped
@@ -1062,18 +1063,12 @@ class GhosttyApp {
             ghostty_app_set_focus(app, false)
         })
 
-        // Keep libghostty's key encoder synchronized with AppKit's selected
-        // input source. Without this upstream Ghostty hook, the first keys after
-        // switching English/Korean can use the previous layout and leak raw
-        // compatibility jamo instead of staying in IME composition.
-        appObservers.append(NotificationCenter.default.addObserver(
-            forName: NSTextInputContext.keyboardSelectionDidChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
+        // AppKit's text-input notification is not reliable for every keyboard
+        // toggle path, so the bridge also listens to the system TIS notification.
+        keyboardInputSourceObserver = GhosttyKeyboardInputSourceObserver { [weak self] in
             guard let app = self?.app else { return }
             ghostty_app_keyboard_changed(app)
-        })
+        }
 
         appObservers.append(NotificationCenter.default.addObserver(
             forName: TerminalCopyOnSelectSettings.didChangeNotification,

@@ -1841,6 +1841,10 @@ final class RemoteTmuxControlConnection {
     #if DEBUG
     func installStdinWriterForTesting(_ writer: RemoteTmuxControlPipeWriter) { stdinWriter = writer }
     func handleMessageForTesting(_ message: RemoteTmuxControlMessage) { handle(message) }
+    func handleClientDetachExitForTesting() {
+        clientDetachRequested = true
+        handle(.exit(reason: nil))
+    }
     var pendingCommandKindsForTesting: [RemoteTmuxControlCommandKind] { pendingCommands }
     #endif
 
