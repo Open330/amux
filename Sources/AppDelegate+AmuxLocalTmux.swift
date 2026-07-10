@@ -481,12 +481,17 @@ extension AppDelegate {
     /// Mirrors the detached amux session `name` into `manager` and selects
     /// it. Returns `false` when the mirror could not be created.
     @discardableResult
-    func amuxAttachSession(named name: String, in manager: TabManager) -> Bool {
+    func amuxAttachSession(
+        named name: String,
+        in manager: TabManager,
+        activateWindow: Bool = true
+    ) -> Bool {
         amuxAttachSession(
             host: .amuxLocal(),
             sessionName: name,
             sessionId: nil,
-            in: manager
+            in: manager,
+            activateWindow: activateWindow
         )
     }
 
@@ -494,7 +499,8 @@ extension AppDelegate {
         host: RemoteTmuxHost,
         sessionName: String,
         sessionId: Int?,
-        in manager: TabManager
+        in manager: TabManager,
+        activateWindow: Bool
     ) -> Bool {
         do {
             guard let targetManager = remoteTmuxController.sessionAttachTargetTabManager(
@@ -513,7 +519,11 @@ extension AppDelegate {
             if let workspace {
                 let owner = amuxWorkspace(withId: workspace.id)?.manager ?? targetManager
                 owner.selectWorkspace(workspace)
-                owner.window?.makeKeyAndOrderFront(nil)
+                Self.activateWindowAfterSessionAttach(
+                    ifRequested: activateWindow,
+                    owner: owner,
+                    bringForward: { $0.window?.makeKeyAndOrderFront(nil) }
+                )
             }
             return true
         } catch {
@@ -530,14 +540,25 @@ extension AppDelegate {
     func amuxAttachSession(
         host: RemoteTmuxHost,
         session: RemoteTmuxSession,
-        in manager: TabManager
+        in manager: TabManager,
+        activateWindow: Bool = true
     ) -> Bool {
         amuxAttachSession(
             host: host,
             sessionName: session.name,
             sessionId: RemoteTmuxController.tmuxSessionNumericId(session.id),
-            in: manager
+            in: manager,
+            activateWindow: activateWindow
         )
+    }
+
+    static func activateWindowAfterSessionAttach(
+        ifRequested activateWindow: Bool,
+        owner: TabManager,
+        bringForward: (TabManager) -> Void
+    ) {
+        guard activateWindow else { return }
+        bringForward(owner)
     }
 
     /// Closes `workspace` AND kills its mirrored tmux session (the explicit

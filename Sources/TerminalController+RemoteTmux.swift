@@ -907,7 +907,11 @@ extension TerminalController {
                 guard let appDelegate = AppDelegate.shared, let manager = appDelegate.tabManager else {
                     throw RemoteTmuxError.unreachable("app not ready")
                 }
-                guard appDelegate.amuxAttachSession(named: name, in: manager) else {
+                guard appDelegate.amuxAttachSession(
+                    named: name,
+                    in: manager,
+                    activateWindow: false
+                ) else {
                     throw RemoteTmuxError.commandFailed(exitCode: -1, stderr: "attach failed")
                 }
                 let workspaceId = appDelegate.remoteTmuxController

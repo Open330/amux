@@ -177,6 +177,26 @@ struct RemoteTmuxMirrorTargetingTests {
         #expect(unresolved === fallback)
     }
 
+    @Test func backgroundSessionAttachDoesNotActivateWindow() {
+        let manager = TabManager()
+        var activatedManagers: [TabManager] = []
+
+        AppDelegate.activateWindowAfterSessionAttach(
+            ifRequested: false,
+            owner: manager,
+            bringForward: { activatedManagers.append($0) }
+        )
+        #expect(activatedManagers.isEmpty)
+
+        AppDelegate.activateWindowAfterSessionAttach(
+            ifRequested: true,
+            owner: manager,
+            bringForward: { activatedManagers.append($0) }
+        )
+        #expect(activatedManagers.count == 1)
+        #expect(activatedManagers.first === manager)
+    }
+
     @Test func sessionSwitcherAttachUsesHostDedicatedWindow() throws {
         let previousDelegate = AppDelegate.shared
         let app = AppDelegate()
