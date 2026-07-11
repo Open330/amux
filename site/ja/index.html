@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>amux - macOS向けtmuxネイティブ・エージェントワークスペース</title>
+    <meta name="description" content="amuxはtmuxネイティブでエージェント中心のmacOSターミナルです。永続ワークスペース、muxa可観測性、Ghosttyレンダリング、自動化CLIを提供します。" />
+    <link rel="canonical" href="https://open330.github.io/amux/ja/" />
+    <link rel="alternate" hreflang="en" href="https://open330.github.io/amux/" />
+    <link rel="alternate" hreflang="ko" href="https://open330.github.io/amux/ko/" />
+    <link rel="alternate" hreflang="ja" href="https://open330.github.io/amux/ja/" />
+    <link rel="alternate" hreflang="x-default" href="https://open330.github.io/amux/" />
+    <meta property="og:title" content="amux - agent mux" />
+    <meta property="og:description" content="ネイティブなエージェント可観測性を備えた永続tmuxワークスペース。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://open330.github.io/amux/ja/" />
+    <meta property="og:image" content="https://open330.github.io/amux/assets/amux-workspaces.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="../assets/amux-logo.png" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#product">製品情報へ移動</a>
+    <header class="hero">
+      <img class="hero-media" src="../assets/amux-workspaces.png" alt="永続ワークスペース、コーディングエージェント、muxa watchを表示するamux" />
+      <div class="hero-shade" aria-hidden="true"></div>
+      <nav class="nav" aria-label="メインナビゲーション">
+        <a class="brand" href="../"><img src="../assets/amux-logo.png" alt="" /><span>amux</span></a>
+        <div class="nav-links">
+          <a href="#product">製品</a><a href="#install">インストール</a><a href="https://github.com/Open330/amux/tree/main/docs">ドキュメント</a>
+          <div class="locale-links" aria-label="言語"><a class="locale-link" href="../">EN</a><a class="locale-link" href="../ko/">KO</a><a class="locale-link" href="./" aria-current="page">JA</a></div>
+        </div>
+      </nav>
+      <div class="hero-copy">
+        <p class="eyebrow">agent mux / macOS 14+</p>
+        <h1>amux</h1>
+        <p class="hero-lede">エージェントの作業も、ワークスペースの状態も継続します。</p>
+        <p class="hero-detail">各ワークスペースを実際のtmuxセッションとして維持し、Claude Code、Codex、Geminiのどのエージェントがあなたを必要としているかをmuxaで示すネイティブターミナルです。</p>
+        <div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">macOS版をダウンロード</a><a class="button" href="https://github.com/Open330/amux">GitHubで見る</a></div>
+        <div class="proof-row" aria-label="リリース情報"><span>署名・公証済み</span><span>tmux 3.7b同梱</span><span>GPL-3.0</span></div>
+      </div>
+    </header>
+
+    <main id="product">
+      <section class="band"><div class="section-inner">
+        <p class="section-kicker">一つの永続モデル</p><h2>セッションはtmuxが、体験はamuxが担います。</h2>
+        <p class="section-lede">ウィンドウを閉じても、prefixでdetachしても、SSHで再接続しても、別のターミナルからattachしてもシェルは残ります。amuxはそのセッションを高速なネイティブGhostty surfaceへ投影します。</p>
+        <img class="product-image" src="../assets/amux-workspaces.png" alt="amuxワークスペースのサイドバー、分割されたエージェントターミナル、muxa watchパネル" loading="lazy" />
+      </div></section>
+
+      <section class="band"><div class="section-inner">
+        <p class="section-kicker">エージェント作業のための設計</p><h2>すべてのペインを監視しなくても、実行全体を把握できます。</h2>
+        <div class="feature-grid">
+          <article class="feature"><p class="feature-code">01 / persist</p><h3>tmuxネイティブ・ワークスペース</h3><p>ワークスペースは専用tmuxセッションに対応します。ペイン構成、スクロールバック、プロセスはアプリ終了後も残ります。</p></article>
+          <article class="feature"><p class="feature-code">02 / observe</p><h3>muxaエージェント状態</h3><p>作業中、入力待ち、選択待ち、エラーをtmuxペインと関連付け、一か所に表示します。</p></article>
+          <article class="feature"><p class="feature-code">03 / attend</p><h3>対応が必要な場所へ移動</h3><p>Attendは最も長く停止しているエージェントへ直接移動し、全ターミナルを探す手間をなくします。</p></article>
+          <article class="feature"><p class="feature-code">04 / connect</p><h3>ローカル、tmux、SSH</h3><p>通常のシェル、ローカルtmuxセッション、リモートセッションを明確に区別します。</p></article>
+          <article class="feature"><p class="feature-code">05 / automate</p><h3>一つのCLIとソケットAPI</h3><p>フォーカスを奪わずに分割作成、プロンプト送信、画面読取、通知ルーティング、ブラウザ操作ができます。</p></article>
+          <article class="feature"><p class="feature-code">06 / render</p><h3>ネイティブGhostty surface</h3><p>入れ子のtmux UIやElectronを使わず、セッションをmacOSネイティブUIへ直接レンダリングします。</p></article>
+        </div>
+      </div></section>
+
+      <section class="band" id="install"><div class="section-inner">
+        <p class="section-kicker">amux 0.2.0をインストール</p><h2>署名済みmacOSリリースから始めましょう。</h2>
+        <div class="install-grid">
+          <article class="install-method"><h3>Homebrew</h3><p>Homebrew 6ではサードパーティtapのcaskを読み込む前に信頼登録が必要です。</p><pre class="command"><code>brew tap Open330/tap
+brew trust Open330/tap
+brew install --cask Open330/tap/amux</code><button class="copy-button" type="button" data-copy aria-label="Homebrewコマンドをコピー">コピー</button></pre><span>以降はcaskとamux内蔵のSparkleアップデーターで更新できます。</span></article>
+          <article class="install-method"><h3>DMG</h3><p>公証済みイメージを開き、amuxをアプリケーションフォルダへドラッグします。</p><div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">DMGをダウンロード</a><a class="text-link" href="https://github.com/Open330/amux/releases/latest">リリースノート</a></div></article>
+        </div>
+      </div></section>
+    </main>
+    <footer class="footer"><div class="section-inner"><span>Copyright <span data-year></span> Open330. GPL-3.0-or-later.</span><div class="footer-links"><a href="https://github.com/Open330/amux">ソース</a><a href="https://github.com/Open330/amux/issues">Issue</a><a href="https://github.com/Open330/muxa">muxa</a><a href="https://github.com/manaflow-ai/cmux">cmux upstream</a></div></div></footer>
+    <script src="../site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>amux - macOS용 tmux 네이티브 에이전트 워크스페이스</title>
+    <meta name="description" content="amux는 tmux 네이티브, 에이전트 중심 macOS 터미널입니다. 영속 워크스페이스, muxa 관찰성, Ghostty 렌더링과 자동화 CLI를 제공합니다." />
+    <link rel="canonical" href="https://open330.github.io/amux/ko/" />
+    <link rel="alternate" hreflang="en" href="https://open330.github.io/amux/" />
+    <link rel="alternate" hreflang="ko" href="https://open330.github.io/amux/ko/" />
+    <link rel="alternate" hreflang="ja" href="https://open330.github.io/amux/ja/" />
+    <link rel="alternate" hreflang="x-default" href="https://open330.github.io/amux/" />
+    <meta property="og:title" content="amux - agent mux" />
+    <meta property="og:description" content="네이티브 에이전트 관찰성을 갖춘 영속 tmux 워크스페이스." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://open330.github.io/amux/ko/" />
+    <meta property="og:image" content="https://open330.github.io/amux/assets/amux-workspaces.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="../assets/amux-logo.png" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#product">제품으로 이동</a>
+    <header class="hero">
+      <img class="hero-media" src="../assets/amux-workspaces.png" alt="영속 워크스페이스, 코딩 에이전트와 muxa watch를 표시하는 amux" />
+      <div class="hero-shade" aria-hidden="true"></div>
+      <nav class="nav" aria-label="주요 탐색">
+        <a class="brand" href="../"><img src="../assets/amux-logo.png" alt="" /><span>amux</span></a>
+        <div class="nav-links">
+          <a href="#product">제품</a><a href="#install">설치</a><a href="https://github.com/Open330/amux/tree/main/docs">문서</a>
+          <div class="locale-links" aria-label="언어"><a class="locale-link" href="../">EN</a><a class="locale-link" href="./" aria-current="page">KO</a><a class="locale-link" href="../ja/">JA</a></div>
+        </div>
+      </nav>
+      <div class="hero-copy">
+        <p class="eyebrow">agent mux / macOS 14+</p>
+        <h1>amux</h1>
+        <p class="hero-lede">에이전트의 작업도, 워크스페이스의 상태도 계속 이어집니다.</p>
+        <p class="hero-detail">모든 워크스페이스를 실제 tmux 세션으로 유지하고, muxa로 Claude Code, Codex, Gemini 에이전트 중 어디에 사용자의 판단이 필요한지 보여주는 네이티브 터미널입니다.</p>
+        <div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">macOS용 다운로드</a><a class="button" href="https://github.com/Open330/amux">GitHub에서 보기</a></div>
+        <div class="proof-row" aria-label="릴리스 정보"><span>서명 및 공증 완료</span><span>tmux 3.7b 내장</span><span>GPL-3.0</span></div>
+      </div>
+    </header>
+
+    <main id="product">
+      <section class="band"><div class="section-inner">
+        <p class="section-kicker">하나의 영속 모델</p><h2>세션은 tmux가, 경험은 amux가 책임집니다.</h2>
+        <p class="section-lede">창을 닫거나 prefix로 detach하고, SSH로 다시 연결하거나 다른 터미널에서 attach해도 셸은 그대로 유지됩니다. amux는 그 세션을 빠른 네이티브 Ghostty surface로 투영합니다.</p>
+        <img class="product-image" src="../assets/amux-workspaces.png" alt="amux 워크스페이스 사이드바, 분할 에이전트 터미널과 muxa watch 패널" loading="lazy" />
+      </div></section>
+
+      <section class="band"><div class="section-inner">
+        <p class="section-kicker">에이전트 작업을 위한 설계</p><h2>모든 패널을 지켜보지 않아도 전체 작업을 파악합니다.</h2>
+        <div class="feature-grid">
+          <article class="feature"><p class="feature-code">01 / persist</p><h3>tmux 네이티브 워크스페이스</h3><p>워크스페이스가 전용 tmux 세션에 대응합니다. 패널 구성, 스크롤백과 프로세스가 앱 종료 후에도 유지됩니다.</p></article>
+          <article class="feature"><p class="feature-code">02 / observe</p><h3>muxa 에이전트 상태</h3><p>작업 중, 입력 대기, 선택 대기, 오류 상태를 tmux 패널과 연결해 한곳에서 보여줍니다.</p></article>
+          <article class="feature"><p class="feature-code">03 / attend</p><h3>주의가 필요한 곳으로 이동</h3><p>Attend가 가장 오래 막혀 있던 에이전트로 바로 이동해 터미널을 일일이 확인할 필요가 없습니다.</p></article>
+          <article class="feature"><p class="feature-code">04 / connect</p><h3>로컬, tmux, SSH</h3><p>일반 셸, 로컬 tmux 세션, 원격 세션을 명확히 구분해 워크스페이스의 정체를 바로 알 수 있습니다.</p></article>
+          <article class="feature"><p class="feature-code">05 / automate</p><h3>하나의 CLI와 소켓 API</h3><p>포커스를 빼앗지 않고 분할 생성, 프롬프트 전송, 화면 읽기, 알림 라우팅과 브라우저 제어가 가능합니다.</p></article>
+          <article class="feature"><p class="feature-code">06 / render</p><h3>네이티브 Ghostty surface</h3><p>중첩된 tmux UI나 Electron 없이 세션을 macOS 네이티브 인터페이스에 직접 렌더링합니다.</p></article>
+        </div>
+      </div></section>
+
+      <section class="band" id="install"><div class="section-inner">
+        <p class="section-kicker">amux 0.2.0 설치</p><h2>서명된 macOS 릴리스로 시작하세요.</h2>
+        <div class="install-grid">
+          <article class="install-method"><h3>Homebrew</h3><p>Homebrew 6에서는 서드파티 tap의 cask를 사용하기 전에 신뢰 등록이 필요합니다.</p><pre class="command"><code>brew tap Open330/tap
+brew trust Open330/tap
+brew install --cask Open330/tap/amux</code><button class="copy-button" type="button" data-copy aria-label="Homebrew 명령 복사">복사</button></pre><span>이후 cask와 amux 내장 Sparkle 업데이터를 통해 업데이트됩니다.</span></article>
+          <article class="install-method"><h3>DMG</h3><p>공증된 이미지를 열고 amux를 응용 프로그램 폴더로 드래그합니다.</p><div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">DMG 다운로드</a><a class="text-link" href="https://github.com/Open330/amux/releases/latest">릴리스 노트</a></div></article>
+        </div>
+      </div></section>
+    </main>
+    <footer class="footer"><div class="section-inner"><span>Copyright <span data-year></span> Open330. GPL-3.0-or-later.</span><div class="footer-links"><a href="https://github.com/Open330/amux">소스</a><a href="https://github.com/Open330/amux/issues">이슈</a><a href="https://github.com/Open330/muxa">muxa</a><a href="https://github.com/manaflow-ai/cmux">cmux upstream</a></div></div></footer>
+    <script src="../site.js"></script>
+  </body>
+</html>

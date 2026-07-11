@@ -1,6 +1,5 @@
 import { useTranslations } from "next-intl";
 import { HeroScreenshot } from "@/app/[locale]/components/hero-screenshot";
-import { TypingTagline } from "@/app/[locale]/typing";
 import { DownloadButton } from "@/app/[locale]/components/download-button";
 import { GitHubButton } from "@/app/[locale]/components/github-button";
 import { SiteHeader } from "@/app/[locale]/components/site-header";
@@ -65,11 +64,7 @@ function HomeContent() {
 
         {/* Tagline */}
         <p className="text-lg leading-relaxed mb-3 text-foreground">
-          <span className="sr-only">{t("taglineStatic")}</span>
-          <span aria-hidden="true">
-            {t("taglinePrefix")}
-            <TypingTagline />
-          </span>
+          {t("taglineStatic")}
         </p>
         <p
           className="text-base text-muted text-balance lg:-mr-32 xl:-mr-48"

@@ -28,9 +28,9 @@
     "galleryItemAlt": "{name} running in a cmux terminal on iPhone"
   },
   "meta": {
-    "title": "amux — The terminal built for multitasking, organization, and programmability",
-    "description": "Free and open source native macOS terminal built on Ghostty. Works with Claude Code, Codex, OpenCode, Gemini CLI, Kiro, Aider, and any CLI tool. Vertical tabs, notification rings, split panes, and a socket API.",
-    "ogDescription": "Free and open source macOS terminal for AI coding agents. Works with Claude Code, Codex, OpenCode, Gemini CLI, Kiro, Aider, and any CLI tool."
+    "title": "amux — tmux-native agent workspaces for macOS",
+    "description": "Persistent tmux workspaces, muxa agent observability, native Ghostty rendering, and a programmable CLI for Claude Code, Codex, Gemini CLI, and other coding agents.",
+    "ogDescription": "The tmux-native, agent-first terminal for macOS. Persistent workspaces and native agent observability."
   },
   "common": {
     "downloadForMac": "Download for Mac",
@@ -618,13 +618,13 @@
     "welcomeTeam": "Your cmux Team purchase is complete."
   },
   "home": {
-    "taglinePrefix": "The terminal built for ",
+    "taglinePrefix": "Persistent agent workspaces for ",
     "typingCodingAgents": "coding agents",
     "typingMultitasking": "multitasking",
     "typingOrganization": "organization",
     "typingProgrammability": "programmability",
-    "taglineStatic": "The terminal built for multitasking, organization, and programmability.",
-    "subtitle": "Free and open source native macOS terminal built on Ghostty. Vertical tabs, notification rings when agents need attention, split panes, and a <cliLink>CLI</cliLink> for programmability.",
+    "taglineStatic": "Persistent tmux workspaces for coding agents.",
+    "subtitle": "Every workspace can be a real tmux session. muxa shows which agents are working, waiting, or blocked while Ghostty renders them in a native macOS interface with a programmable <cliLink>CLI</cliLink>.",
     "features": "Features",
     "faq": "FAQ",
     "communitySection": "Community",
@@ -661,7 +661,7 @@
     "faqShortcutsQ": "Can I customize keyboard shortcuts?",
     "faqShortcutsA": "Terminal keybindings are read from your Ghostty config file (<configPath>~/.config/ghostty/config</configPath>). amux-specific shortcuts (workspaces, splits, browser, notifications) can be customized in Settings. See the <link>default shortcuts</link> for a full list.",
     "faqTmuxQ": "How does it compare to tmux?",
-    "faqTmuxA": "tmux is a terminal multiplexer that runs inside any terminal. amux is a native macOS app with a GUI: vertical tabs, split panes, an embedded browser, and a socket API, all built in, no config files or prefix keys needed. That said, lots of people happily run amux with SSH and tmux together, and amux can attach to your remote tmux sessions natively (<link>beta</link>).",
+    "faqTmuxA": "tmux is not an add-on in amux: it is the durable workspace engine. A tmux-backed workspace maps to a real session, while amux projects its windows and panes into native Ghostty surfaces with a sidebar, browser, notifications, and socket API. You can also attach to the same session from another terminal or connect to remote tmux sessions (<link>docs</link>).",
     "faqFreeQ": "Is amux free?",
     "faqFreeA": "Yes, amux is free to use. The source code is available on <link>GitHub</link>.",
     "faqSessionsQ": "Are my sessions saved?",

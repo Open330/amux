@@ -7,10 +7,24 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple" alt="macOS 14+" />
-  <img src="https://img.shields.io/badge/status-0.2.0%20pre--release-orange" alt="status" />
+  <img src="https://img.shields.io/badge/status-0.2.0%20stable-30A46C" alt="amux 0.2.0 stable" />
   <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="GPL-3.0-or-later" />
   <img src="https://img.shields.io/badge/renderer-Ghostty-6f42c1" alt="Ghostty" />
   <img src="https://img.shields.io/badge/agents-muxa-30A46C" alt="muxa" />
+</p>
+
+<p align="center">
+  <a href="https://open330.github.io/amux/">
+    <img src="site/assets/amux-workspaces.png" alt="amux with persistent tmux workspaces, coding agents, and muxa watch" width="1200" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://open330.github.io/amux/"><strong>Website</strong></a>
+  ·
+  <a href="https://github.com/Open330/amux/releases/latest"><strong>Latest release</strong></a>
+  ·
+  <a href="docs/"><strong>Documentation</strong></a>
 </p>
 
 <p align="center">
@@ -58,6 +72,27 @@ flowchart LR
 - **muxa (muxad)** owns agent state (`working / waiting_input / waiting_choice / error`), prompt history, and activity analytics.
 - **amux.app** owns rendering, focus, notifications, and UX — a projection of the two sources of truth above, plus everything a native app should be.
 
+## Install
+
+amux 0.2.0 requires Apple Silicon and macOS 14 or later. The release is signed,
+notarized, stapled, and distributed with Sparkle automatic updates enabled.
+
+### Homebrew
+
+Homebrew 6 requires an explicit trust step for third-party taps:
+
+```bash
+brew tap Open330/tap
+brew trust Open330/tap
+brew install --cask Open330/tap/amux
+```
+
+### DMG
+
+Download [`amux-macos.dmg`](https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg),
+open it, and drag **amux.app** to Applications. Future stable releases are offered
+through the built-in Sparkle updater.
+
 ## Build from source
 
 Requirements: **Apple Silicon**, **macOS 14+**, **Xcode 26+**, `zig` (for GhosttyKit), `tmux 3.x`.
@@ -100,8 +135,8 @@ Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.
 | **1 — tmux-backed workspaces** | Local one-shot transport, `{"local":true}` socket RPC family, multipane socket I/O routing, launch-time session reconcile | ✅ live-verified |
 | **2 — Agent layer** | `CmuxMuxa` daemon client (hello/snapshot/subscribe), sidebar agent badges, **attend** (jump to longest-blocked agent, ⌘⇧J), prompt composer, `waiting_choice` native sheet | ✅ shipped |
 | **muxa co-evolution** | muxad carries `tmux_socket` + `tmux_session` on the wire so amux joins by session name across servers ([Open330/muxa#60](https://github.com/Open330/muxa/pull/60)) | ✅ merged (upgrade muxad) |
-| **3 — Deep UX** | New/attach/detach/kill lifecycle, detach-by-default, opt-in ⌘N tmux-backed workspace | 🔶 lifecycle shipped — Detached-sessions **visual** sidebar section + stats panel remain |
-| **4 — Product** | amux branding, bundled tmux 3.7b + muxad/muxa, opt-in muxad LaunchAgent, first-run wizard, signed + notarized dmg, Homebrew cask | 🔶 **v0.2.0 pre-release** — app/runtime pipeline is wired; amux Sparkle and publish secrets remain to be configured |
+| **3 — Deep UX** | New/attach/detach/kill lifecycle, detach-by-default, workspace-kind chips, session recovery, and agent attention routing | ✅ shipped in 0.2.0 |
+| **4 — Product** | amux branding, bundled tmux 3.7b + muxad/muxa, opt-in muxad LaunchAgent, first-run wizard, signed + notarized DMG, Sparkle, and Homebrew cask | ✅ 0.2.0 stable release published |
 
 Download the signed, notarized build from [Releases](https://github.com/Open330/amux/releases/latest).
 

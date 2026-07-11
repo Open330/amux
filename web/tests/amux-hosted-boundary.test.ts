@@ -50,9 +50,12 @@ describe("amux hosted-service boundary", () => {
     expect(pricing.headers.get("location")).toBe("https://github.com/Open330/amux");
   });
 
-  test("disallows indexing until Open330 configures a public origin", async () => {
+  test("indexes the Open330 GitHub Pages origin by default", async () => {
     delete process.env.NEXT_PUBLIC_AMUX_SITE_URL;
     const { default: robots } = await import(`../app/robots?unset=${Date.now()}`);
-    expect(robots()).toEqual({ rules: { userAgent: "*", disallow: "/" } });
+    expect(robots()).toEqual({
+      rules: { userAgent: "*", allow: "/", disallow: "/_next/" },
+      sitemap: "https://open330.github.io/amux/sitemap.xml",
+    });
   });
 });

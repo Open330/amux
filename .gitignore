@@ -51,6 +51,10 @@ experiments/*/target/
 
 # Generated docs search index
 web/.pagefind-site/
+
+# Public GitHub Pages source (overrides common global /site ignores).
+!site/
+!site/**
 web/public/pagefind/
 
 # Local scratch (screenshots, etc.)

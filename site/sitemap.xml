@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://open330.github.io/amux/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://open330.github.io/amux/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://open330.github.io/amux/ko/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://open330.github.io/amux/ja/" />
+  </url>
+  <url>
+    <loc>https://open330.github.io/amux/ko/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://open330.github.io/amux/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://open330.github.io/amux/ko/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://open330.github.io/amux/ja/" />
+  </url>
+  <url>
+    <loc>https://open330.github.io/amux/ja/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://open330.github.io/amux/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://open330.github.io/amux/ko/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://open330.github.io/amux/ja/" />
+  </url>
+</urlset>

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>amux - tmux-native agent workspaces for macOS</title>
+    <meta name="description" content="amux is the tmux-native, agent-first terminal for macOS. Persistent workspaces, muxa observability, Ghostty rendering, and a programmable CLI." />
+    <link rel="canonical" href="https://open330.github.io/amux/" />
+    <link rel="alternate" hreflang="en" href="https://open330.github.io/amux/" />
+    <link rel="alternate" hreflang="ko" href="https://open330.github.io/amux/ko/" />
+    <link rel="alternate" hreflang="ja" href="https://open330.github.io/amux/ja/" />
+    <link rel="alternate" hreflang="x-default" href="https://open330.github.io/amux/" />
+    <meta property="og:title" content="amux - agent mux" />
+    <meta property="og:description" content="Persistent tmux workspaces with native agent observability." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://open330.github.io/amux/" />
+    <meta property="og:image" content="https://open330.github.io/amux/assets/amux-workspaces.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="./assets/amux-logo.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#product">Skip to product</a>
+    <header class="hero">
+      <img class="hero-media" src="./assets/amux-workspaces.png" alt="amux showing persistent workspaces, coding agents, and muxa watch" />
+      <div class="hero-shade" aria-hidden="true"></div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="./"><img src="./assets/amux-logo.png" alt="" /><span>amux</span></a>
+        <div class="nav-links">
+          <a href="#product">Product</a>
+          <a href="#install">Install</a>
+          <a href="https://github.com/Open330/amux/tree/main/docs">Docs</a>
+          <div class="locale-links" aria-label="Language">
+            <a class="locale-link" href="./" aria-current="page">EN</a>
+            <a class="locale-link" href="./ko/">KO</a>
+            <a class="locale-link" href="./ja/">JA</a>
+          </div>
+        </div>
+      </nav>
+      <div class="hero-copy">
+        <p class="eyebrow">agent mux / macOS 14+</p>
+        <h1>amux</h1>
+        <p class="hero-lede">Your agents keep working. Your workspaces keep existing.</p>
+        <p class="hero-detail">A native terminal where every workspace can be a real tmux session and muxa shows which Claude Code, Codex, or Gemini agent needs you.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">Download for macOS</a>
+          <a class="button" href="https://github.com/Open330/amux">View on GitHub</a>
+        </div>
+        <div class="proof-row" aria-label="Release facts">
+          <span>signed + notarized</span><span>tmux 3.7b bundled</span><span>GPL-3.0</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="product">
+      <section class="band">
+        <div class="section-inner">
+          <p class="section-kicker">One durable model</p>
+          <h2>tmux owns the session. amux owns the experience.</h2>
+          <p class="section-lede">Close the window, detach with your prefix, reconnect over SSH, or attach from another terminal. The shell remains a tmux session while amux projects it into fast native Ghostty surfaces.</p>
+          <img class="product-image" src="./assets/amux-workspaces.png" alt="The amux workspace sidebar next to split agent terminals and a muxa watch panel" loading="lazy" />
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="section-inner">
+          <p class="section-kicker">Built for agent work</p>
+          <h2>See the whole run without babysitting every pane.</h2>
+          <div class="feature-grid">
+            <article class="feature"><p class="feature-code">01 / persist</p><h3>tmux-native workspaces</h3><p>A workspace maps to a dedicated tmux session. Pane topology, scrollback, and processes survive the app.</p></article>
+            <article class="feature"><p class="feature-code">02 / observe</p><h3>muxa agent state</h3><p>Working, waiting, choice, and error states are correlated with tmux panes and surfaced in one place.</p></article>
+            <article class="feature"><p class="feature-code">03 / attend</p><h3>Jump to what needs you</h3><p>Attend moves directly to the longest-blocked agent instead of making you scan every terminal.</p></article>
+            <article class="feature"><p class="feature-code">04 / connect</p><h3>Local, tmux, and SSH</h3><p>Clear workspace identity separates ordinary shells, local tmux sessions, and remote sessions.</p></article>
+            <article class="feature"><p class="feature-code">05 / automate</p><h3>One CLI and socket API</h3><p>Create splits, send prompts, read screens, route notifications, and drive browsers without stealing focus.</p></article>
+            <article class="feature"><p class="feature-code">06 / render</p><h3>Native Ghostty surfaces</h3><p>No nested tmux chrome and no Electron. amux renders the session directly with a native macOS interface.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="install">
+        <div class="section-inner">
+          <p class="section-kicker">Install amux 0.2.0</p>
+          <h2>Start with the signed macOS release.</h2>
+          <div class="install-grid">
+            <article class="install-method">
+              <h3>Homebrew</h3>
+              <p>Homebrew 6 asks you to trust third-party taps before loading their casks.</p>
+              <pre class="command"><code>brew tap Open330/tap
+brew trust Open330/tap
+brew install --cask Open330/tap/amux</code><button class="copy-button" type="button" data-copy aria-label="Copy Homebrew commands">CP</button></pre>
+              <span>Updates continue through the cask and amux's built-in Sparkle updater.</span>
+            </article>
+            <article class="install-method">
+              <h3>DMG</h3>
+              <p>Download the notarized image, open it, and drag amux to Applications.</p>
+              <div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">Download DMG</a><a class="text-link" href="https://github.com/Open330/amux/releases/latest">Release notes</a></div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="section-inner"><span>Copyright <span data-year></span> Open330. GPL-3.0-or-later.</span><div class="footer-links"><a href="https://github.com/Open330/amux">Source</a><a href="https://github.com/Open330/amux/issues">Issues</a><a href="https://github.com/Open330/muxa">muxa</a><a href="https://github.com/manaflow-ai/cmux">cmux upstream</a></div></div>
+    </footer>
+    <script src="./site.js"></script>
+  </body>
+</html>

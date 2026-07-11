@@ -28,9 +28,9 @@
     "galleryItemAlt": "iPhone の cmux ターミナルで動作する {name}"
   },
   "meta": {
-    "title": "amux — マルチタスク、整理、プログラマビリティのために作られたターミナル",
-    "description": "無料・オープンソースのGhosttyベースのネイティブ macOS ターミナル。Claude Code、Codex、OpenCode、Gemini CLI、Kiro、Aider、あらゆるCLIツールに対応。垂直タブ、通知リング、分割ペイン、ソケットAPI搭載。",
-    "ogDescription": "無料・オープンソースのAIコーディングエージェント向けネイティブ macOS ターミナル。Claude Code、Codex、OpenCode、Gemini CLI、Kiro、Aider、あらゆるCLIツールに対応。"
+    "title": "amux — macOS向けtmuxネイティブ・エージェントワークスペース",
+    "description": "永続tmuxワークスペース、muxaエージェント可観測性、ネイティブGhosttyレンダリング、Claude CodeやCodexなどを操作するプログラマブルCLI。",
+    "ogDescription": "macOS向けtmuxネイティブ、エージェント中心のターミナル。永続ワークスペースとネイティブなエージェント可観測性。"
   },
   "common": {
     "downloadForMac": "Mac版をダウンロード",
@@ -618,13 +618,13 @@
     "welcomeTeam": "cmux Team のご購入が完了しました。"
   },
   "home": {
-    "taglinePrefix": "次のために作られたターミナル：",
+    "taglinePrefix": "永続エージェントワークスペース：",
     "typingCodingAgents": "コーディングエージェント",
     "typingMultitasking": "マルチタスク",
     "typingOrganization": "整理",
     "typingProgrammability": "プログラマビリティ",
-    "taglineStatic": "マルチタスク、整理、プログラマビリティのために作られたターミナル。",
-    "subtitle": "無料・オープンソースのGhosttyベースのネイティブmacOSターミナル。縦タブ、エージェントが注意を必要とするときの通知リング、分割ペイン、プログラマビリティのための<cliLink>CLI</cliLink>を搭載。",
+    "taglineStatic": "コーディングエージェントのための永続tmuxワークスペース。",
+    "subtitle": "各ワークスペースを実際のtmuxセッションとして維持します。muxaが作業中・待機中・停止中のエージェントを示し、Ghosttyがプログラマブルな<cliLink>CLI</cliLink>を備えたネイティブmacOS UIに描画します。",
     "features": "機能",
     "faq": "FAQ",
     "communitySection": "コミュニティ",
@@ -661,7 +661,7 @@
     "faqShortcutsQ": "キーボードショートカットはカスタマイズできますか？",
     "faqShortcutsA": "ターミナルのキーバインドはGhosttyの設定ファイル（<configPath>~/.config/ghostty/config</configPath>）から読み込まれます。amux固有のショートカット（ワークスペース、分割、ブラウザ、通知）は設定画面でカスタマイズできます。全一覧は<link>デフォルトショートカット</link>をご覧ください。",
     "faqTmuxQ": "tmuxとの違いは？",
-    "faqTmuxA": "tmuxは任意のターミナル内で動作するターミナルマルチプレクサです。amuxはGUIを備えたネイティブmacOSアプリで、縦タブ、分割ペイン、組み込みブラウザ、ソケットAPIがすべて標準搭載されており、設定ファイルやプレフィックスキーは不要です。とはいえ、多くの人がamuxをSSH + tmuxと組み合わせて愛用しています。amuxはリモートのtmuxセッションにネイティブでアタッチすることもできます（<link>ベータ</link>）。",
+    "faqTmuxA": "amuxではtmuxは追加機能ではなく、永続ワークスペースのエンジンです。tmuxベースのワークスペースは実際のセッションに対応し、amuxがそのウィンドウとペインをサイドバー、ブラウザ、通知、ソケットAPIを備えたネイティブGhostty surfaceへ投影します。同じセッションへ別のターミナルからattachしたり、リモートtmuxセッションへ接続したりできます（<link>ドキュメント</link>）。",
     "faqFreeQ": "amuxは無料ですか？",
     "faqFreeA": "はい、amuxは無料で使えます。ソースコードは<link>GitHub</link>で公開されています。",
     "faqSessionsQ": "セッションは保存されますか？",

@@ -1,15 +1,17 @@
 # amux web
 
-Next.js source for the amux website. Public product pages use the Open330/amux
-identity and local macOS distribution only. The inherited Stack Auth, billing,
-iOS, Vault, and Cloud VM routes remain in the tree for upstream compatibility
-and development reference, but the amux middleware does not expose them. Their
-credentials are optional and unset unless Open330 later owns the infrastructure.
+This Next.js tree is retained for upstream synchronization and local feature
+development. It is not the public amux deployment.
 
-Set `NEXT_PUBLIC_AMUX_SITE_URL` to an Open330-owned origin for canonical URLs,
-localized alternates, robots metadata, and the sitemap. Without it, canonical
-discovery points to the GitHub repository, sitemap publication is disabled, and
-robots metadata disallows indexing.
+The public product website lives in [`../site`](../site) and deploys as static
+files to <https://open330.github.io/amux/> through GitHub Pages. That boundary
+contains no Stack Auth, billing, iOS, Vault, Cloud VM, PostHog, or inherited
+cmux.com runtime.
+
+The middleware in this tree still rejects inherited hosted APIs and redirects
+unowned service pages if somebody runs the Next application locally. Public
+metadata defaults to the GitHub Pages origin; `NEXT_PUBLIC_AMUX_SITE_URL` may
+override it for an Open330-owned preview.
 
 ## Development
 

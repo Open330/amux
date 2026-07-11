@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://open330.github.io/amux/sitemap.xml
