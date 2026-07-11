@@ -9,19 +9,19 @@ cask "amux" do
 
   url "https://github.com/Open330/amux/releases/download/v#{version}/amux-macos.dmg"
   name "amux"
-  desc "tmux-native, agent-first terminal for macOS"
+  desc "Agent-first terminal with tmux-native workspaces"
   homepage "https://github.com/Open330/amux"
 
   # amux ships Sparkle; let it self-update once installed.
   auto_updates true
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "amux.app"
 
   zap trash: [
     "~/Library/Application Support/com.open330.amux",
     "~/Library/Caches/com.open330.amux",
-    "~/Library/Preferences/com.open330.amux.plist",
     "~/Library/LaunchAgents/com.open330.amux.muxad.plist",
+    "~/Library/Preferences/com.open330.amux.plist",
   ]
 end

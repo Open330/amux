@@ -3,23 +3,29 @@
 All notable amux changes are documented here. The historical entries below the
 amux section are retained from the upstream cmux fork point.
 
-## [0.2.0] - Unreleased
+## [0.2.0] - 2026-07-11
 
 ### Added
 - tmux-native local and SSH workspaces with stable session targeting, detach lifecycle handling, and progressive multi-host session discovery.
 - muxa-backed agent state, attention-first navigation, prompt actions, and durable orchestration messages, tasks, gates, and heartbeats.
+- Remote muxad observation over SSH with per-host badges, attention alarms, prompt/response details, and guarded host provisioning.
+- A unified, progressively streaming tmux session switcher for local and remote sessions.
+- Orca-inspired agent-driving primitives for reading panes, waiting for idle agents, sending guarded prompts, and launching supported agent CLIs.
 - Canonical `amux` CLI help, release assets, app identity, Sparkle feed, Homebrew cask source, and Open330 documentation links.
 
 ### Changed
 - Renamed Debug and Staging application channels to `amux DEV` and `amux STAGING` with `com.open330.amux.*` bundle identifiers.
 - Preserved `CMUX_*`, `cmux.json`, `.cmux/`, `cmux.*` action IDs, and the `cmux` executable as explicit compatibility contracts.
+- Added compact runtime chips that distinguish local shells, tmux sessions, SSH sessions, and agent workspaces without dominating the sidebar.
 - Disabled inherited hosted auth, telemetry, feedback submission, billing, Cloud VM, and mobile-pairing entrypoints until Open330-owned services are configured.
+- Removed the inherited PostHog SDK and made retained feature-flag compatibility state local-only.
 - Removed inherited Presence defaults and web-service credentials; unavailable website APIs and account routes now fail closed.
 - Rebranded active website metadata, downloads, navigation, documentation, and 20 locale catalogs around Open330/amux.
 - Made release packaging fail closed when Sparkle keys, signed runtimes, remote-daemon assets, notarization, final DMG verification, or Homebrew reconciliation fail.
 
 ### Fixed
 - Refresh Ghostty keyboard mappings on both AppKit and TIS input-source notifications to prevent Korean composition regressions after language switching.
+- Make tmux prefix detach close the mirrored workspace while preserving the underlying tmux session.
 - Keep background tmux attach operations from stealing workspace or window focus.
 
 ## [0.64.17] - 2026-06-23
