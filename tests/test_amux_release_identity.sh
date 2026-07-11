@@ -23,6 +23,19 @@ reject_text() {
   fi
 }
 
+require_missing() {
+  local path="$1"
+  [[ ! -e "$path" ]] || fail "$path must not exist"
+}
+
+reject_tree_text() {
+  local text="$1"
+  shift
+  if grep -RFiq -- "$text" "$@"; then
+    fail "macOS release inputs still contain legacy identity: $text"
+  fi
+}
+
 require_text "$PROJECT" 'PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux;'
 require_text "$PROJECT" 'PRODUCT_BUNDLE_IDENTIFIER = com.open330.amux.debug;'
 require_text "$PROJECT" 'PRODUCT_NAME = "amux DEV";'
@@ -81,8 +94,14 @@ require_text "$ROOT_DIR/Sources/cmuxApp.swift" 'static let enabledForCurrentLaun
 require_text "$ROOT_DIR/CLI/CLISocketSentryTelemetry.swift" 'private static let dsn = ""'
 reject_text "$ROOT_DIR/CLI/CLISocketSentryTelemetry.swift" 'ingest.us.sentry.io'
 reject_text "$ROOT_DIR/Sources/AppDelegate.swift" 'ingest.us.sentry.io'
-reject_text "$ROOT_DIR/Sources/PostHogAnalytics.swift" 'phc_'
-reject_text "$ROOT_DIR/Sources/PostHogAnalytics.swift" 'us.i.posthog.com'
+require_missing "$ROOT_DIR/Sources/PostHogAnalytics.swift"
+reject_tree_text 'PostHog' \
+  "$ROOT_DIR/Sources" \
+  "$ROOT_DIR/CLI" \
+  "$ROOT_DIR/cmuxTests" \
+  "$ROOT_DIR/Resources/Localizable.xcstrings" \
+  "$ROOT_DIR/THIRD_PARTY_LICENSES.md" \
+  "$PROJECT"
 require_text "$ROOT_DIR/Packages/iOS/CmuxMobileAnalytics/Sources/CmuxMobileAnalytics/AnalyticsConsentProviding.swift" 'as? Bool ?? false'
 require_text "$ROOT_DIR/web/data/cmux.schema.json" 'Compatibility key retained by amux; telemetry is disabled.'
 reject_text "$ROOT_DIR/Sources/AppDelegate.swift" 'auth.start()'
