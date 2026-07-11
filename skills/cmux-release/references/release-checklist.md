@@ -71,11 +71,14 @@ Release signing/notarization depends on:
 - `AMUX_SPARKLE_PRIVATE_KEY`
 - `AMUX_GITHUB_TOKEN`
 - `AMUX_HOMEBREW_GITHUB_TOKEN`
-- `APPLE_CERTIFICATE_BASE64`
-- `APPLE_CERTIFICATE_PASSWORD`
-- `APPLE_SIGNING_IDENTITY`
-- `APPLE_ID`
-- `APPLE_APP_SPECIFIC_PASSWORD`
-- `APPLE_TEAM_ID`
+
+The self-hosted runner must also have an authenticated, unlocked Vaultwarden
+session in `~/.bw_session` containing:
+
+- `Developer ID Application (Jiun Bae)` with `p12_b64`, `p12_password`, and `team_id`
+- `App Store Connect API Key - file-stack` with `key_id`, `issuer_id`, and `private_key_p8_b64`
+
+The current workflow does not read Apple certificate or notarization material
+from GitHub secrets.
 
 If release automation fails before signing, inspect workflow configuration and version metadata first. If it fails during signing/notarization, inspect the secret availability and Apple account status.
