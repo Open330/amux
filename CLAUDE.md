@@ -245,8 +245,9 @@ Notes:
 - Requires repository secrets: `AMUX_SPARKLE_PUBLIC_KEY`,
   `AMUX_SPARKLE_PRIVATE_KEY`, `AMUX_GITHUB_TOKEN`, and
   `AMUX_HOMEBREW_GITHUB_TOKEN`.
-- Requires GitHub secrets: `APPLE_CERTIFICATE_BASE64`, `APPLE_CERTIFICATE_PASSWORD`,
-  `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`.
+- The self-hosted runner reads Developer ID and App Store Connect API key
+  material from an authenticated, unlocked Vaultwarden session at
+  `~/.bw_session`; Apple credentials are not read from GitHub secrets.
 - The release asset is `amux-macos.dmg` attached to the tag.
 - README download button points to `releases/latest/download/amux-macos.dmg`.
 - Versioning: bump the minor version for updates unless explicitly asked otherwise.
