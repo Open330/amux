@@ -3,7 +3,7 @@ import Darwin
 import Foundation
 
 /// The user-configured custom upload rules (`terminal.uploadCommands` in
-/// `cmux.json`, see ``TerminalUploadCommandRule``), resolved against an ssh
+/// `amux.json`, see ``TerminalUploadCommandRule``), resolved against an ssh
 /// destination. Constructed at the call site (see ``TerminalCustomUploadRunner``)
 /// from the rules read out of the settings catalog, so the rule set can be
 /// supplied directly in tests.

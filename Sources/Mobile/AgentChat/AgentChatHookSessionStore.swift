@@ -1,7 +1,7 @@
 import CmuxAgentChat
 import Foundation
 
-/// Reads the per-agent hook session stores (`~/.cmuxterm/<agent>-hook-sessions.json`)
+/// Reads the per-agent hook session stores (`~/.amux/<agent>-hook-sessions.json`)
 /// the `cmux hooks` CLI maintains, yielding terminal bindings and transcript
 /// paths for agent sessions.
 ///
@@ -32,7 +32,7 @@ struct AgentChatHookSessionStore: Sendable {
     /// Creates a store reader.
     ///
     /// - Parameter homeDirectory: The home directory containing
-    ///   `.cmuxterm/`; injectable for tests.
+    ///   `.amux/`; injectable for tests.
     init(homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser) {
         self.homeDirectory = homeDirectory
     }
@@ -44,7 +44,7 @@ struct AgentChatHookSessionStore: Sendable {
     /// - Returns: All entries, or empty when the store is absent/malformed.
     func entries(agentSource: String) -> [Entry] {
         let file = homeDirectory
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("\(agentSource)-hook-sessions.json", isDirectory: false)
         guard let data = try? Data(contentsOf: file),
               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {

@@ -31,7 +31,7 @@ machine (Aziz's, 2026-06-22):
   events cannot fire.
 - Slice D removed the terminal-title / newest-jsonl-by-mtime fallback
   (intentionally — no unreliable fallback), so a hook-less Codex is invisible.
-- The 13 "codex" entries in `~/.cmuxterm/codex-hook-sessions.json` are stale,
+- The 13 "codex" entries in `~/.amux/codex-hook-sessions.json` are stale,
   not live-updating.
 
 Why Claude works, for contrast: Claude Code has a `SessionStart` hook. cmux's

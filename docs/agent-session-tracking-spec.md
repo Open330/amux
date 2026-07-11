@@ -272,7 +272,7 @@ panel UUIDs and re-consults the JSON store to re-bind):
 - `newestClaudeTranscript` + the `excludingSessionIDs` / forced-retry / claim
   machinery, the `$HOME` junk-drawer guard, the `/tmp` vs `/private/tmp`
   cwd-encoding gymnastics.
-- `~/.cmuxterm/<agent>-hook-sessions.json` as a read-side source of truth (it may
+- `~/.amux/<agent>-hook-sessions.json` as a read-side source of truth (it may
   remain a CLI-side scratch artifact, but the app stops reading it on the hot
   path).
 - the 30s store-read throttle (no store reads on the hot path; state was always

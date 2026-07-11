@@ -202,7 +202,7 @@ public struct AppCatalogSection: SettingCatalogSection {
     /// windows on, identified by the display's `localizedName` (e.g.
     /// `"LG HDR 4K"`). Empty means the system default placement.
     ///
-    /// JSON-backed (`JSONKey`) on purpose: `cmux.json` lives at a fixed path
+    /// JSON-backed (`JSONKey`) on purpose: `amux.json` lives at a fixed path
     /// shared by every bundle id, so one value is honored by every tagged dev
     /// build and every launch path. `UserDefaults` is per-bundle and would not
     /// be shared. Release builds never read it.

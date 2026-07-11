@@ -90,24 +90,24 @@ Existing terminal-only configs (no `type`) keep loading unchanged. The order of 
 
 cmux looks for Dock config in this order:
 
-1. `.cmux/dock.json` in the current project or a parent directory
-2. `~/.config/cmux/dock.json`
+1. `.amux/dock.json` in the current project or a parent directory
+2. `~/.config/amux/dock.json`
 
-Use `.cmux/dock.json` for repo-specific controls that should be shared with teammates. Commit it to the repo when the commands are safe and portable.
+Use `.amux/dock.json` for repo-specific controls that should be shared with teammates. Commit it to the repo when the commands are safe and portable.
 
-Use `~/.config/cmux/dock.json` for personal defaults, machines without a repo, or controls that are specific to your local setup.
+Use `~/.config/amux/dock.json` for personal defaults, machines without a repo, or controls that are specific to your local setup.
 
-Nested project configs apply to their directory tree. If a nested project has its own `.cmux/dock.json`, use that nearest config for work inside the nested project. Do not put unrelated project controls into the global config just because a repo is absent.
+Nested project configs apply to their directory tree. If a nested project has its own `.amux/dock.json`, use that nearest config for work inside the nested project. Do not put unrelated project controls into the global config just because a repo is absent.
 
 If neither file exists, Dock opens empty and offers a prompt to create a starter config. cmux does not add Dock controls automatically.
 
-Relative `cwd` values resolve from the config base. For `.cmux/dock.json`, that base is the project directory containing `.cmux`. For the global config, that base is the home directory.
+Relative `cwd` values resolve from the config base. For `.amux/dock.json`, that base is the project directory containing `.cmux`. For the global config, that base is the home directory.
 
 ## Trust
 
 Project Dock configs can start commands. The first time cmux sees a project Dock config, it shows a trust gate before launching controls. Changing the config changes the trust fingerprint and asks again.
 
-Global Dock config at `~/.config/cmux/dock.json` is treated as personal config and starts without a project trust gate.
+Global Dock config at `~/.config/amux/dock.json` is treated as personal config and starts without a project trust gate.
 
 Do not put secrets, tokens, or machine-specific private paths in a shared project Dock config. Read secrets from the user's shell, local env files, or existing dev tooling.
 

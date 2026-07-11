@@ -8,7 +8,7 @@ const os = require("node:os");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const DEFAULT_SOCKET = `${os.homedir()}/.config/cmux/cmux.sock`;
+const DEFAULT_SOCKET = `${os.homedir()}/.local/state/amux/amux.sock`;
 const SOCKET_PATH = process.env.CMUX_SOCKET_PATH || DEFAULT_SOCKET;
 const REPLY_TIMEOUT_MS = 120_000;
 const MAX_PLAN_BYTES = 128 * 1024;

@@ -102,7 +102,7 @@ extension CMUXCLI {
         ),
         AgentHookDef(
             name: "kiro", displayName: "Kiro", statusKey: "kiro",
-            configDir: ".kiro/agents", configFile: "cmux.json",
+            configDir: ".kiro/agents", configFile: "amux.json",
             configDirEnvOverride: "KIRO_HOME", configDirEnvOverrideSubpath: "agents",
             createConfigDirIfMissing: true, binaryName: "kiro-cli",
             sessionStoreSuffix: "kiro", disableEnvVar: "CMUX_KIRO_HOOKS_DISABLED",

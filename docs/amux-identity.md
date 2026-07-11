@@ -9,6 +9,9 @@ the old spelling or where upstream attribution is explicit.
 - App bundles: `amux.app`, `amux DEV <tag>.app`, `amux STAGING.app`
 - Bundle identifiers: `com.open330.amux` and `com.open330.amux.*`
 - CLI and examples: `amux`
+- Global configuration: `~/.config/amux/amux.json`
+- Project and user data: `.amux/` and `~/.amux/`
+- Control state: `~/.local/state/amux/`
 - URL schemes: `amux://`, `amux-dev[-tag]://`, `amux-nightly://`
 - Release assets: `amux-macos.dmg`, `appcast.xml`
 - Releases and documentation: `github.com/Open330/amux`
@@ -16,20 +19,22 @@ the old spelling or where upstream attribution is explicit.
 
 ## Compatibility contracts
 
-These names remain intentionally stable until a versioned migration exists:
+These protocol and source-level names remain intentionally stable:
 
 - `CMUX_*` environment variables used by terminals, hooks, and automation
-- `cmux.json`, `.cmux/`, and `~/.config/cmux/`
 - `cmux.*` built-in action identifiers
-- control socket and marker filenames under the existing cmux namespace
 - `cmuxd` and its remote protocol artifact names
-- the `cmux` executable alias
 - persisted keychain, notification, and session identifiers that existing
   installations already own
 - Swift module, package, target, and Xcode project names inherited from upstream
 
 New documentation may mention these only as literal configuration or API names.
 Descriptive prose and command examples use amux.
+
+The `cmux` executable alias is not shipped. On first launch, amux imports
+legacy `cmux.json`, `.cmux/`, `.cmuxterm/`, and `~/.local/state/cmux/` data into
+the canonical amux paths without overwriting existing amux files. Legacy files
+remain in place for rollback but are not active configuration sources.
 
 ## Upstream references
 

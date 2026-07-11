@@ -46,13 +46,13 @@ class cmuxError(Exception):
 
 
 # The control socket, markers, and password live in the non-TCC cmux state
-# directory (~/.local/state/cmux), not Application Support, so the separately
+# directory (~/.local/state/amux), not Application Support, so the separately
 # signed cmux CLI can touch them without the macOS "access data from other apps"
 # prompt (https://github.com/manaflow-ai/cmux/issues/5146).
-_STATE_DIR = os.path.expanduser("~/.local/state/cmux")
-_STABLE_SOCKET_PATH = os.path.join(_STATE_DIR, "cmux.sock")
-_LEGACY_STABLE_SOCKET_PATH = "/tmp/cmux.sock"
-_STABLE_BUNDLE_ID = "com.cmuxterm.app"
+_STATE_DIR = os.path.expanduser("~/.local/state/amux")
+_STABLE_SOCKET_PATH = os.path.join(_STATE_DIR, "amux.sock")
+_LEGACY_STABLE_SOCKET_PATH = "/tmp/amux.sock"
+_STABLE_BUNDLE_ID = "com.open330.amux"
 _NIGHTLY_BUNDLE_ID = "com.cmuxterm.app.nightly"
 _STAGING_BUNDLE_ID = "com.open330.amux.staging"
 _DEFAULT_DEBUG_BUNDLE_ID = "com.open330.amux.debug"

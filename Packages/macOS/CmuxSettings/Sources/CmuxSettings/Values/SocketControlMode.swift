@@ -3,7 +3,7 @@ import Foundation
 /// Controls which clients may connect to the cmux automation socket.
 ///
 /// Stored under the catalog entry ``SettingCatalog/automationSocketControlMode``.
-/// The cases mirror the on-disk strings used by `~/.config/cmux/cmux.json` and
+/// The cases mirror the on-disk strings used by `~/.config/amux/amux.json` and
 /// the legacy UserDefaults value, so the raw values must not be renamed without
 /// a migration.
 public enum SocketControlMode: String, CaseIterable, Sendable, SettingCodable {

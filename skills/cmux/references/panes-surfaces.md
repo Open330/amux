@@ -5,16 +5,16 @@ Split layout, surface creation, focus, move, and reorder.
 ## Inspect
 
 ```bash
-cmux list-panes
-cmux list-pane-surfaces --pane pane:1
+amux list-panes
+amux list-pane-surfaces --pane pane:1
 ```
 
 ## Create Splits/Surfaces
 
 ```bash
-cmux new-split right --panel pane:1
-cmux new-surface --type terminal --pane pane:1
-cmux new-surface --type browser --pane pane:1 --url https://example.com
+amux new-split right --panel pane:1
+amux new-surface --type terminal --pane pane:1
+amux new-surface --type browser --pane pane:1 --url https://example.com
 ```
 
 ## Focus and Close

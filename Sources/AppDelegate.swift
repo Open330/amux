@@ -2063,8 +2063,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             scheduleUITestSocketSanityCheckIfNeeded()
         }
         // Best-effort one-time migration: a value previously stored in the
-        // legacy ~/.config/cmux/dev-window-display file moves into the shared
-        // cmux.json (app.devWindowDisplay) so an existing dev-display default
+        // legacy ~/.config/amux/dev-window-display file moves into the shared
+        // amux.json (app.devWindowDisplay) so an existing dev-display default
         // keeps working. No-op when already set or the legacy file is absent.
         Task { await DevWindowDisplayDefault.migrateLegacyFileIfNeeded(runtime: settingsRuntime) }
 #endif
@@ -12410,7 +12410,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         KeyboardShortcutSettings.Action.allCases.filter { action in
             // System-wide hotkeys are dispatched via Carbon RegisterEventHotKey
             // and never routed through AppKit's local key handler. If a managed
-            // cmux.json entry somehow stores one as a chord, arming the prefix
+            // amux.json entry somehow stores one as a chord, arming the prefix
             // here would swallow the first stroke and leave the second one
             // orphaned, breaking that keystroke for the focused terminal/browser
             // input.

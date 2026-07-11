@@ -220,7 +220,7 @@ public struct SocketControlPasswordStore: Sendable {
     /// The default password file URL within the cmux state directory.
     ///
     /// Resolves to `<directory>/socket-control-password`, where `directory`
-    /// defaults to ``CmuxStateDirectory`` (`~/.local/state/cmux`). The file lives
+    /// defaults to ``CmuxStateDirectory`` (`~/.local/state/amux`). The file lives
     /// outside Application Support so the separately-signed `cmux` CLI can read it
     /// on the agent hook path without triggering the macOS Sequoia "access data
     /// from other apps" prompt (https://github.com/manaflow-ai/cmux/issues/5146).

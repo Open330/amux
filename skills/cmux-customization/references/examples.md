@@ -2,11 +2,11 @@
 
 Use these examples as starting points. Merge only the relevant top-level keys
 into the target config file named above each code block. Unlabeled JSON examples
-target `cmux.json`. Preserve unrelated sections, then run `cmux reload-config`
+target `amux.json`. Preserve unrelated sections, then run `amux reload-config`
 when available.
 
-Prefer project-local `.cmux/cmux.json` for team workflows and global
-`~/.config/cmux/cmux.json` for personal app preferences.
+Prefer project-local `.amux/amux.json` for team workflows and global
+`~/.config/amux/amux.json` for personal app preferences.
 
 ## Worktree Agents
 
@@ -70,7 +70,7 @@ layout, and right-click to offer alternate starters.
 Use this when a repo needs terminals, browser preview, and persistent Dock
 controls for repeated local development.
 
-`.cmux/cmux.json`:
+`.amux/amux.json`:
 
 ```json
 {
@@ -118,13 +118,13 @@ controls for repeated local development.
 }
 ```
 
-`.cmux/dock.json`:
+`.amux/dock.json`:
 
 ```json
 {
   "controls": [
     { "id": "git", "title": "Git", "command": "lazygit", "cwd": ".", "height": 320 },
-    { "id": "feed", "title": "Feed", "command": "cmux feed tui --opentui", "height": 260 }
+    { "id": "feed", "title": "Feed", "command": "amux feed tui --opentui", "height": 260 }
   ]
 }
 ```
@@ -306,7 +306,7 @@ the default new terminal and browser buttons.
 Use this when the user wants a repeatable place for GitHub Actions, CircleCI,
 or release-monitoring commands. Prefer Dock controls for long-running monitors.
 
-`.cmux/dock.json`:
+`.amux/dock.json`:
 
 ```json
 {
@@ -321,7 +321,7 @@ or release-monitoring commands. Prefer Dock controls for long-running monitors.
     {
       "id": "feed",
       "title": "Feed",
-      "command": "cmux feed tui --opentui",
+      "command": "amux feed tui --opentui",
       "height": 260
     }
   ]

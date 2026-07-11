@@ -46905,13 +46905,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usage: amux sidebar <validate|reload|select|open> [name|--all] [--json]\n\nValidate, reload, select, or open custom sidebars from ~/.config/cmux/sidebars.\nSwift files win over JSON files with the same base name.\n\nCommands:\n  validate [name]   Validate all custom sidebars, or one named sidebar\n  reload [name]     Validate all sidebars, then reload every valid one\n  select <name>     Validate and activate one custom sidebar\n  open <name>       Open one custom sidebar as a Bonsplit pane\n\nExamples:\n  amux sidebar validate\n  amux sidebar reload --all\n  amux sidebar select finder.tree\n  amux sidebar open finder.tree"
+            "value": "Usage: amux sidebar <validate|reload|select|open> [name|--all] [--json]\n\nValidate, reload, select, or open custom sidebars from ~/.config/amux/sidebars.\nSwift files win over JSON files with the same base name.\n\nCommands:\n  validate [name]   Validate all custom sidebars, or one named sidebar\n  reload [name]     Validate all sidebars, then reload every valid one\n  select <name>     Validate and activate one custom sidebar\n  open <name>       Open one custom sidebar as a Bonsplit pane\n\nExamples:\n  amux sidebar validate\n  amux sidebar reload --all\n  amux sidebar select finder.tree\n  amux sidebar open finder.tree"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "使用法: amux sidebar <validate|reload|select|open> [name|--all] [--json]\n\n~/.config/cmux/sidebars のカスタムサイドバーを検証、再読み込み、選択、または開きます。\n同じベース名の JSON ファイルより Swift ファイルが優先されます。\n\nコマンド:\n  validate [name]   すべてのカスタムサイドバー、または指定したサイドバーを検証します\n  reload [name]     すべてのサイドバーを検証して、有効なものを再読み込みします\n  select <name>     指定したカスタムサイドバーを検証して有効化します\n  open <name>       指定したカスタムサイドバーを Bonsplit ペインとして開きます\n\n例:\n  amux sidebar validate\n  amux sidebar reload --all\n  amux sidebar select finder.tree\n  amux sidebar open finder.tree"
+            "value": "使用法: amux sidebar <validate|reload|select|open> [name|--all] [--json]\n\n~/.config/amux/sidebars のカスタムサイドバーを検証、再読み込み、選択、または開きます。\n同じベース名の JSON ファイルより Swift ファイルが優先されます。\n\nコマンド:\n  validate [name]   すべてのカスタムサイドバー、または指定したサイドバーを検証します\n  reload [name]     すべてのサイドバーを検証して、有効なものを再読み込みします\n  select <name>     指定したカスタムサイドバーを検証して有効化します\n  open <name>       指定したカスタムサイドバーを Bonsplit ペインとして開きます\n\n例:\n  amux sidebar validate\n  amux sidebar reload --all\n  amux sidebar select finder.tree\n  amux sidebar open finder.tree"
           }
         }
       }
@@ -55371,13 +55371,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Invalid cmux.json"
+            "value": "Invalid amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "無効な cmux.json"
+            "value": "無効な amux.json"
           }
         }
       }
@@ -55388,13 +55388,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json Schema Error"
+            "value": "amux.json Schema Error"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json スキーマエラー"
+            "value": "amux.json スキーマエラー"
           }
         }
       }
@@ -55422,13 +55422,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json Configuration Warning"
+            "value": "amux.json Configuration Warning"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json 設定警告"
+            "value": "amux.json 設定警告"
           }
         }
       }
@@ -55439,115 +55439,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         }
       }
@@ -102160,13 +102160,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux#readme.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/cmux/dock.json`.\n- If both exist, project `.cmux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
+            "value": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux#readme.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.amux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/amux/dock.json`.\n- If both exist, project `.amux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "現在のコンテキストに合わせて amux Dock コントロールを設定してください。\n\n編集する前に機能を確認してください:\n1. amux CLI が使える場合は `amux docs dock` を実行してください。使えない場合は https://github.com/Open330/amux#readme を読んでください。\n2. リポジトリまたは現在のディレクトリを調べ、プロジェクト種別、スクリプト、パッケージマネージャー、開発サーバー、ログ、タスクランナー、テストコマンド、既存の TUI ツールを把握してください。\n3. どの Dock を作るべきか曖昧な場合は、ファイルを書く前に何を監視または操作したいかユーザーに確認してください。\n\nDock は amux の右サイドバーにあるターミナルコントロール領域です。Dock 設定はトップレベルに `controls` 配列を持つ JSON です。各コントロールはユーザーのログインシェルを使い、Ghostty ベースの独立したターミナルセクションで command を実行します。プロジェクトダッシュボード、git/status、開発サーバーやビルド状態、テストウォッチャー、ログ tail、キュー、ローカルサービス、または有用な場合の `amux feed tui --opentui` のようなカスタム TUI に向いています。\n\n設定を書く場所を選んでください:\n- リポジトリまたはプロジェクトディレクトリでは、チームで共有できるように `.cmux/dock.json` を作成または編集してください。\n- リポジトリ外の個人用デフォルトでは、`~/.config/cmux/dock.json` を作成または編集してください。\n- 両方がある場合、そのプロジェクトでは `.cmux/dock.json` がより具体的です。ネストしたプロジェクト設定はそのディレクトリツリーに適用されます。無関係なコントロールをグローバルに書かず、最も近い適切なプロジェクト設定を使ってください。\n- リポジトリがなく、明確なプロジェクトルートもない場合は、個人用 Dock でよいかユーザーに確認してからグローバル設定を使ってください。\n\nスキーマ:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nルール:\n- id は安定した小文字の一意な値にしてください。\n- サブディレクトリで実行する場合は `cwd` を使ってください。相対パスは設定ファイルの基準ディレクトリから解決されます。\n- `height` は固定の縦幅が必要なコントロールにだけ使ってください。\n- `env` はそのコントロールだけに必要な非秘密の値にだけ使ってください。\n- 共有するプロジェクト設定にシークレット、トークン、マシン固有の非公開パスを入れないでください。\n- 繰り返し起動しても安全で、ターミナル内で意味のあるコマンドを優先してください。\n- 存在しないスクリプトを作り上げないでください。先に package ファイル、Makefile、Procfile、README、設定ファイル、既存ツールを読んでください。\n- 共有プロジェクト Dock はチームメイトが使えるよう移植性を保ってください。個人用またはマシン固有のコントロールはグローバル Dock に入れてください。\n\n成果物:\n- 適切な dock.json を作成または更新してください。\n- ユーザーが置き換えを依頼していない限り、既存の有用なコントロールは残してください。\n- JSON がパースできることを検証してください。\n- 各コントロールの役割と、信頼する前にユーザーが確認すべきコマンドを要約してください。"
+            "value": "現在のコンテキストに合わせて amux Dock コントロールを設定してください。\n\n編集する前に機能を確認してください:\n1. amux CLI が使える場合は `amux docs dock` を実行してください。使えない場合は https://github.com/Open330/amux#readme を読んでください。\n2. リポジトリまたは現在のディレクトリを調べ、プロジェクト種別、スクリプト、パッケージマネージャー、開発サーバー、ログ、タスクランナー、テストコマンド、既存の TUI ツールを把握してください。\n3. どの Dock を作るべきか曖昧な場合は、ファイルを書く前に何を監視または操作したいかユーザーに確認してください。\n\nDock は amux の右サイドバーにあるターミナルコントロール領域です。Dock 設定はトップレベルに `controls` 配列を持つ JSON です。各コントロールはユーザーのログインシェルを使い、Ghostty ベースの独立したターミナルセクションで command を実行します。プロジェクトダッシュボード、git/status、開発サーバーやビルド状態、テストウォッチャー、ログ tail、キュー、ローカルサービス、または有用な場合の `amux feed tui --opentui` のようなカスタム TUI に向いています。\n\n設定を書く場所を選んでください:\n- リポジトリまたはプロジェクトディレクトリでは、チームで共有できるように `.amux/dock.json` を作成または編集してください。\n- リポジトリ外の個人用デフォルトでは、`~/.config/amux/dock.json` を作成または編集してください。\n- 両方がある場合、そのプロジェクトでは `.amux/dock.json` がより具体的です。ネストしたプロジェクト設定はそのディレクトリツリーに適用されます。無関係なコントロールをグローバルに書かず、最も近い適切なプロジェクト設定を使ってください。\n- リポジトリがなく、明確なプロジェクトルートもない場合は、個人用 Dock でよいかユーザーに確認してからグローバル設定を使ってください。\n\nスキーマ:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nルール:\n- id は安定した小文字の一意な値にしてください。\n- サブディレクトリで実行する場合は `cwd` を使ってください。相対パスは設定ファイルの基準ディレクトリから解決されます。\n- `height` は固定の縦幅が必要なコントロールにだけ使ってください。\n- `env` はそのコントロールだけに必要な非秘密の値にだけ使ってください。\n- 共有するプロジェクト設定にシークレット、トークン、マシン固有の非公開パスを入れないでください。\n- 繰り返し起動しても安全で、ターミナル内で意味のあるコマンドを優先してください。\n- 存在しないスクリプトを作り上げないでください。先に package ファイル、Makefile、Procfile、README、設定ファイル、既存ツールを読んでください。\n- 共有プロジェクト Dock はチームメイトが使えるよう移植性を保ってください。個人用またはマシン固有のコントロールはグローバル Dock に入れてください。\n\n成果物:\n- 適切な dock.json を作成または更新してください。\n- ユーザーが置き換えを依頼していない限り、既存の有用なコントロールは残してください。\n- JSON がパースできることを検証してください。\n- 各コントロールの役割と、信頼する前にユーザーが確認すべきコマンドを要約してください。"
           }
         }
       }
@@ -102313,13 +102313,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add controls to .cmux/dock.json."
+            "value": "Add controls to .amux/dock.json."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": ".cmux/dock.json にコントロールを追加してください。"
+            "value": ".amux/dock.json にコントロールを追加してください。"
           }
         }
       }
@@ -112674,19 +112674,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open cmux.json"
+            "value": "Open amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.jsonを開く"
+            "value": "amux.jsonを開く"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json 열기"
+            "value": "amux.json 열기"
           }
         }
       }
@@ -144493,19 +144493,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open cmux.json"
+            "value": "Open amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.jsonを開く"
+            "value": "amux.jsonを開く"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json 열기"
+            "value": "amux.json 열기"
           }
         }
       }
@@ -154736,13 +154736,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lists your sidebars from ~/.config/cmux/sidebars in the sidebar picker, rendered in an isolated helper process."
+            "value": "Lists your sidebars from ~/.config/amux/sidebars in the sidebar picker, rendered in an isolated helper process."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "~/.config/cmux/sidebars のサイドバーをサイドバーピッカーに表示し、分離されたヘルパープロセスで描画します。"
+            "value": "~/.config/amux/sidebars のサイドバーをサイドバーピッカーに表示し、分離されたヘルパープロセスで描画します。"
           }
         }
       }
@@ -162042,13 +162042,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lists your sidebars from ~/.config/cmux/sidebars in the sidebar picker."
+            "value": "Lists your sidebars from ~/.config/amux/sidebars in the sidebar picker."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "~/.config/cmux/sidebars のサイドバーをサイドバーピッカーに表示します。"
+            "value": "~/.config/amux/sidebars のサイドバーをサイドバーピッカーに表示します。"
           }
         }
       }
@@ -162059,13 +162059,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Custom sidebars are SwiftUI-style files in ~/.config/cmux/sidebars. Pick one from the sidebar toggle button's right-click menu; edits hot-reload on save. Use the in-app renderer only for sidebars you trust."
+            "value": "Custom sidebars are SwiftUI-style files in ~/.config/amux/sidebars. Pick one from the sidebar toggle button's right-click menu; edits hot-reload on save. Use the in-app renderer only for sidebars you trust."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "カスタムサイドバーは ~/.config/cmux/sidebars にある SwiftUI 形式のファイルです。サイドバー切り替えボタンの右クリックメニューから選択でき、保存すると即時に再読み込みされます。アプリ内レンダラーは信頼できるサイドバーのみに使用してください。"
+            "value": "カスタムサイドバーは ~/.config/amux/sidebars にある SwiftUI 形式のファイルです。サイドバー切り替えボタンの右クリックメニューから選択でき、保存すると即時に再読み込みされます。アプリ内レンダラーは信頼できるサイドバーのみに使用してください。"
           }
         }
       }
@@ -175934,7 +175934,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "tmux prefix ctrl-b control-b multi key sequence chord amux json 키보드 단축키 핫키 명령 키 기록기 설정 구성 파일 스키마 문서 참조 환경설정 설정… cmux.json 조합"
+            "value": "tmux prefix ctrl-b control-b multi key sequence chord amux json 키보드 단축키 핫키 명령 키 기록기 설정 구성 파일 스키마 문서 참조 환경설정 설정… amux.json 조합"
           }
         },
         "nb": {
@@ -176053,7 +176053,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "hotkeys keybindings key bindings commands keyboard accelerators shortcuts amux json 키보드 단축키 핫키 명령 키 기록기 설정 구성 파일 스키마 문서 참조 환경설정 설정… cmux.json"
+            "value": "hotkeys keybindings key bindings commands keyboard accelerators shortcuts amux json 키보드 단축키 핫키 명령 키 기록기 설정 구성 파일 스키마 문서 참조 환경설정 설정… amux.json"
           }
         },
         "nb": {
@@ -176342,7 +176342,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "docs documentation schema reference amux json keys configuration 키보드 단축키 핫키 명령 키 기록기 설정 구성 파일 스키마 문서 참조 환경설정 설정… cmux.json"
+            "value": "docs documentation schema reference amux json keys configuration 키보드 단축키 핫키 명령 키 기록기 설정 구성 파일 스키마 문서 참조 환경설정 설정… amux.json"
           }
         },
         "nb": {
@@ -176407,25 +176407,25 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences تطبيق عام تفضيلات سلوك شريط القائمة حالة الشريط الجانبي إعدادات تكوين ملف مخطط وثائق مرجع محرر كود فتح مسار cmux.json الإعدادات الإعدادات… التفضيلات… مفتوح"
+            "value": "open config file json jsonc config editor ~/.config amux preferences تطبيق عام تفضيلات سلوك شريط القائمة حالة الشريط الجانبي إعدادات تكوين ملف مخطط وثائق مرجع محرر كود فتح مسار amux.json الإعدادات الإعدادات… التفضيلات… مفتوح"
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences aplikacija opće postavke ponašanje dock traka menija status bočna konfiguracija datoteka šema dokumentacija referenca preferencije kod otvori putanja cmux.json Postavke… otvoren"
+            "value": "open config file json jsonc config editor ~/.config amux preferences aplikacija opće postavke ponašanje dock traka menija status bočna konfiguracija datoteka šema dokumentacija referenca preferencije kod otvori putanja amux.json Postavke… otvoren"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences app generelt indstillinger adfærd dock menulinje status sidepanel konfiguration fil skema dokumentation reference præferencer kode åbn sti cmux.json Indstillinger… åben"
+            "value": "open config file json jsonc config editor ~/.config amux preferences app generelt indstillinger adfærd dock menulinje status sidepanel konfiguration fil skema dokumentation reference præferencer kode åbn sti amux.json Indstillinger… åben"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences app allgemein einstellungen verhalten dock menüleiste status seitenleiste konfiguration datei schema dokumentation referenz präferenzen code öffnen pfad cmux.json … offen"
+            "value": "open config file json jsonc config editor ~/.config amux preferences app allgemein einstellungen verhalten dock menüleiste status seitenleiste konfiguration datei schema dokumentation referenz präferenzen code öffnen pfad amux.json … offen"
           }
         },
         "en": {
@@ -176437,85 +176437,85 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences aplicación general preferencias comportamiento dock barra de menú estado lateral ajustes configuración archivo esquema documentación referencia código abrir ruta cmux.json Ajustes… Preferencias… abierto"
+            "value": "open config file json jsonc config editor ~/.config amux preferences aplicación general preferencias comportamiento dock barra de menú estado lateral ajustes configuración archivo esquema documentación referencia código abrir ruta amux.json Ajustes… Preferencias… abierto"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences application général préférences comportement dock barre de menus état latérale réglages configuration fichier schéma documentation référence éditeur code ouvrir chemin cmux.json les Réglages... Préférences... ouverte"
+            "value": "open config file json jsonc config editor ~/.config amux preferences application général préférences comportement dock barre de menus état latérale réglages configuration fichier schéma documentation référence éditeur code ouvrir chemin amux.json les Réglages... Préférences... ouverte"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences app generale preferenze comportamento dock barra menu stato laterale impostazioni configurazione schema documentazione riferimento codice apri percorso cmux.json Impostazioni… Preferenze… aperta"
+            "value": "open config file json jsonc config editor ~/.config amux preferences app generale preferenze comportamento dock barra menu stato laterale impostazioni configurazione schema documentazione riferimento codice apri percorso amux.json Impostazioni… Preferenze… aperta"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences cmux.json を開く json jsonc 設定ファイル エディタ ドットファイル 環境設定"
+            "value": "open config file json jsonc config editor ~/.config amux preferences amux.json を開く json jsonc 設定ファイル エディタ ドットファイル 環境設定"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences 앱 일반 환경설정 동작 독 메뉴 막대 상태 사이드바 설정 구성 파일 스키마 문서 참조 편집기 코드 열기 경로 cmux.json 설정… cmux.json 환경설정… 열림"
+            "value": "open config file json jsonc config editor ~/.config amux preferences 앱 일반 환경설정 동작 독 메뉴 막대 상태 사이드바 설정 구성 파일 스키마 문서 참조 편집기 코드 열기 경로 amux.json 설정… amux.json 환경설정… 열림"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences app generelt innstillinger oppførsel dock menylinje status sidepanel konfigurasjon fil skjema dokumentasjon referanse preferanser redigerer kode åpne bane cmux.json … åpen"
+            "value": "open config file json jsonc config editor ~/.config amux preferences app generelt innstillinger oppførsel dock menylinje status sidepanel konfigurasjon fil skjema dokumentasjon referanse preferanser redigerer kode åpne bane amux.json … åpen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences aplikacja ogólne preferencje zachowanie dock pasek menu status boczny ustawienia konfiguracja plik schemat dokumentacja referencja edytor kod otwórz ścieżka cmux.json Ustawienia… Preferencje… otwarty"
+            "value": "open config file json jsonc config editor ~/.config amux preferences aplikacja ogólne preferencje zachowanie dock pasek menu status boczny ustawienia konfiguracja plik schemat dokumentacja referencja edytor kod otwórz ścieżka amux.json Ustawienia… Preferencje… otwarty"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences app geral preferências comportamento dock barra de menu status lateral configurações configuração arquivo esquema documentação referência código abrir caminho cmux.json Ajustes Ajustes… Preferências… aberto"
+            "value": "open config file json jsonc config editor ~/.config amux preferences app geral preferências comportamento dock barra de menu status lateral configurações configuração arquivo esquema documentação referência código abrir caminho amux.json Ajustes Ajustes… Preferências… aberto"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences приложение общие настройки поведение док строка меню статус боковая панель конфигурация файл схема документация справочник предпочтения редактор код открыть путь cmux.json Настройки... открыт"
+            "value": "open config file json jsonc config editor ~/.config amux preferences приложение общие настройки поведение док строка меню статус боковая панель конфигурация файл схема документация справочник предпочтения редактор код открыть путь amux.json Настройки... открыт"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences แอป ทั่วไป ค่ากำหนด พฤติกรรม ด็อก แถบเมนู สถานะ แถบด้านข้าง การตั้งค่า การกำหนดค่า ไฟล์ สคีมา เอกสาร อ้างอิง ตัวแก้ไข โค้ด เปิด เส้นทาง cmux.json เปิดการตั้งค่า การตั้งค่า..."
+            "value": "open config file json jsonc config editor ~/.config amux preferences แอป ทั่วไป ค่ากำหนด พฤติกรรม ด็อก แถบเมนู สถานะ แถบด้านข้าง การตั้งค่า การกำหนดค่า ไฟล์ สคีมา เอกสาร อ้างอิง ตัวแก้ไข โค้ด เปิด เส้นทาง amux.json เปิดการตั้งค่า การตั้งค่า..."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences uygulama genel tercihler davranış dock menü çubuğu durum kenar ayarlar yapılandırma dosya şema belgeler başvuru düzenleyici kod aç yol cmux.json Ayarları Ayarlar… Tercihler… açık"
+            "value": "open config file json jsonc config editor ~/.config amux preferences uygulama genel tercihler davranış dock menü çubuğu durum kenar ayarlar yapılandırma dosya şema belgeler başvuru düzenleyici kod aç yol amux.json Ayarları Ayarlar… Tercihler… açık"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences програма загальні параметри поведінка док рядок меню статус бічна панель налаштування конфігурація файл схема документація довідник редактор код відкрити шлях cmux.json Налаштування… Параметри… відкритий"
+            "value": "open config file json jsonc config editor ~/.config amux preferences програма загальні параметри поведінка док рядок меню статус бічна панель налаштування конфігурація файл схема документація довідник редактор код відкрити шлях amux.json Налаштування… Параметри… відкритий"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences 应用 通用 偏好设置 行为 程序坞 菜单栏 状态 侧边栏 设置 配置 文件 架构 文档 参考 编辑器 代码 打开 路径 cmux.json 打开设置 设置... 偏好设置..."
+            "value": "open config file json jsonc config editor ~/.config amux preferences 应用 通用 偏好设置 行为 程序坞 菜单栏 状态 侧边栏 设置 配置 文件 架构 文档 参考 编辑器 代码 打开 路径 amux.json 打开设置 设置... 偏好设置..."
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "open config file json jsonc config editor ~/.config amux preferences 應用程式 一般 偏好設定 行為 Dock 選單列 狀態 側邊欄 設定 設定檔 檔案 結構描述 文件 參考 編輯器 程式碼 開啟 路徑 cmux.json 開啟設定 設定... 偏好設定..."
+            "value": "open config file json jsonc config editor ~/.config amux preferences 應用程式 一般 偏好設定 行為 Dock 選單列 狀態 側邊欄 設定 設定檔 檔案 結構描述 文件 參考 編輯器 程式碼 開啟 路徑 amux.json 開啟設定 設定... 偏好設定..."
           }
         }
       }
@@ -179141,19 +179141,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json"
+            "value": "amux.json"
           }
         }
       }
@@ -179699,19 +179699,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open cmux.json"
+            "value": "Open amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.jsonを開く"
+            "value": "amux.jsonを開く"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json 열기"
+            "value": "amux.json 열기"
           }
         }
       }
@@ -179768,19 +179768,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add tmux-style multi-step shortcuts in cmux.json, for example [\"ctrl+b\", \"c\"]."
+            "value": "Add tmux-style multi-step shortcuts in amux.json, for example [\"ctrl+b\", \"c\"]."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json で tmux 風の2段階ショートカットを追加できます。例: [\"ctrl+b\", \"c\"]。"
+            "value": "amux.json で tmux 風の2段階ショートカットを追加できます。例: [\"ctrl+b\", \"c\"]。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json에서 tmux 스타일의 다단계 단축키를 추가할 수 있습니다. 예: [\"ctrl+b\", \"c\"]."
+            "value": "amux.json에서 tmux 스타일의 다단계 단축키를 추가할 수 있습니다. 예: [\"ctrl+b\", \"c\"]."
           }
         }
       }
@@ -179790,115 +179790,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json で管理"
+            "value": "amux.json で管理"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Managed in cmux.json"
+            "value": "Managed in amux.json"
           }
         }
       }
@@ -186030,19 +186030,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Edit cmux.json to add or remove named colors. \"Choose Custom Color...\" still adds local Custom N entries."
+            "value": "Edit amux.json to add or remove named colors. \"Choose Custom Color...\" still adds local Custom N entries."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "名前付きカラーの追加や削除は cmux.json を編集してください。「カスタムカラーを選択…」は引き続きローカルの Custom N エントリを追加します。"
+            "value": "名前付きカラーの追加や削除は amux.json を編集してください。「カスタムカラーを選択…」は引き続きローカルの Custom N エントリを追加します。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "cmux.json을 편집하여 이름이 지정된 색상을 추가하거나 제거하세요. \"사용자 지정 색상 선택...\"으로 로컬 Custom N 항목을 추가할 수 있습니다."
+            "value": "amux.json을 편집하여 이름이 지정된 색상을 추가하거나 제거하세요. \"사용자 지정 색상 선택...\"으로 로컬 Custom N 항목을 추가할 수 있습니다."
           }
         }
       }
@@ -186053,19 +186053,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No palette entries. Add colors in cmux.json or use \"Choose Custom Color...\" from a workspace context menu."
+            "value": "No palette entries. Add colors in amux.json or use \"Choose Custom Color...\" from a workspace context menu."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "パレット項目はありません。cmux.json でカラーを追加するか、ワークスペースのコンテキストメニューから「カスタムカラーを選択…」を使ってください。"
+            "value": "パレット項目はありません。amux.json でカラーを追加するか、ワークスペースのコンテキストメニューから「カスタムカラーを選択…」を使ってください。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "팔레트 항목이 없습니다. cmux.json에서 색상을 추가하거나 워크스페이스 컨텍스트 메뉴의 \"사용자 지정 색상 선택...\"을 사용하세요."
+            "value": "팔레트 항목이 없습니다. amux.json에서 색상을 추가하거나 워크스페이스 컨텍스트 메뉴의 \"사용자 지정 색상 선택...\"을 사용하세요."
           }
         }
       }

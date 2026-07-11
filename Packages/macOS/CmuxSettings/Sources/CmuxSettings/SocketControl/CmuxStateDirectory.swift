@@ -1,6 +1,6 @@
 public import Foundation
 
-/// The per-user directory that holds cmux's control-plane runtime state: the
+/// The per-user directory that holds amux's control-plane runtime state: the
 /// control socket, its `last-socket-path` marker files, the socket password, and
 /// the cached remote daemon binaries.
 ///
@@ -8,7 +8,7 @@ public import Foundation
 ///
 /// These files are read and written by **two separately code-signed binaries** —
 /// the cmux app (bundle id `com.cmuxterm.app`) and the standalone `cmux` CLI
-/// installed at `/usr/local/bin/cmux`. On macOS Sequoia, a non-sandboxed process
+/// installed as `amux`. On macOS Sequoia, a non-sandboxed process
 /// that reaches into another app's data under `~/Library/Application Support`,
 /// `~/Library/Containers`, or `~/Library/Group Containers` triggers the
 /// "<app> would like to access data from other apps" TCC ("App Data") prompt.
@@ -17,22 +17,22 @@ public import Foundation
 /// Support made the prompt fire constantly
 /// (https://github.com/manaflow-ai/cmux/issues/5146).
 ///
-/// This directory therefore resolves to `~/.local/state/cmux`, a plain dotfolder
+/// This directory therefore resolves to `~/.local/state/amux`, a plain dotfolder
 /// macOS does **not** treat as protected app data. It is the sibling of the
-/// existing `~/.local/state/cmux/crash` breadcrumb directory.
+/// existing `~/.local/state/amux/crash` breadcrumb directory.
 ///
 /// ```swift
 /// // The stable control socket; app and CLI agree on the same path by passing
 /// // the real account home (`FileManager.default.homeDirectoryForCurrentUser`):
 /// let home = FileManager.default.homeDirectoryForCurrentUser
-/// let socket = CmuxStateDirectory.url(homeDirectory: home).appendingPathComponent("cmux.sock")
+/// let socket = CmuxStateDirectory.url(homeDirectory: home).appendingPathComponent("amux.sock")
 /// ```
 public enum CmuxStateDirectory {
     /// The directory name segment under `~/.local/state` (and the legacy name
     /// under `~/Library/Application Support`).
-    public static let directoryName = "cmux"
+    public static let directoryName = "amux"
 
-    /// The cmux state directory: `<home>/.local/state/cmux`.
+    /// The amux state directory: `<home>/.local/state/amux`.
     ///
     /// The home directory is injected (no ambient `FileManager.default` default)
     /// so this stays a pure, testable function with no hidden global state.
@@ -65,6 +65,6 @@ public enum CmuxStateDirectory {
     ///   be resolved.
     public static func legacyApplicationSupportURL(fileManager: FileManager) -> URL? {
         fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-            .appendingPathComponent(directoryName, isDirectory: true)
+            .appendingPathComponent("cmux", isDirectory: true)
     }
 }

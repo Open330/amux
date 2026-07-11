@@ -263,7 +263,7 @@ extension TerminalController: ControlWorkspaceGroupContext {
             return .tabManagerUnavailable
         }
         // Placement resolution: explicit `placement` param wins, then the group's
-        // per-cwd `newWorkspacePlacement` from cmux.json, then the global default.
+        // per-cwd `newWorkspacePlacement` from amux.json, then the global default.
         let explicitPlacement = WorkspaceGroupNewPlacement(rawString: placementRaw)
         if let raw = placementRaw,
            !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,

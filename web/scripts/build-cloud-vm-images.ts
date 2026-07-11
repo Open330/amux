@@ -380,7 +380,7 @@ function cloudRootSetupCommands(): string[] {
     `chmod 0440 /etc/sudoers.d/90-${PRIMARY_LINUX_USER}-nopasswd`,
     "if id -u user >/dev/null 2>&1; then printf 'user ALL=(ALL) NOPASSWD:ALL\\n' > /etc/sudoers.d/91-user-nopasswd && chmod 0440 /etc/sudoers.d/91-user-nopasswd; fi",
     "mkdir -p /tmp/cmux && chmod 700 /tmp/cmux",
-    "ln -sf /usr/local/bin/cmuxd-remote /usr/local/bin/cmux",
+    "ln -sf /usr/local/bin/cmuxd-remote /usr/local/bin/amux",
   ];
 }
 

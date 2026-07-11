@@ -42,7 +42,7 @@ final class RendererRealizationController {
     func start() {
         if settingsObserver == nil {
             // An immediate pass when the setting changes (command palette /
-            // cmux.json post this). The always-on timer below is the safety net
+            // amux.json post this). The always-on timer below is the safety net
             // for write paths that do NOT post it (the Settings-window toggle
             // writes the default directly), so re-enabling always takes effect.
             settingsObserver = NotificationCenter.default.addObserver(

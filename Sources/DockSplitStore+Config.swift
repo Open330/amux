@@ -1,4 +1,5 @@
 import Foundation
+import CmuxSettings
 import SwiftUI
 
 extension DockSplitStore {
@@ -6,10 +7,10 @@ extension DockSplitStore {
 
     /// Resolves the config that seeds a Dock of the given scope.
     ///
-    /// - `.workspace`: only the project `.cmux/dock.json` (searched upward from
+    /// - `.workspace`: only the project `.amux/dock.json` (searched upward from
     ///   `rootDirectory`); no global fallback, so the Workspace Dock stays
     ///   distinct from the window Dock. Empty when there is no project config.
-    /// - `.global`: only `~/.config/cmux/dock.json` with a home base directory.
+    /// - `.global`: only `~/.config/amux/dock.json` with a home base directory.
     ///
     /// `scope` defaults to `.workspace` to preserve existing call sites/tests.
     nonisolated static func resolve(scope: DockScope = .workspace, rootDirectory: String?) throws -> DockConfigResolution {
@@ -95,7 +96,7 @@ extension DockSplitStore {
         case .workspace:
             if let rootDirectory = rootDirectory.flatMap(existingDirectory) {
                 return URL(fileURLWithPath: rootDirectory, isDirectory: true)
-                    .appendingPathComponent(".cmux", isDirectory: true)
+                    .appendingPathComponent(".amux", isDirectory: true)
                     .appendingPathComponent("dock.json", isDirectory: false)
             }
             return globalConfigURL()
@@ -210,8 +211,12 @@ extension DockSplitStore {
         var candidatePath = (rootDirectory as NSString).standardizingPath
         let homePath = FileManager.default.homeDirectoryForCurrentUser.path
         while true {
+            try? AmuxPathMigration.migrateProjectData(
+                at: URL(fileURLWithPath: candidatePath, isDirectory: true),
+                fileManager: .default
+            )
             let configURL = URL(fileURLWithPath: candidatePath, isDirectory: true)
-                .appendingPathComponent(".cmux", isDirectory: true)
+                .appendingPathComponent(".amux", isDirectory: true)
                 .appendingPathComponent("dock.json", isDirectory: false)
             if FileManager.default.fileExists(atPath: configURL.path) {
                 return configURL
@@ -239,7 +244,7 @@ extension DockSplitStore {
             return URL(fileURLWithPath: testPath)
         }
         return FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".config/cmux/dock.json", isDirectory: false)
+            .appendingPathComponent(".config/amux/dock.json", isDirectory: false)
     }
 
     nonisolated private static func existingDirectory(_ rawPath: String) -> String? {

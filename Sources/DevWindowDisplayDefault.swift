@@ -5,9 +5,9 @@ import CmuxSettingsUI
 /// Shared, cross-tag default for which display new amux DEV windows open on.
 ///
 /// The value is a display's `localizedName` (e.g. `"LG HDR 4K"`), persisted in
-/// the shared `cmux.json` under `app.devWindowDisplay` through ``CmuxSettings``.
+/// the shared `amux.json` under `app.devWindowDisplay` through ``CmuxSettings``.
 ///
-/// It lives in `cmux.json` (a fixed path shared across bundle ids) rather than
+/// It lives in `amux.json` (a fixed path shared across bundle ids) rather than
 /// per-bundle `UserDefaults` on purpose: every tagged dev build has its own
 /// bundle id and therefore its own defaults domain, but we want one value
 /// honored by *every* dev build and *every* launch path (`reload.sh`, an agent,
@@ -19,11 +19,11 @@ import CmuxSettingsUI
 /// seam, and the Debug menu / CLI write through the store's async `set`.
 enum DevWindowDisplayDefault {
     /// Legacy single-line file the value used to live in, before it moved into
-    /// `cmux.json`. Read for migration and as a first-launch fallback, then
+    /// `amux.json`. Read for migration and as a first-launch fallback, then
     /// ignored.
     static var legacyFileURL: URL {
         FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".config/cmux/dev-window-display")
+            .appendingPathComponent(".config/amux/dev-window-display")
     }
 
     /// The trimmed display name in the legacy file, or `nil` when absent/empty.
@@ -55,7 +55,7 @@ enum DevWindowDisplayDefault {
         }
     }
 
-    /// One-time best-effort migration of the pre-`cmux.json` file value into
+    /// One-time best-effort migration of the pre-`amux.json` file value into
     /// `app.devWindowDisplay`. No-op when the settings value is already set or
     /// the legacy file is absent. Leaves the legacy file untouched so an older
     /// build that still reads it keeps working too.
@@ -77,7 +77,7 @@ enum DevWindowDisplayDefault {
               let runtime = app.settingsRuntime else { return }
         // Prefer the settings value; fall back to the legacy file so an existing
         // pre-migration default still places the very first window before the
-        // async one-time migration has committed to cmux.json.
+        // async one-time migration has committed to amux.json.
         guard let name = current(runtime) ?? legacyFileName(),
               let screen = app.screenMatching(name) else { return }
         app.repositionPreservingSize(window, onto: screen)

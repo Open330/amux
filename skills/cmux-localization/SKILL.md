@@ -30,7 +30,7 @@ Before finishing a task that changes UI, Settings rows, menus, shortcut metadata
 
 ## Related shortcut rule
 
-Every new cmux-owned keyboard shortcut must be added to `KeyboardShortcutSettings`, visible/editable in Settings, supported in `~/.config/cmux/cmux.json`, and documented in the keyboard shortcut and configuration docs.
+Every new amux-owned keyboard shortcut must be added to `KeyboardShortcutSettings`, visible/editable in Settings, supported in `~/.config/amux/amux.json`, and documented in the keyboard shortcut and configuration docs.
 
 ## Detailed reference
 

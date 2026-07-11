@@ -1,7 +1,7 @@
 internal import Foundation
 
 // Resolution of the bootstrap terminal's remote TTY name (written by the
-// relay shell hook to `~/.cmux/relay/<port>.tty`), with a bounded retry.
+// relay shell hook to `~/.amux/relay/<port>.tty`), with a bounded retry.
 // Faithful lift; the legacy retry `asyncAfter` work item became an
 // injected-clock task with a token guard. The 0.5s delay and 8-retry limit
 // are identical.
@@ -26,7 +26,7 @@ extension RemoteSessionCoordinator {
         bootstrapRemoteTTYFetchInFlight = true
         defer { bootstrapRemoteTTYFetchInFlight = false }
 
-        let command = "sh -c \("tty_path=\"$HOME/.cmux/relay/\(relayPort).tty\"; if [ -r \"$tty_path\" ]; then cat \"$tty_path\"; fi".shellSingleQuoted)"
+        let command = "sh -c \("tty_path=\"$HOME/.amux/relay/\(relayPort).tty\"; if [ -r \"$tty_path\" ]; then cat \"$tty_path\"; fi".shellSingleQuoted)"
         do {
             let result = try sshExec(
                 arguments: sshCommonArguments(batchMode: true) + [configuration.destination, command],

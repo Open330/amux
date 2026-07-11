@@ -18,10 +18,10 @@ printf 'workspace=%s\nsurface=%s\nsocket=%s\n' \
   "${CMUX_WORKSPACE_ID:-}" \
   "${CMUX_SURFACE_ID:-}" \
   "${CMUX_SOCKET_PATH:-}"
-cmux identify --json
+amux identify --json
 ```
 
-Use `CMUX_WORKSPACE_ID` as the default workspace anchor and `CMUX_SURFACE_ID` as the default caller terminal/surface anchor. If those are missing, use `cmux identify --json` and be explicit that you are using the currently focused cmux context.
+Use `CMUX_WORKSPACE_ID` as the default workspace anchor and `CMUX_SURFACE_ID` as the default caller terminal/surface anchor. If those are missing, use `amux identify --json` and be explicit that you are using the currently focused cmux context.
 
 ## Non-Disruptive Automation
 
@@ -39,8 +39,8 @@ Build layout additively, in one shot. Prefer commands that create a new pane alr
 
 ```bash
 # pane and content in one call, no follow-up needed
-cmux new-pane --workspace "${CMUX_WORKSPACE_ID}" --type browser --direction right --url "http://127.0.0.1:8765"
-cmux new-pane --workspace "${CMUX_WORKSPACE_ID}" --type terminal --direction down
+amux new-pane --workspace "${CMUX_WORKSPACE_ID}" --type browser --direction right --url "http://127.0.0.1:8765"
+amux new-pane --workspace "${CMUX_WORKSPACE_ID}" --type terminal --direction down
 ```
 
 Avoid create-then-move-then-focus chains. If a layout command rejects a valid `surface:` or `pane:` ref, do not work around it by focusing. Report the bug to the user and stop.
@@ -54,20 +54,20 @@ When opening auxiliary output for the current task (preview apps, TUIs, logs, on
 First inspect the caller context and panes:
 
 ```bash
-cmux identify --json
-cmux list-panes --workspace "${CMUX_WORKSPACE_ID:-}" --json
-cmux list-pane-surfaces --workspace "${CMUX_WORKSPACE_ID:-}" --json
+amux identify --json
+amux list-panes --workspace "${CMUX_WORKSPACE_ID:-}" --json
+amux list-pane-surfaces --workspace "${CMUX_WORKSPACE_ID:-}" --json
 ```
 
 Use this policy:
 
 - If the caller workspace already has a non-caller helper pane, add a new surface to that pane instead of creating another pane:
   ```bash
-  cmux new-surface --workspace "${CMUX_WORKSPACE_ID:-}" --pane pane:<helper> --type terminal --focus false
+  amux new-surface --workspace "${CMUX_WORKSPACE_ID:-}" --pane pane:<helper> --type terminal --focus false
   ```
 - If there is no helper pane, create exactly one right-side pane:
   ```bash
-  cmux new-pane --workspace "${CMUX_WORKSPACE_ID:-}" --type terminal --direction right --focus false
+  amux new-pane --workspace "${CMUX_WORKSPACE_ID:-}" --type terminal --direction right --focus false
   ```
 - If there are multiple obvious stale helper panes from this same automation and the user asked to tidy or reuse, keep one right helper pane and clean up the duplicates. Do not close panes you cannot confidently identify as stale helper output.
 - Send commands to the new or reused helper surface by explicit surface ref. Do not focus it unless the user asks.
@@ -85,12 +85,12 @@ This means repeated "open it" requests should normally create tabs inside the ex
 ## Inspect Current Context
 
 ```bash
-cmux identify --json
+amux identify --json
 cmux current-workspace --json
-cmux list-workspaces --json
-cmux list-panes --workspace "${CMUX_WORKSPACE_ID:-}" --json
-cmux list-pane-surfaces --workspace "${CMUX_WORKSPACE_ID:-}" --json
-cmux list-panels --workspace "${CMUX_WORKSPACE_ID:-}" --json
+amux list-workspaces --json
+amux list-panes --workspace "${CMUX_WORKSPACE_ID:-}" --json
+amux list-pane-surfaces --workspace "${CMUX_WORKSPACE_ID:-}" --json
+amux list-panels --workspace "${CMUX_WORKSPACE_ID:-}" --json
 ```
 
 Use `--id-format both` when logs or handoffs need stable UUIDs plus human refs:
@@ -105,7 +105,7 @@ Prefer explicit workspace flags even when env vars are set. It makes automation 
 
 ```bash
 # create a new workspace when the user asks for a new task area
-cmux new-workspace --name "debug auth" --cwd "$PWD"
+amux new-workspace --name "debug auth" --cwd "$PWD"
 
 # rename / close (only when explicitly requested)
 cmux rename-workspace --workspace "${CMUX_WORKSPACE_ID:-}" -- "build fix"
@@ -113,8 +113,8 @@ cmux close-workspace --workspace workspace:4
 cmux close-surface --workspace "${CMUX_WORKSPACE_ID:-}" --surface surface:3
 
 # additive layout (safe, no focus side effects beyond the command's own defaults)
-cmux new-pane --workspace "${CMUX_WORKSPACE_ID:-}" --type terminal --direction right
-cmux new-surface --workspace "${CMUX_WORKSPACE_ID:-}" --type terminal
+amux new-pane --workspace "${CMUX_WORKSPACE_ID:-}" --type terminal --direction right
+amux new-surface --workspace "${CMUX_WORKSPACE_ID:-}" --type terminal
 
 # focus-changing (USER-AFFECTING, only on explicit ask, see Non-Disruptive Automation above)
 cmux select-workspace --workspace workspace:2
@@ -128,11 +128,11 @@ The current terminal is the surface that invoked the agent. Treat it as the safe
 
 ```bash
 # send to the focused terminal in the caller workspace
-cmux send "npm test\n"
+amux send "npm test\n"
 
 # send to the exact caller surface
-cmux send --surface "${CMUX_SURFACE_ID:-}" "git status\n"
-cmux send-key --surface "${CMUX_SURFACE_ID:-}" enter
+amux send --surface "${CMUX_SURFACE_ID:-}" "git status\n"
+amux send-key --surface "${CMUX_SURFACE_ID:-}" enter
 ```
 
 Do not send keystrokes, close surfaces, or change focus in other workspaces unless the user asked for that target.
@@ -187,7 +187,7 @@ For cmux app/runtime changes in a cmux source checkout, use tagged reloads from 
 Never build or launch untagged `amux DEV`. If tests or tools need a socket, use the tag-specific socket:
 
 ```bash
-CMUX_SOCKET_PATH=/tmp/cmux-debug-<short-tag>.sock cmux identify --json
+CMUX_SOCKET_PATH=/tmp/cmux-debug-<short-tag>.sock amux identify --json
 ```
 
 ## Socket and Access

@@ -182,7 +182,7 @@ amux surface resume clear --checkpoint work`}</CodeBlock>
 
       <h2>{t("disableTitle")}</h2>
       <p>{t("disableDesc")}</p>
-      <CodeBlock title="~/.config/cmux/cmux.json" lang="json">{`{
+      <CodeBlock title="~/.config/amux/amux.json" lang="json">{`{
   "terminal": {
     "autoResumeAgentSessions": false
   }

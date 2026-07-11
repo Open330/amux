@@ -7,8 +7,8 @@ Operational checks useful in automation loops.
 Flash a surface or workspace to provide visual confirmation in UI:
 
 ```bash
-cmux trigger-flash --surface surface:7
-cmux trigger-flash --workspace workspace:2
+amux trigger-flash --surface surface:7
+amux trigger-flash --workspace workspace:2
 ```
 
 ## Surface Health

@@ -111,28 +111,28 @@ fi
 printf 'cmux_socket_password_set: %s\n' "$([[ -n "${CMUX_SOCKET_PASSWORD:-}" ]] && printf yes || printf no)"
 
 section "cli"
-if command -v cmux >/dev/null 2>&1; then
-  printf 'cmux_path: %s\n' "$(safe_path "$(command -v cmux)")"
-  if cmux --version >/dev/null 2>&1; then
-    printf 'cmux_version: %s\n' "$(cmux --version 2>/dev/null | head -n 1)"
+if command -v amux >/dev/null 2>&1; then
+  printf 'amux_path: %s\n' "$(safe_path "$(command -v amux)")"
+  if amux --version >/dev/null 2>&1; then
+    printf 'amux_version: %s\n' "$(amux --version 2>/dev/null | head -n 1)"
   else
-    printf 'cmux_version: unavailable\n'
+    printf 'amux_version: unavailable\n'
   fi
-  run_status "cmux_ping" cmux ping
-  run_status "cmux_capabilities" cmux capabilities --json
+  run_status "amux_ping" amux ping
+  run_status "amux_capabilities" amux capabilities --json
   if [[ "$include_context" -eq 1 ]]; then
     printf 'identify_json:\n'
-    cmux identify --json 2>/dev/null || printf '  unavailable\n'
+    amux identify --json 2>/dev/null || printf '  unavailable\n'
   fi
 else
-  printf 'cmux_path: missing\n'
+  printf 'amux_path: missing\n'
 fi
 
 section "settings"
 printf 'cmux_json: '
-file_summary "$HOME/.config/cmux/cmux.json"
+file_summary "$HOME/.config/amux/amux.json"
 printf 'legacy_settings_json: '
-file_summary "$HOME/.config/cmux/settings.json"
+file_summary "$HOME/.config/amux/settings.json"
 if [[ -x "$settings_helper" ]]; then
   run_status "cmux_settings_validate" "$settings_helper" validate
   printf 'auto_resume_agent_sessions: '
@@ -143,20 +143,20 @@ fi
 
 section "hook configs"
 declare -a hook_checks=(
-  "codex:$HOME/.codex/hooks.json:cmux hooks codex"
+  "codex:$HOME/.codex/hooks.json:amux hooks codex"
   "codex-config:$HOME/.codex/config.toml:codex_hooks"
-  "opencode-session:$HOME/.config/opencode/plugins/cmux-session.js:cmux hooks opencode"
-  "opencode-feed:$HOME/.config/opencode/plugins/cmux-feed.js:cmux hooks feed --source opencode"
-  "pi:$HOME/.pi/agent/extensions/cmux-session.ts:cmux hooks pi"
-  "amp:$HOME/.config/amp/plugins/cmux-session.ts:cmux hooks amp"
-  "cursor:$HOME/.cursor/hooks.json:cmux hooks cursor"
-  "gemini:$HOME/.gemini/settings.json:cmux hooks gemini"
-  "rovodev:$HOME/.rovodev/rovodev.yml:cmux hooks rovodev"
-  "hermes-agent:$HOME/.hermes/config.yaml:cmux hooks hermes-agent"
-  "copilot:$HOME/.copilot/settings.json:cmux hooks copilot"
-  "codebuddy:$HOME/.codebuddy/settings.json:cmux hooks codebuddy"
-  "factory:$HOME/.factory/settings.json:cmux hooks factory"
-  "qoder:$HOME/.qoder/settings.json:cmux hooks qoder"
+  "opencode-session:$HOME/.config/opencode/plugins/cmux-session.js:amux hooks opencode"
+  "opencode-feed:$HOME/.config/opencode/plugins/cmux-feed.js:amux hooks feed --source opencode"
+  "pi:$HOME/.pi/agent/extensions/cmux-session.ts:amux hooks pi"
+  "amp:$HOME/.config/amp/plugins/cmux-session.ts:amux hooks amp"
+  "cursor:$HOME/.cursor/hooks.json:amux hooks cursor"
+  "gemini:$HOME/.gemini/settings.json:amux hooks gemini"
+  "rovodev:$HOME/.rovodev/rovodev.yml:amux hooks rovodev"
+  "hermes-agent:$HOME/.hermes/config.yaml:amux hooks hermes-agent"
+  "copilot:$HOME/.copilot/settings.json:amux hooks copilot"
+  "codebuddy:$HOME/.codebuddy/settings.json:amux hooks codebuddy"
+  "factory:$HOME/.factory/settings.json:amux hooks factory"
+  "qoder:$HOME/.qoder/settings.json:amux hooks qoder"
 )
 for entry in "${hook_checks[@]}"; do
   IFS=: read -r name path marker <<<"$entry"

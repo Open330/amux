@@ -34,7 +34,7 @@ nonisolated enum SSHPTYAttachStartupCommandBuilder {
         )
         var lines = [
             "cmux_ssh_attach_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"",
-            "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
             "if [ -z \"$cmux_ssh_attach_cli\" ]; then printf '%s\\n' \(shellQuote(cliMissing)) >&2; exit 127; fi",
             "if [ -z \"${CMUX_SOCKET_PATH:-}\" ]; then printf '%s\\n' \(shellQuote(configurationMissing)) >&2; exit 1; fi",
             "if [ -z \"${CMUX_WORKSPACE_ID:-}\" ]; then printf '%s\\n' \(shellQuote(workspaceContextMissing)) >&2; exit 1; fi",

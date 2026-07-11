@@ -87,7 +87,7 @@ final class MarkdownPanel: Panel, ObservableObject, FilePreviewTextEditingPanel 
     // NotificationCenter token; removal is thread-safe so deinit can drop it.
     private nonisolated(unsafe) var typographyDefaultsObserver: NSObjectProtocol?
     // The typography default this viewer is currently tracking. While the panel
-    // still matches it, a default change (Set as Default / cmux.json reload) is
+    // still matches it, a default change (Set as Default / amux.json reload) is
     // adopted; once the user customizes the panel it diverges and is left alone.
     private var followedFontSize: Double
     private var followedFontFamily: String
@@ -119,7 +119,7 @@ final class MarkdownPanel: Panel, ObservableObject, FilePreviewTextEditingPanel 
     }
 
     /// Adopt a changed typography default (from another viewer's "Set as Default"
-    /// or a `cmux.json` reload), but only while this viewer still matches the
+    /// or a `amux.json` reload), but only while this viewer still matches the
     /// default it was tracking — i.e. the user has not customized it.
     private func observeTypographyDefaults() {
         typographyDefaultsObserver = NotificationCenter.default.addObserver(

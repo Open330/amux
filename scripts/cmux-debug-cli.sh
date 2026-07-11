@@ -62,13 +62,13 @@ fi
 app_path="${HOME}/Library/Developer/Xcode/DerivedData/cmux-${tag_slug}/Build/Products/Debug/amux DEV ${tag_slug}.app"
 cli_path="${app_path}/Contents/Resources/bin/amux"
 if [[ ! -x "$cli_path" ]]; then
-  cli_path="${app_path}/Contents/Resources/bin/cmux"
+  cli_path="${app_path}/Contents/Resources/bin/amux"
 fi
 if [[ ! -x "$cli_path" ]]; then
   cat >&2 <<EOF
 Tagged amux CLI not found:
   ${app_path}/Contents/Resources/bin/amux
-  ${app_path}/Contents/Resources/bin/cmux
+  ${app_path}/Contents/Resources/bin/amux
 
 Build the tagged app first:
   ./scripts/reload.sh --tag $CMUX_TAG

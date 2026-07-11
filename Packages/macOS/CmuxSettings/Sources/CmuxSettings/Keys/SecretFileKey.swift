@@ -3,12 +3,12 @@
 /// `SecretFileKey` is the third key flavor in ``CmuxSettings``, alongside
 /// ``DefaultsKey`` (UserDefaults) and ``JSONKey`` (the cmux JSON config). It
 /// exists for values that must not live in the shared, user-editable
-/// `cmux.json` (for example, the socket-control password): each secret is
+/// `amux.json` (for example, the socket-control password): each secret is
 /// stored in its own `0600` file rather than serialized into the config.
 ///
 /// The matching store is ``SecretFileStore``. The secret lives at
 /// `<baseDirectory>/<fileName>`, where `baseDirectory` is supplied by the
-/// store (the app uses `~/.config/cmux`, the same directory as `cmux.json`).
+/// store (the app uses `~/.config/amux`, the same directory as `amux.json`).
 ///
 /// ```swift
 /// public let socketPassword = SecretFileKey(

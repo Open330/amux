@@ -246,7 +246,7 @@ extension Array where Element == CuratedSettingEntry {
             .init(section: .workspaceColors, id: "badge", title: "Notification Badge", synonyms: "workspaceColors.notificationBadgeColor unread notification badge color dot count"),
             .init(section: .workspaceColors, id: "palette", title: "Reset Palette", synonyms: "reset palette named colors restore built-in custom remove default"),
 
-            // cmux.json
+            // amux.json
             .init(section: .settingsJSON, id: "open-file", title: "User config file", synonyms: "open config file json jsonc config editor ~/.config cmux preferences"),
             .init(section: .settingsJSON, id: "documentation", title: "Documentation", synonyms: "docs documentation schema reference cmux json keys configuration"),
 

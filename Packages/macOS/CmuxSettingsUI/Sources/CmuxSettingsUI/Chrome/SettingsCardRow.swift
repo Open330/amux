@@ -4,7 +4,7 @@ import SwiftUI
 /// One row inside a ``SettingsCard``: a left-aligned title (and
 /// optional subtitle), the row's control on the right, and an
 /// optional ``configurationReview`` annotation that exposes the
-/// underlying cmux.json path next to the row when the host enables
+/// underlying amux.json path next to the row when the host enables
 /// "show config paths".
 ///
 /// Mirrors the legacy in-app `SettingsCardRow`: 13pt medium title,
@@ -22,7 +22,7 @@ public struct SettingsCardRow<Trailing: View>: View {
     @ViewBuilder let trailing: Trailing
 
     // The settings root injects the built search index so each row can
-    // map the cmux.json path(s) it declares via `configurationReview`
+    // map the amux.json path(s) it declares via `configurationReview`
     // into the sidebar/search anchor id(s) the navigation layer scrolls
     // to and highlights. `nil` outside the settings window (previews,
     // host embedding without the index), in which case the row simply
@@ -32,7 +32,7 @@ public struct SettingsCardRow<Trailing: View>: View {
     /// Anchor ids that make the row `scrollTo`-addressable and eligible
     /// for the search-result highlight pulse. An explicit
     /// ``searchAnchorID`` wins (used by `.action` / `.settingsOnly` /
-    /// custom-control rows that don't write a single cmux.json key);
+    /// custom-control rows that don't write a single amux.json key);
     /// otherwise the row resolves the path(s) it declares via
     /// `configurationReview` through the injected index. Empty when no
     /// index is injected and no explicit anchor is set.

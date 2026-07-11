@@ -25,8 +25,13 @@ final class CmuxSettingsFileStore {
     static let shared = CmuxSettingsFileStore()
 
     static let currentSchemaVersion = 1
-    static let schemaURLString = "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json"
-    private static let legacySchemaURLString = "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux-settings.schema.json"
+    static let schemaURLString = "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux.schema.json"
+    private static let legacySchemaURLStrings = [
+        "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json",
+        "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux-settings.schema.json",
+        "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+        "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux-settings.schema.json",
+    ]
     private static let releaseBundleIdentifier = "com.open330.amux"
     private static let backupsDefaultsKey = "cmux.settingsFile.backups.v1"
     private static let importedManagedDefaultsDefaultsKey = "cmux.settingsFile.importedManagedDefaults.v1"
@@ -34,12 +39,12 @@ final class CmuxSettingsFileStore {
 
     static var defaultPrimaryPath: String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
-        return (home as NSString).appendingPathComponent(".config/cmux/cmux.json")
+        return (home as NSString).appendingPathComponent(".config/amux/amux.json")
     }
 
     static var defaultFallbackPath: String? {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
-        return (home as NSString).appendingPathComponent(".config/cmux/settings.json")
+        return (home as NSString).appendingPathComponent(".config/amux/settings.json")
     }
 
     static var defaultApplicationSupportFallbackPath: String? {
@@ -80,8 +85,8 @@ final class CmuxSettingsFileStore {
 
     init(
         primaryPath: String = CmuxSettingsFileStore.defaultPrimaryPath,
-        fallbackPath: String? = CmuxSettingsFileStore.defaultFallbackPath,
-        additionalFallbackPaths: [String] = [CmuxSettingsFileStore.defaultApplicationSupportFallbackPath].compactMap { $0 },
+        fallbackPath: String? = nil,
+        additionalFallbackPaths: [String] = [],
         fileManager: FileManager = .default,
         notificationCenter: NotificationCenter = .default,
         appearanceEnvironment: AppearanceSettings.LiveApplyEnvironment = .live,
@@ -98,7 +103,7 @@ final class CmuxSettingsFileStore {
         importedManagedDefaults = Self.loadImportedManagedDefaults()
 
         bootstrapPrimaryTemplateIfNeeded()
-        // The app init path loads cmux.json before applying language/appearance
+        // The app init path loads amux.json before applying language/appearance
         // itself. Running live default side effects here can initialize UI/runtime
         // singletons while this store singleton is still in its dispatch_once.
         reload(
@@ -191,7 +196,7 @@ final class CmuxSettingsFileStore {
     }
 
     /// The `when`-clause override for an action parsed from `shortcuts.when` in
-    /// cmux.json, or `nil` when the action has no configured override (so the
+    /// amux.json, or `nil` when the action has no configured override (so the
     /// caller falls back to the action's built-in ``shortcutContext``).
     func whenClause(for action: KeyboardShortcutSettings.Action) -> ShortcutWhenClause? {
         synchronized { whenClausesByAction[action] }
@@ -241,7 +246,9 @@ final class CmuxSettingsFileStore {
             guard let source = String(data: data, encoding: .utf8) else {
                 return data
             }
-            let updated = source.replacingOccurrences(of: Self.legacySchemaURLString, with: Self.schemaURLString)
+            let updated = Self.legacySchemaURLStrings.reduce(source) { contents, legacyURL in
+                contents.replacingOccurrences(of: legacyURL, with: Self.schemaURLString)
+            }
             return Data(updated.utf8)
         }
         return nil
@@ -1515,7 +1522,7 @@ final class CmuxSettingsFileStore {
     ) -> Bool {
         guard !forceApply else { return true }
         guard let importedDefault else { return true }
-        // Precedence: user explicit choice (UserDefaults) > cmux.json imported default > built-in default.
+        // Precedence: user explicit choice (UserDefaults) > amux.json imported default > built-in default.
         guard let current = currentManagedUserDefaultsValue(
             for: defaultsKey,
             matching: value,

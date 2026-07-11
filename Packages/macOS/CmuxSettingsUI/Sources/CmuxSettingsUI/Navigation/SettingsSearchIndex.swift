@@ -82,7 +82,7 @@ public struct SettingsSearchIndex: Sendable {
     /// Search text normalizer and scorer used for query matching.
     private let matcher: SettingsSearchMatcher
 
-    /// Maps a dotted cmux.json path (e.g. `sidebar.showBranchDirectory`)
+    /// Maps a dotted amux.json path (e.g. `sidebar.showBranchDirectory`)
     /// to the stable anchor id of the entry that owns it. Lets a
     /// ``SettingsCardRow`` resolve the config path it already declares
     /// via ``SettingsConfigurationReview`` into the scroll/highlight
@@ -203,7 +203,7 @@ public struct SettingsSearchIndex: Sendable {
             .map(\.entry)
     }
 
-    /// Resolves a dotted cmux.json path to the curated entry id the
+    /// Resolves a dotted amux.json path to the curated entry id the
     /// sidebar/search navigation scrolls to and highlights, so a row can
     /// tag itself with the exact id its search hit posts.
     ///
@@ -212,7 +212,7 @@ public struct SettingsSearchIndex: Sendable {
     /// hit scrolls and pulses nothing — `SettingsRowAnchorResolutionTests`
     /// enforces that across all rows.
     ///
-    /// - Parameter path: A dotted cmux.json path, e.g. `terminal.copyOnSelect`.
+    /// - Parameter path: A dotted amux.json path, e.g. `terminal.copyOnSelect`.
     /// - Returns: The curated entry id to use as a `scrollTo` / highlight
     ///   anchor, or `nil` when no curated entry owns `path`.
     public func anchorID(forSettingsPath path: String) -> String? {

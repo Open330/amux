@@ -22,7 +22,7 @@ trap cleanup EXIT
 
 FAKE_HOME="$TMP_DIR/home"
 FAKE_CLI_DIR="$FAKE_HOME/Library/Developer/Xcode/DerivedData/cmux-${TAG_SLUG}/Build/Products/Debug/amux DEV ${TAG_SLUG}.app/Contents/Resources/bin"
-FAKE_CLI="$FAKE_CLI_DIR/cmux"
+FAKE_CLI="$FAKE_CLI_DIR/amux"
 mkdir -p "$FAKE_CLI_DIR"
 cat > "$FAKE_CLI" <<'EOF'
 #!/usr/bin/env bash
@@ -31,7 +31,7 @@ if [[ "${1:-}" == "env" ]]; then
   env | sort
   exit 0
 fi
-printf 'fake cmux argv:'
+printf 'fake amux argv:'
 printf ' %q' "$@"
 printf '\n'
 EOF
@@ -76,7 +76,7 @@ OUTPUT="$(
   CMUX_SOCKET_PATH="/tmp/main-cmux.sock" \
   CMUX_SOCKET_PASSWORD="main-secret" \
   CMUX_BUNDLE_ID="com.cmuxterm.app" \
-  CMUX_BUNDLED_CLI_PATH="/Applications/amux.app/Contents/Resources/bin/cmux" \
+  CMUX_BUNDLED_CLI_PATH="/Applications/amux.app/Contents/Resources/bin/amux" \
   CMUX_WORKSPACE_ID="main-workspace" \
   CMUX_TAB_ID="main-tab" \
   CMUX_SURFACE_ID="main-surface" \

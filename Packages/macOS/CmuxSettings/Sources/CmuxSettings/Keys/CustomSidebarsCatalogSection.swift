@@ -9,7 +9,7 @@ public struct CustomSidebarsCatalogSection: SettingCatalogSection {
     /// native in-host SwiftUI with real hover/focus/keyboard) or `remote`
     /// (the crash-isolated out-of-process worker for untrusted sources).
     ///
-    /// JSON-backed so it can be flipped by editing `~/.config/cmux/cmux.json`:
+    /// JSON-backed so it can be flipped by editing `~/.config/amux/amux.json`:
     ///
     /// ```json
     /// { "customSidebars": { "renderer": "remote" } }

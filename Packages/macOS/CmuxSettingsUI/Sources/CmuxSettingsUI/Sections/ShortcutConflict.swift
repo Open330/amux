@@ -38,7 +38,7 @@ func numberedAwareStrokesConflict(
     }
     // Exact match on key + modifiers, ignoring `keyCode`: the same logical
     // keystroke can be stored with or without a resolved virtual key code (e.g.
-    // recorded vs. hand-written cmux.json), so a full `ShortcutStroke` equality
+    // recorded vs. hand-written amux.json), so a full `ShortcutStroke` equality
     // would miss those collisions.
     return lhs.key == rhs.key && sameModifiers(lhs, rhs)
 }

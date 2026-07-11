@@ -8,7 +8,7 @@ Feed is cmux's inline surface for AI agent decisions. It stays in the right side
 
 Anything else the agent does, including tool uses, assistant messages, session starts/stops, and `TodoWrite` updates, is stored and shown in the TUI's latest-first timeline as informational activity.
 
-`cmux feed tui` uses OpenTUI through Bun in the terminal alternate screen. The first run creates `~/.cmuxterm/feed-tui-opentui`, writes the bundled Feed app there, and installs `@opentui/core`. The prepared app is launched by absolute path, so the TUI keeps the workspace cwd where you ran the command. Use `cmux feed tui --opentui` to dogfood OpenTUI in isolation and fail loudly if it cannot start. Set `CMUX_FEED_TUI_BUN_PATH` to an explicit Bun executable when your shell does not expose Bun on `PATH`. Set `CMUX_FEED_TUI_LEGACY=1` or run `cmux feed tui --legacy` to force the older built-in TUI.
+`cmux feed tui` uses OpenTUI through Bun in the terminal alternate screen. The first run creates `~/.amux/feed-tui-opentui`, writes the bundled Feed app there, and installs `@opentui/core`. The prepared app is launched by absolute path, so the TUI keeps the workspace cwd where you ran the command. Use `cmux feed tui --opentui` to dogfood OpenTUI in isolation and fail loudly if it cannot start. Set `CMUX_FEED_TUI_BUN_PATH` to an explicit Bun executable when your shell does not expose Bun on `PATH`. Set `CMUX_FEED_TUI_LEGACY=1` or run `cmux feed tui --legacy` to force the older built-in TUI.
 
 ## How it works
 
@@ -47,7 +47,7 @@ Agents pipe their hook events into `cmux hooks feed --source <agent>`. The bridg
 
 When you click Allow / Deny / Submit (either in Feed or in the notification's inline action buttons), `feed.permission.reply` / `feed.question.reply` / `feed.exit_plan.reply` delivers the decision back through `FeedCoordinator`, which wakes the hook. The hook emits the agent's expected decision JSON on stdout and the agent proceeds.
 
-All events (actionable and telemetry) are appended to `~/.cmuxterm/workstream.jsonl` for audit. Memory holds the most recent 2000 items in a ring; older items remain available in the JSONL audit log.
+All events (actionable and telemetry) are appended to `~/.amux/workstream.jsonl` for audit. Memory holds the most recent 2000 items in a ring; older items remain available in the JSONL audit log.
 
 The reconnectable [events stream](events.md) also publishes Feed and agent-hook
 activity as it happens:
@@ -143,9 +143,9 @@ Per-event timeout inside agent hook configs is raised to roughly 120 to 125 seco
 
 | Path                              | Contents                                                   |
 |-----------------------------------|------------------------------------------------------------|
-| `~/.cmuxterm/workstream.jsonl`    | Append-only audit log of every Feed event.                 |
-| `~/.cmuxterm/<agent>-hook-sessions.json` | Session-to-workspace mapping used by `feed.jump`.   |
-| `~/.config/cmux/cmux.sock`        | V2 socket the hooks/plugin talk to.                        |
+| `~/.amux/workstream.jsonl`    | Append-only audit log of every Feed event.                 |
+| `~/.amux/<agent>-hook-sessions.json` | Session-to-workspace mapping used by `feed.jump`.   |
+| `~/.local/state/amux/amux.sock`   | V2 socket the hooks/plugin talk to.                        |
 | `~/.config/opencode/plugins/cmux-feed.js` | OpenCode plugin emitted by `cmux hooks opencode install`. |
 
 To reset history:
@@ -165,7 +165,7 @@ Double-click a Feed row and cmux focuses the cmux workspace + surface where the 
 
 **Codex plan-mode question stays in the terminal.** Codex `request_user_input` is not a hook event in the stock TUI path. Feed only sees Codex permission hooks today.
 
-**Agent hangs on a permission request.** Feed never blocks the agent longer than 120 seconds; if you see a longer hang, the hook failed to reach the socket. Verify `$CMUX_SOCKET_PATH` matches the running app (default is `~/.config/cmux/cmux.sock`).
+**Agent hangs on a permission request.** Feed never blocks the agent longer than 120 seconds; if you see a longer hang, the hook failed to reach the socket. Verify `$CMUX_SOCKET_PATH` matches the running app (default is `~/.local/state/amux/amux.sock`).
 
 **Notifications aren't showing inline buttons.** The three Feed categories (`CMUXFeedPermission`, `CMUXFeedExitPlan`, `CMUXFeedQuestion`) are registered at app launch. On first Feed use, macOS may prompt for notification authorization; if authorization is denied, Feed rows still appear in the sidebar but no native banner is delivered.
 

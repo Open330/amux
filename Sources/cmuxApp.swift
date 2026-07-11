@@ -74,7 +74,16 @@ struct cmuxApp: App {
         // is assigned after the saved language override below, because
         // it owns localized search-index text for the process lifetime.
         let settingsCatalog = SettingCatalog()
-        let configFileURL = CmuxConfigLocation().userConfigFile
+        let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
+        do {
+            try AmuxPathMigration.migrateUserData(
+                homeDirectory: homeDirectory,
+                fileManager: .default
+            )
+        } catch {
+            NSLog("[amux migration] Could not import legacy user data: %@", String(describing: error))
+        }
+        let configFileURL = CmuxConfigLocation(home: homeDirectory).userConfigFile
         // Relocate a pre-existing socket password out of the legacy
         // Application Support directory before any store reads it. The CLI reads
         // this file on every agent hook, and a cross-identity reach into
@@ -94,7 +103,7 @@ struct cmuxApp: App {
             ?? CmuxStateDirectory.url(homeDirectory: FileManager.default.homeDirectoryForCurrentUser)
         let secretStore = SecretFileStore(baseDirectory: secretBaseDirectory)
 
-        // Lift any plaintext socket-control password out of `cmux.json` into the
+        // Lift any plaintext socket-control password out of `amux.json` into the
         // secure store, then scrub it from the config. This runs here, in the App
         // initializer, on purpose: it completes before the managed-config layer
         // (`CmuxSettingsFileStore`, loaded later during app launch) reads the
@@ -120,11 +129,7 @@ struct cmuxApp: App {
         self.authComposition = nil
 
         // If invoked with CLI-style arguments (e.g. `amux hooks setup`), exec the
-        // bundled CLI at Contents/Resources/bin/amux. Tagged/debug builds still
-        // keep a `cmux` compatibility link, but if the GUI's Contents/MacOS leaks
-        // onto $PATH (which happens for any shell descended from this process), bare `cmux`
-        // resolves here instead of the CLI. See
-        // https://github.com/manaflow-ai/cmux/issues/4678.
+        // bundled CLI at Contents/Resources/bin/amux.
         // cmux ships a universal binary so it still supports Intel Macs, but a
         // stale LaunchServices architecture preference can pin the app to its
         // x86_64 slice on Apple Silicon, running the whole process tree under
@@ -408,7 +413,7 @@ struct cmuxApp: App {
                 splitCommandButton(title: String(localized: "menu.app.settings", defaultValue: "Settings…"), shortcut: menuShortcut(for: .openSettings)) {
                     appDelegate.openPreferencesWindow(debugSource: "menu.cmdComma")
                 }
-                Button(String(localized: "menu.app.openCmuxSettingsFile", defaultValue: "Open cmux.json")) {
+                Button(String(localized: "menu.app.openCmuxSettingsFile", defaultValue: "Open amux.json")) {
                     openCmuxSettingsFileInEditor()
                 }
                 Button(String(localized: "menu.app.ghosttySettings", defaultValue: "Ghostty Settings…")) {

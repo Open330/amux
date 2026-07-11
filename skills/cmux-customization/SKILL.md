@@ -1,6 +1,6 @@
 ---
 name: cmux-customization
-description: "Customize cmux for an end user. Use when changing cmux.json actions, custom commands, workspace layouts, plus-button behavior, surface tab bar buttons, Command Palette entries, Dock controls, sidebar and app settings, shortcuts, notifications, browser routing, examples-library presets, or Ghostty-backed terminal preferences."
+description: "Customize cmux for an end user. Use when changing amux.json actions, custom commands, workspace layouts, plus-button behavior, surface tab bar buttons, Command Palette entries, Dock controls, sidebar and app settings, shortcuts, notifications, browser routing, examples-library presets, or Ghostty-backed terminal preferences."
 ---
 
 # cmux Customization
@@ -9,25 +9,25 @@ Use this skill for user-facing cmux customization. Keep the user's config intact
 
 ## What Can Be Customized
 
-- Custom actions: define reusable `actions` in `cmux.json`. Actions can appear in Cmd+Shift+P, surface tab bars, shortcuts, and the plus-button right-click menu.
+- Custom actions: define reusable `actions` in `amux.json`. Actions can appear in Cmd+Shift+P, surface tab bars, shortcuts, and the plus-button right-click menu.
 - New workspace button: set `ui.newWorkspace.action` to replace the normal plus-button click, and `ui.newWorkspace.contextMenu` to control right-click actions. `ui.newWorkspace.rightClick` is accepted as an alias, but new examples should use `contextMenu`.
 - Surface tab bar buttons: set `ui.surfaceTabBar.buttons` to replace the default tab bar buttons. Include built-in IDs such as `cmux.newTerminal`, `cmux.newBrowser`, `cmux.splitRight`, and `cmux.splitDown` only when they should stay visible.
 - Workflows and layouts: use `commands` with workspace definitions to open a worktree, multiple checkouts, local services, browser previews, or SSH sessions in a deliberate split layout.
-- Dock controls: create `.cmux/dock.json` or `~/.config/cmux/dock.json` for right-sidebar terminal controls such as logs, test watchers, git TUIs, dev servers, queues, or `cmux feed tui --opentui`.
+- Dock controls: create `.amux/dock.json` or `~/.config/amux/dock.json` for right-sidebar terminal controls such as logs, test watchers, git TUIs, dev servers, queues, or `amux feed tui --opentui`.
 - Sidebar and app behavior: use `cmux-settings` for supported settings such as appearance, sidebar display, notification behavior, browser routing, automation, shortcuts, and new-workspace placement.
 - Workspace metadata: use the cmux CLI or `cmux-workspace` for workspace names, descriptions, colors, read state, and sidebar metadata updates.
-- Feed and notifications: use `cmux hooks setup` for Feed event sources, notification settings for delivery behavior, and notification hooks in `cmux.json` for filtering or post-processing banners.
-- Team presets and examples: use project-local `.cmux/cmux.json` and `.cmux/dock.json` to share worktree, SSH, review, dev, CI, and docs workspace patterns with a repo.
+- Feed and notifications: use `amux hooks setup` for Feed event sources, notification settings for delivery behavior, and notification hooks in `amux.json` for filtering or post-processing banners.
+- Team presets and examples: use project-local `.amux/amux.json` and `.amux/dock.json` to share worktree, SSH, review, dev, CI, and docs workspace patterns with a repo.
 - Import, export, and reset: back up the current config, apply the smallest diff, validate it, and keep a rollback path for user-owned customizations.
 - Terminal behavior: use Ghostty config for fonts, themes, cursor style, copy-on-select, shell integration, terminal keybindings, and terminal rendering.
 
 ## Choose the Right Surface
 
-- cmux app preferences: use `cmux-settings` for global `~/.config/cmux/cmux.json` settings such as appearance, sidebar, notifications, browser behavior, automation, and shortcuts.
-- Custom actions, workspace layouts, tab bar buttons, plus-button behavior, and Command Palette entries: edit `~/.config/cmux/cmux.json` globally or `.cmux/cmux.json` in the project. Project-local actions and commands override global entries with the same ID or name.
-- Dock controls: edit `.cmux/dock.json` in the project or `~/.config/cmux/dock.json` globally. Run `cmux docs dock` when available.
+- cmux app preferences: use `cmux-settings` for global `~/.config/amux/amux.json` settings such as appearance, sidebar, notifications, browser behavior, automation, and shortcuts.
+- Custom actions, workspace layouts, tab bar buttons, plus-button behavior, and Command Palette entries: edit `~/.config/amux/amux.json` globally or `.amux/amux.json` in the project. Project-local actions and commands override global entries with the same ID or name.
+- Dock controls: edit `.amux/dock.json` in the project or `~/.config/amux/dock.json` globally. Run `amux docs dock` when available.
 - Terminal rendering and terminal keybindings: use Ghostty config, usually `~/.config/ghostty/config`. This includes fonts, cursor style, copy-on-select, shell integration, themes, and terminal keybindings.
-- Project-specific behavior: prefer `.cmux/cmux.json` in the project so actions, commands, UI action wiring, and notification hooks travel with the repo. Do not put global app preferences there.
+- Project-specific behavior: prefer `.amux/amux.json` in the project so actions, commands, UI action wiring, and notification hooks travel with the repo. Do not put global app preferences there.
 
 If a request can be handled by Ghostty config, say that and use Ghostty config instead of inventing cmux UI settings.
 
@@ -43,8 +43,8 @@ templates, starter configs, or a known workflow shape.
 1. Inspect existing config before editing.
 
    ```bash
-   test -f ~/.config/cmux/cmux.json && sed -n '1,220p' ~/.config/cmux/cmux.json
-   test -f .cmux/cmux.json && sed -n '1,220p' .cmux/cmux.json
+   test -f ~/.config/amux/amux.json && sed -n '1,220p' ~/.config/amux/amux.json
+   test -f .amux/amux.json && sed -n '1,220p' .amux/amux.json
    ```
 
 2. Pick global or project-local scope. Ask only when the choice changes behavior meaningfully. Default to project-local for repo-specific commands and global for app preferences.
@@ -52,12 +52,12 @@ templates, starter configs, or a known workflow shape.
 
    ```bash
    stamp="$(date +%Y%m%d-%H%M%S)"
-   test -f ~/.config/cmux/cmux.json && cp -p ~/.config/cmux/cmux.json ~/.config/cmux/cmux.json."$stamp".bak
-   test -f .cmux/cmux.json && cp -p .cmux/cmux.json .cmux/cmux.json."$stamp".bak
+   test -f ~/.config/amux/amux.json && cp -p ~/.config/amux/amux.json ~/.config/amux/amux.json."$stamp".bak
+   test -f .amux/amux.json && cp -p .amux/amux.json .amux/amux.json."$stamp".bak
    ```
 
    Use the applicable path only. Do not create a backup for a missing file.
-4. For app settings and cmux-owned shortcuts, use the settings helper from the installed skill or checkout:
+4. For app settings and amux-owned shortcuts, use the settings helper from the installed skill or checkout:
 
    ```bash
    ~/.agents/skills/cmux-settings/scripts/cmux-settings list-supported
@@ -70,7 +70,7 @@ templates, starter configs, or a known workflow shape.
 6. Reload config after successful edits:
 
    ```bash
-   cmux reload-config
+   amux reload-config
    ```
 
 7. Verify the configured entrypoint exists. For shortcuts, read back the binding. For custom actions, confirm the action ID and where it should appear.
@@ -210,7 +210,7 @@ Add project Dock controls:
     {
       "id": "feed",
       "title": "Feed",
-      "command": "cmux feed tui --opentui",
+      "command": "amux feed tui --opentui",
       "height": 260
     }
   ]
@@ -221,8 +221,8 @@ Add project Dock controls:
 
 - App settings: run `cmux-settings validate`.
 - JSONC shape: keep valid JSONC and avoid duplicate keys.
-- Dock JSON: parse `.cmux/dock.json` or `~/.config/cmux/dock.json` with a JSON parser before reporting completion.
-- Runtime reload: run `cmux reload-config` when the CLI is available.
+- Dock JSON: parse `.amux/dock.json` or `~/.config/amux/dock.json` with a JSON parser before reporting completion.
+- Runtime reload: run `amux reload-config` when the CLI is available.
 - User-facing action: confirm the action title, shortcut, plus-button behavior, context-menu entry, or tab bar placement the user asked for.
 
 ## Rules

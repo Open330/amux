@@ -2,7 +2,7 @@ import AppKit
 import Bonsplit
 import Foundation
 
-// MARK: - cmux.json custom layout
+// MARK: - amux.json custom layout
 
 extension Workspace {
 

@@ -257,7 +257,7 @@ struct ClaudeHookSessionStoreFile: Codable {
 }
 
 final class ClaudeHookSessionStore {
-    private static let defaultStatePath = "~/.cmuxterm/claude-hook-sessions.json"
+    private static let defaultStatePath = "~/.amux/claude-hook-sessions.json"
     private static let maxStateAgeSeconds: TimeInterval = 60 * 60 * 24 * 7
     private static let maxRememberedTerminalPromptTurnIds = 32
     private static let maxAutoNameRecentMessages = 24
@@ -2136,7 +2136,7 @@ final class SocketClient {
         }
 
         let authURL = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
-            .appendingPathComponent(".cmux/relay/\(endpoint.port).auth", isDirectory: false)
+            .appendingPathComponent(".amux/relay/\(endpoint.port).auth", isDirectory: false)
         guard let authData = try? Data(contentsOf: authURL),
               let authObject = try? JSONSerialization.jsonObject(with: authData) as? [String: Any],
               let relayID = trimmedEnvValue(authObject["relay_id"] as? String),
@@ -2902,7 +2902,7 @@ struct CMUXCLI {
 
     private static func vmCreateIdempotencyStoreURL() -> URL {
         FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("vm-create-idempotency.json", isDirectory: false)
     }
 
@@ -7571,7 +7571,7 @@ struct CMUXCLI {
     /// cross-tag default display that DEBUG cmux builds open new windows on.
     ///
     /// Persisted through ``CmuxSettings/JSONConfigStore`` in the shared
-    /// `cmux.json` under `app.devWindowDisplay`, so it applies to every tagged
+    /// `amux.json` under `app.devWindowDisplay`, so it applies to every tagged
     /// dev build regardless of bundle id. No running app required: the value is
     /// read/written directly on disk via the store on this no-socket early path.
     private func runWindowDefaultDisplayCommand(commandArgs: [String], jsonOutput: Bool) throws {
@@ -9433,7 +9433,7 @@ struct CMUXCLI {
         remoteRelayPort: Int
     ) -> String {
         var lines = remoteBootstrapTTYCaptureLines(remoteRelayPort: remoteRelayPort, includeRelayRPC: true)
-        lines.append("/bin/sh \"$HOME/.cmux/relay/\(remoteRelayPort).bootstrap.sh\"")
+        lines.append("/bin/sh \"$HOME/.amux/relay/\(remoteRelayPort).bootstrap.sh\"")
         return lines.joined(separator: "\n")
     }
 
@@ -9441,8 +9441,8 @@ struct CMUXCLI {
         [
             "set -eu",
             "umask 077",
-            "cmux_bootstrap_path=\"$HOME/.cmux/relay/\(remoteRelayPort).bootstrap.sh\"",
-            "mkdir -p \"$HOME/.cmux/relay\"",
+            "cmux_bootstrap_path=\"$HOME/.amux/relay/\(remoteRelayPort).bootstrap.sh\"",
+            "mkdir -p \"$HOME/.amux/relay\"",
             "cat > \"$cmux_bootstrap_path\"",
             "chmod 700 \"$cmux_bootstrap_path\" >/dev/null 2>&1 || true",
         ].joined(separator: "\n")
@@ -9475,15 +9475,15 @@ struct CMUXCLI {
             "cmux_bootstrap_tty=\"$(tty 2>/dev/null || true)\"",
             "cmux_bootstrap_tty=\"${cmux_bootstrap_tty##*/}\"",
             "if [ -n \"$cmux_bootstrap_tty\" ] && [ \"$cmux_bootstrap_tty\" != \"not a tty\" ]; then",
-            "  mkdir -p \"$HOME/.cmux/relay\" >/dev/null 2>&1 || true",
-            "  printf '%s' \"$cmux_bootstrap_tty\" > \"$HOME/.cmux/relay/\(remoteRelayPort).tty\" 2>/dev/null || true",
+            "  mkdir -p \"$HOME/.amux/relay\" >/dev/null 2>&1 || true",
+            "  printf '%s' \"$cmux_bootstrap_tty\" > \"$HOME/.amux/relay/\(remoteRelayPort).tty\" 2>/dev/null || true",
             "  export CMUX_BOOTSTRAP_TTY=\"$cmux_bootstrap_tty\"",
         ]
 
         if includeRelayRPC {
             lines += [
-                "  cmux_relay_cli=\"$HOME/.cmux/bin/cmux\"",
-                "  if [ ! -x \"$cmux_relay_cli\" ]; then cmux_relay_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+                "  cmux_relay_cli=\"$HOME/.amux/bin/amux\"",
+                "  if [ ! -x \"$cmux_relay_cli\" ]; then cmux_relay_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
                 "  if [ -n \"$cmux_relay_cli\" ]; then",
                 "    ( cmux_relay_report_tty='{\"workspace_id\":\"__CMUX_WORKSPACE_ID__\",\"tty_name\":\"'$cmux_bootstrap_tty'\"}'",
                 "      cmux_relay_ports_kick='{\"workspace_id\":\"__CMUX_WORKSPACE_ID__\",\"reason\":\"command\"}'",
@@ -9532,7 +9532,7 @@ struct CMUXCLI {
             "cmux_ssh_preflight_control_path() {",
             #"  cmux_ssh_control_path="$(command \#(sshPrefix) -G \#(destination) 2>/dev/null | awk 'tolower($1) == "controlpath" { $1 = ""; sub(/^[[:space:]]+/, ""); print; exit }')" "#,
             "  case \"${cmux_ssh_control_path:-}\" in",
-            "    /tmp/cmux-ssh-*|\"$HOME\"/.cmux/control/*)",
+            "    /tmp/cmux-ssh-*|\"$HOME\"/.amux/control/*)",
             "      if ! command \(sshPrefix) -S \"$cmux_ssh_control_path\" -O check \(destination) >/dev/null 2>&1; then",
             "        rm -f -- \"$cmux_ssh_control_path\" 2>/dev/null || true",
             "      fi",
@@ -9566,8 +9566,8 @@ struct CMUXCLI {
         var commonShellExportLines = remoteTerminalLines
         commonShellExportLines.append(contentsOf: remoteLocaleLines)
         commonShellExportLines.append(contentsOf: remoteEnvExportLines)
-        commonShellExportLines.append("export PATH=\"$HOME/.cmux/bin:$PATH\"")
-        commonShellExportLines.append("export CMUX_BUNDLED_CLI_PATH=\"$HOME/.cmux/bin/cmux\"")
+        commonShellExportLines.append("export PATH=\"$HOME/.amux/bin:$PATH\"")
+        commonShellExportLines.append("export CMUX_BUNDLED_CLI_PATH=\"$HOME/.amux/bin/amux\"")
         commonShellExportLines.append("export CMUX_SHELL_INTEGRATION_DIR=\"\(shellStateDir)\"")
         if let relaySocket {
             commonShellExportLines.append("export CMUX_SOCKET_PATH=\(relaySocket)")
@@ -9599,7 +9599,7 @@ struct CMUXCLI {
         let relayWarmupLines = interactiveRemoteRelayWarmupLines(remoteRelayPort: remoteRelayPort)
 
         var outerLines: [String] = [
-            "mkdir -p \"$HOME/.cmux/relay\"",
+            "mkdir -p \"$HOME/.amux/relay\"",
             "cmux_shell_dir=\"\(shellStateDir)\"",
             "mkdir -p \"$cmux_shell_dir\"",
         ]
@@ -9676,7 +9676,7 @@ struct CMUXCLI {
     }
 
     private func shellStateDirForRemoteRelayPort(_ remoteRelayPort: Int) -> String {
-        "$HOME/.cmux/relay/\(max(remoteRelayPort, 0)).shell"
+        "$HOME/.amux/relay/\(max(remoteRelayPort, 0)).shell"
     }
 
     private func bundledShellIntegrationScript(named fileName: String) -> String? {
@@ -9773,14 +9773,14 @@ struct CMUXCLI {
             return []
         }
         return [
-            "cmux_relay_cli=\"${CMUX_BUNDLED_CLI_PATH:-$HOME/.cmux/bin/cmux}\"",
-            "if [ ! -x \"$cmux_relay_cli\" ]; then cmux_relay_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "cmux_relay_cli=\"${CMUX_BUNDLED_CLI_PATH:-$HOME/.amux/bin/amux}\"",
+            "if [ ! -x \"$cmux_relay_cli\" ]; then cmux_relay_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
             "cmux_relay_tty=\"${CMUX_BOOTSTRAP_TTY:-}\"",
             "if [ -z \"$cmux_relay_tty\" ]; then cmux_relay_tty=\"$(tty 2>/dev/null || true)\"; fi",
             "cmux_relay_tty=\"${cmux_relay_tty##*/}\"",
             "if [ -n \"$cmux_relay_tty\" ] && [ \"$cmux_relay_tty\" != \"not a tty\" ]; then",
-            "  mkdir -p \"$HOME/.cmux/relay\" >/dev/null 2>&1 || true",
-            "  printf '%s' \"$cmux_relay_tty\" > \"$HOME/.cmux/relay/\(remoteRelayPort).tty\" 2>/dev/null || true",
+            "  mkdir -p \"$HOME/.amux/relay\" >/dev/null 2>&1 || true",
+            "  printf '%s' \"$cmux_relay_tty\" > \"$HOME/.amux/relay/\(remoteRelayPort).tty\" 2>/dev/null || true",
             "fi",
             "if [ -n \"$cmux_relay_cli\" ] && [ -n \"$CMUX_WORKSPACE_ID\" ] && [ -n \"$cmux_relay_tty\" ] && [ \"$cmux_relay_tty\" != \"not a tty\" ]; then",
             "  ( cmux_relay_report_tty=\"{\\\"workspace_id\\\":\\\"$CMUX_WORKSPACE_ID\\\",\\\"tty_name\\\":\\\"$cmux_relay_tty\\\"}\"",
@@ -10157,10 +10157,10 @@ struct CMUXCLI {
             "&& [ -n \"${CMUX_WORKSPACE_ID:-}\" ]",
             "&& [ -n \"${CMUX_SURFACE_ID:-}\" ]; then",
             "\"${CMUX_BUNDLED_CLI_PATH}\" --socket \"${CMUX_SOCKET_PATH}\" ssh-session-end --relay-port \(remoteRelayPort) --workspace \"${CMUX_WORKSPACE_ID}\" --surface \"${CMUX_SURFACE_ID}\" >/dev/null 2>&1 || true;",
-            "elif command -v amux >/dev/null 2>&1 || command -v cmux >/dev/null 2>&1",
+            "elif command -v amux >/dev/null 2>&1",
             "&& [ -n \"${CMUX_WORKSPACE_ID:-}\" ]",
             "&& [ -n \"${CMUX_SURFACE_ID:-}\" ]; then",
-            "\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null)\" ssh-session-end --relay-port \(remoteRelayPort) --workspace \"${CMUX_WORKSPACE_ID}\" --surface \"${CMUX_SURFACE_ID}\" >/dev/null 2>&1 || true;",
+            "\"$(command -v amux 2>/dev/null)\" ssh-session-end --relay-port \(remoteRelayPort) --workspace \"${CMUX_WORKSPACE_ID}\" --surface \"${CMUX_SURFACE_ID}\" >/dev/null 2>&1 || true;",
             "fi",
         ].joined(separator: " ")
     }
@@ -11338,7 +11338,7 @@ struct CMUXCLI {
         let script = ([
             "cmux_ssh_attach_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"",
             "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\(currentExecutable); fi",
-            "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "if [ -z \"$cmux_ssh_attach_cli\" ] || [ ! -x \"$cmux_ssh_attach_cli\" ]; then cmux_ssh_attach_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
             "if [ -z \"$cmux_ssh_attach_cli\" ]; then printf '%s\\n' '[amux] bundled CLI not found for SSH PTY attach.' >&2; exit 127; fi",
             "if [ -z \"${CMUX_SOCKET_PATH:-}\" ]; then printf '%s\\n' '[amux] required configuration missing for SSH PTY attach.' >&2; exit 1; fi",
             "if [ -z \"${CMUX_WORKSPACE_ID:-}\" ]; then printf '%s\\n' '[amux] required workspace context missing for SSH PTY attach.' >&2; exit 1; fi",
@@ -12006,7 +12006,7 @@ struct CMUXCLI {
             preferredCLIPath.map { "cmux_reconnect_cli=\(shellQuote($0));" } ?? "cmux_reconnect_cli=\"\";",
             "cmux_reconnect_socket=\"${CMUX_SOCKET_PATH:-${CMUX_SOCKET:-}}\";",
             "if [ -z \"$cmux_reconnect_cli\" ] && [ -n \"${CMUX_BUNDLED_CLI_PATH:-}\" ]; then cmux_reconnect_cli=\"$CMUX_BUNDLED_CLI_PATH\"; fi;",
-            "if [ ! -x \"$cmux_reconnect_cli\" ]; then cmux_reconnect_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi;",
+            "if [ ! -x \"$cmux_reconnect_cli\" ]; then cmux_reconnect_cli=\"$(command -v amux 2>/dev/null || true)\"; fi;",
             "if [ -n \"${CMUX_WORKSPACE_ID:-}\" ]; then",
             "if [ -z \"$cmux_reconnect_socket\" ]; then printf '%s\\n' 'amux: deferred SSH reconnect skipped, local amux socket not found' >&2;",
             "elif [ -z \"$cmux_reconnect_cli\" ] || [ ! -x \"$cmux_reconnect_cli\" ]; then printf '%s\\n' 'amux: deferred SSH reconnect skipped, local amux CLI not found' >&2;",
@@ -14321,7 +14321,7 @@ struct CMUXCLI {
             Usage: amux disable-browser [--json]
 
             Disable amux browser creation and link interception. This overrides
-            browser settings from cmux.json until re-enabled.
+            browser settings from amux.json until re-enabled.
             """
         case "enable-browser":
             return """
@@ -14398,7 +14398,7 @@ struct CMUXCLI {
               ~/.pi/agent/extensions/cmux-session.ts
               ~/.omp/agent/extensions/cmux-omp-session.ts
               ~/.config/amp/plugins/cmux-session.ts
-              ~/.kiro/agents/cmux.json
+              ~/.kiro/agents/amux.json
               See docs/agent-hooks.md for the full integration matrix.
 
             Examples:
@@ -14934,7 +14934,7 @@ struct CMUXCLI {
               new-workspace <group> [--placement afterCurrent|top|end]
                                         Create a new workspace in the group.
                                         Placement resolves first from per-cwd
-                                        cmux.json `newWorkspacePlacement`, then
+                                        amux.json `newWorkspacePlacement`, then
                                         from the global default. The default is
                                         afterCurrent; without an active
                                         in-group reference it behaves like top.
@@ -15312,7 +15312,7 @@ struct CMUXCLI {
             Usage: amux reload-config
 
             Run the same configuration reload as the Reload Configuration shortcut.
-            This reloads Ghostty config, re-reads ~/.config/cmux/cmux.json, and refreshes terminals.
+            This reloads Ghostty config, re-reads ~/.config/amux/amux.json, and refreshes terminals.
 
             Example:
               amux reload-config
@@ -15978,7 +15978,7 @@ struct CMUXCLI {
         case "sidebar":
             return String(localized: "cli.sidebar.usage", defaultValue: """
             Usage: amux sidebar <validate|reload|select|open> [name|--all] [--json]
-            Validate, reload, select, or open custom sidebars from ~/.config/cmux/sidebars.
+            Validate, reload, select, or open custom sidebars from ~/.config/amux/sidebars.
             Commands:
               validate [name]   Validate all custom sidebars, or one named sidebar
               reload [name]     Validate all sidebars, then reload every valid one
@@ -19304,7 +19304,7 @@ struct CMUXCLI {
     ) throws -> URL {
         let homePath = ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory()
         let root = URL(fileURLWithPath: homePath, isDirectory: true)
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent(directoryName, isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true, attributes: nil)
         let tmuxURL = root.appendingPathComponent("tmux", isDirectory: false)
@@ -21020,7 +21020,7 @@ struct CMUXCLI {
     private func omoShadowConfigDir() -> URL {
         let homePath = ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory()
         return URL(fileURLWithPath: homePath, isDirectory: true)
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("omo-config", isDirectory: true)
     }
 
@@ -22386,7 +22386,7 @@ struct CMUXCLI {
         let homePath = ProcessInfo.processInfo.environment["HOME"]
             ?? NSString(string: "~").expandingTildeInPath
         return URL(fileURLWithPath: homePath)
-            .appendingPathComponent(".cmuxterm")
+            .appendingPathComponent(".amux")
             .appendingPathComponent("tmux-compat-store.json")
     }
 
@@ -27237,7 +27237,7 @@ struct CMUXCLI {
     func agentHookStatePath(sessionStoreSuffix: String, env: [String: String]) -> String {
         let filename = "\(sessionStoreSuffix)-hook-sessions.json"
         guard let overrideDirectory = normalizedHookValue(env["CMUX_AGENT_HOOK_STATE_DIR"]) else {
-            return "~/.cmuxterm/\(filename)"
+            return "~/.amux/\(filename)"
         }
         return URL(fileURLWithPath: NSString(string: overrideDirectory).expandingTildeInPath, isDirectory: true)
             .appendingPathComponent(filename, isDirectory: false)
@@ -28379,7 +28379,7 @@ export default CMUXSessionRestore;
     ) throws {
         guard def.name == "grok" else { return }
         let legacyURL = URL(fileURLWithPath: configDir, isDirectory: true)
-            .appendingPathComponent("cmux.json", isDirectory: false)
+            .appendingPathComponent("amux.json", isDirectory: false)
         guard legacyURL.path != primaryFilePath,
               FileManager.default.fileExists(atPath: legacyURL.path),
               let data = FileManager.default.contents(atPath: legacyURL.path),
@@ -28836,10 +28836,22 @@ export default CMUXSessionRestore;
 
         var hashes = Set<String>()
         func insertHashes(eventLabel: String, command: String, timeouts: [Int]) {
-            let commands = [
-                command,
-                "[ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && command -v cmux >/dev/null 2>&1 && \(command) || echo '{}'",
-            ]
+            var commands = [command]
+            if let script = try? String(contentsOfFile: command, encoding: .utf8),
+               script.hasPrefix("#!/bin/sh\n") {
+                let inline = String(script.dropFirst("#!/bin/sh\n".count))
+                    .trimmingCharacters(in: .newlines)
+                commands.append(inline)
+                commands.append(
+                    inline.replacingOccurrences(
+                        of: "command -v amux 2>/dev/null || true",
+                        with: "command -v cmux 2>/dev/null || true"
+                    )
+                )
+            }
+            commands.append(
+                "[ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && command -v cmux >/dev/null 2>&1 && \(command) || echo '{}'"
+            )
             for command in commands {
                 for timeout in timeouts {
                     hashes.insert(codexCommandHookHash(
@@ -28877,6 +28889,11 @@ export default CMUXSessionRestore;
             insertHashes(
                 eventLabel: eventLabel,
                 command: "amux feed-hook --source \(def.name) --event \(agentEvent)",
+                timeouts: [120_000, 600]
+            )
+            insertHashes(
+                eventLabel: eventLabel,
+                command: "cmux feed-hook --source \(def.name) --event \(agentEvent)",
                 timeouts: [120_000, 600]
             )
         }
@@ -31914,7 +31931,7 @@ export default CMUXSessionRestore;
         let fileManager = FileManager.default
         let homePath = ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory()
         let appDirectory = URL(fileURLWithPath: homePath, isDirectory: true)
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("feed-tui-opentui", isDirectory: true)
         try fileManager.createDirectory(at: appDirectory, withIntermediateDirectories: true)
 
@@ -32777,7 +32794,7 @@ export default CMUXSessionRestore;
     private func runFeedClear() throws {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let path = home
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("workstream.jsonl", isDirectory: false)
         let fm = FileManager.default
         guard fm.fileExists(atPath: path.path) else {
@@ -32826,7 +32843,7 @@ export default CMUXSessionRestore;
 
     private func bundledOpenCodePluginSource() throws -> String {
         // The plugin JS is bundled into the .app via `Resources/opencode-plugin.js`.
-        // The `cmux` CLI is often launched from `Contents/Resources/bin/cmux`,
+        // The amux CLI is launched from `Contents/Resources/bin/amux`,
         // where Bundle.main can be the CLI executable rather than the containing
         // app. Search the real executable path before falling back to repo dev
         // paths used by `swift run`-style local builds.
@@ -34392,10 +34409,10 @@ export default CMUXSessionRestore;
 
         Agent Help:
           Change amux settings with `amux docs settings` and `amux settings path`; add Dock controls with `amux docs dock`.
-          Before editing, back up any existing cmux.json file to a timestamped .bak copy.
+          Before editing, back up any existing amux.json file to a timestamped .bak copy.
           Use printed curl commands to fetch the latest docs/schema; prefer Ghostty config for terminal behavior Ghostty already supports.
           Ghostty config lives at ~/.config/ghostty/config (terminal transparency, blur, font, theme, keybinds, etc.).
-          `amux reload-config` reloads BOTH Ghostty config and ~/.config/cmux/cmux.json, then refreshes terminals in place. No app restart needed.
+          `amux reload-config` reloads BOTH Ghostty config and ~/.config/amux/amux.json, then refreshes terminals in place. No app restart needed.
 
         Commands:
           welcome
@@ -34577,7 +34594,7 @@ export default CMUXSessionRestore;
           CMUX_TAB_ID         Optional alias used by `tab-action`/`rename-tab` as default --tab.
           CMUX_SURFACE_ID     Auto-set in amux terminals. Used as default --surface.
           CMUX_SOCKET_PATH    Override the Unix socket path. Without this, the CLI defaults
-                              to ~/.local/state/cmux/cmux.sock and auto-discovers tagged/debug sockets.
+                              to ~/.local/state/amux/amux.sock and auto-discovers tagged/debug sockets.
         """
     }
 
@@ -34592,6 +34609,14 @@ private enum CMUXCLIOutput {
 @main
 struct CMUXTermMain {
     static func main() {
+        do {
+            try AmuxPathMigration.migrateUserData(
+                homeDirectory: FileManager.default.homeDirectoryForCurrentUser,
+                fileManager: .default
+            )
+        } catch {
+            CMUXCLIOutput.writeStandardError("Warning: could not import legacy cmux data: \(error)\n")
+        }
         let initialSIGPIPEInspectionPayload = CMUXCLI.currentSIGPIPEInspectionPayload()
         _ = signal(SIGPIPE, SIG_DFL)
         configureCLIStdioNoSIGPIPE()

@@ -4,7 +4,7 @@ Interactive terminal cadence probe for cmux notification lag.
 
 This is a terminal-side proxy, not a compositor frame counter. It measures how
 regularly this process can wake up and repaint a small TUI while other work,
-such as `cmux notify`, runs. Gaps over two 120 Hz intervals are the useful
+such as `amux notify`, runs. Gaps over two 120 Hz intervals are the useful
 "likely missed frame interval" signal.
 """
 
@@ -124,14 +124,14 @@ def cmux_bin_from_args(value: str | None) -> str:
     env_value = os.environ.get("CMUX_FRAME_PROBE_CMUX")
     if env_value:
         return env_value
-    tmp_cli = "/tmp/cmux-cli"
+    tmp_cli = "/tmp/amux-cli"
     if os.access(tmp_cli, os.X_OK):
         return tmp_cli
-    for candidate in ("cmux-dev", "cmux"):
+    for candidate in ("amux-dev", "amux"):
         resolved = shutil.which(candidate)
         if resolved:
             return resolved
-    return "cmux"
+    return "amux"
 
 
 def notify_command(cmux_bin: str, index: int) -> list[str]:
@@ -139,7 +139,7 @@ def notify_command(cmux_bin: str, index: int) -> list[str]:
         cmux_bin,
         "notify",
         "--title",
-        "cmux frame probe",
+        "amux frame probe",
         "--body",
         f"notify burst {index}",
     ]
@@ -254,7 +254,7 @@ def draw(stdscr: curses.window, stats: FrameStats, notify: NotifyState, args: ar
     summary = stats.summary()
     budget = stats.budget_ms
     rows = [
-        "cmux frame probe TUI",
+        "amux frame probe TUI",
         f"visible terminal cells: columns={width} rows={height} inner={content_width}x{content_height}",
         "terminal cadence proxy, not a Core Animation compositor counter",
         f"target={stats.hz:.1f}Hz budget={budget:.2f}ms hiccup>={stats.hiccup_ms:.2f}ms cmux={args.cmux_bin}",
@@ -440,7 +440,7 @@ def run_headless(args: argparse.Namespace) -> int:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Show a live terminal cadence meter and optionally trigger cmux notify bursts."
+            "Show a live terminal cadence meter and optionally trigger amux notify bursts."
         )
     )
     parser.add_argument("--hz", type=float, default=DEFAULT_HZ, help="target repaint rate")
@@ -454,7 +454,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--notify-count",
         type=int,
         default=250,
-        help="number of cmux notify commands to run per burst",
+        help="number of amux notify commands to run per burst",
     )
     parser.add_argument(
         "--notify-interval-ms",
@@ -465,7 +465,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--cmux-bin",
         default=None,
-        help="cmux binary path, defaults to CMUX_FRAME_PROBE_CMUX, /tmp/cmux-cli, cmux-dev, then cmux",
+        help="cmux binary path, defaults to CMUX_FRAME_PROBE_CMUX, /tmp/amux-cli, amux-dev, then amux",
     )
     parser.add_argument(
         "--socket-path",

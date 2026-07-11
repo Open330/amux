@@ -39,7 +39,7 @@ if test "$_cmux_integration_enabled" != 0
             printf '%s\n' "$CMUX_BUNDLED_CLI_PATH"
             return 0
         end
-        command -v amux 2>/dev/null; or command -v cmux 2>/dev/null
+        command -v amux 2>/dev/null
     end
 
     function _cmux_socket_uses_remote_relay
@@ -166,7 +166,7 @@ if test "$_cmux_integration_enabled" != 0
                 printf '%s\n' '    fi'
                 printf '%s\n' 'fi'
                 printf '%s\n' 'if [[ ! -x "$cmux_wrapper" ]]; then'
-                printf '%s\n' '    cmux_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"'
+                printf '%s\n' '    cmux_cli="$(command -v amux 2>/dev/null || true)"'
                 printf '%s\n' '    if [[ -n "$cmux_cli" ]]; then'
                 printf '%s\n' '        cmux_candidate="$(dirname "$cmux_cli")/cmux-claude-wrapper"'
                 printf '%s\n' '        if [[ -x "$cmux_candidate" ]]; then'

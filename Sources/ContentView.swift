@@ -6863,8 +6863,8 @@ struct ContentView: View {
         contributions.append(
             CommandPaletteCommandContribution(
                 commandId: "palette.openCmuxSettingsFile",
-                title: constant(String(localized: "settings.settingsJSON.openFile", defaultValue: "Open cmux.json")),
-                subtitle: constant(String(localized: "command.cmuxConfig.subtitle", defaultValue: "cmux.json")),
+                title: constant(String(localized: "settings.settingsJSON.openFile", defaultValue: "Open amux.json")),
+                subtitle: constant(String(localized: "command.cmuxConfig.subtitle", defaultValue: "amux.json")),
                 keywords: ["open", "cmux", "json", "config", "configuration", "settings", "file", "editor", "dotfile"]
             )
         )
@@ -7824,7 +7824,7 @@ struct ContentView: View {
             )
         )
 
-        let cmuxConfigDefaultSubtitle = String(localized: "command.cmuxConfig.subtitle", defaultValue: "cmux.json")
+        let cmuxConfigDefaultSubtitle = String(localized: "command.cmuxConfig.subtitle", defaultValue: "amux.json")
         for issue in cmuxConfigStore.configurationIssues {
             contributions.append(
                 CommandPaletteCommandContribution(
@@ -7897,12 +7897,12 @@ struct ContentView: View {
         case .schemaError:
             return String(
                 localized: "command.cmuxConfig.issue.schemaError.title",
-                defaultValue: "cmux.json Schema Error"
+                defaultValue: "amux.json Schema Error"
             )
         default:
             return String(
                 localized: "command.cmuxConfig.issue.warning.title",
-                defaultValue: "cmux.json Configuration Warning"
+                defaultValue: "amux.json Configuration Warning"
             )
         }
     }
@@ -7930,7 +7930,7 @@ struct ContentView: View {
             )
             let fallback = String(
                 localized: "command.cmuxConfig.issue.schemaError.fallback",
-                defaultValue: "Invalid cmux.json"
+                defaultValue: "Invalid amux.json"
             )
             return String(format: format, issue.message ?? fallback)
         case .newWorkspaceActionNotFound:
@@ -10175,7 +10175,7 @@ enum CmuxExtensionSidebarSelection {
         if let override = customSidebarsDirectoryOverrideForTesting { return override }
         #endif
         return FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".config/cmux/sidebars", isDirectory: true)
+            .appendingPathComponent(".config/amux/sidebars", isDirectory: true)
     }
 
     /// One provider descriptor per `<name>.swift`/`<name>.json` file in the

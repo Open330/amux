@@ -98,7 +98,6 @@ else
 fi
 SH
 chmod +x "$APP/Contents/Resources/bin/amux"
-ln -s amux "$APP/Contents/Resources/bin/cmux"
 touch "$WORK/amux-macos.dmg"
 
 cat > "$WORK/fake-bin/hdiutil" <<'SH'
@@ -136,18 +135,16 @@ grep -Fq 'spctl --assess --type open' "$DMG_LOG" || fail "DMG Gatekeeper assessm
 grep -Fq 'spctl --assess --type execute' "$DMG_LOG" || fail "app Gatekeeper assessment was not run"
 grep -Fq 'codesign --verify --deep --strict' "$DMG_LOG" || fail "mounted app signature was not verified"
 
-rm "$APP/Contents/Resources/bin/cmux"
-ln -s not-amux "$APP/Contents/Resources/bin/cmux"
+ln -s amux "$APP/Contents/Resources/bin/cmux"
 if AMUX_TEST_DMG_FIXTURE="$FIXTURE" AMUX_TEST_DMG_LOG="$DMG_LOG" \
     PATH="$WORK/fake-bin:$PATH" \
     "$ROOT_DIR/scripts/verify-amux-release-dmg.sh" "$WORK/amux-macos.dmg" >"$WORK/alias.out" 2>&1; then
-  fail "invalid cmux compatibility alias passed final DMG verification"
+  fail "retired cmux CLI alias passed final DMG verification"
 fi
-grep -Fq 'cmux as a relative symlink to amux' "$WORK/alias.out" \
-  || fail "invalid compatibility alias failure was not actionable"
+grep -Fq 'must not include the retired cmux CLI alias' "$WORK/alias.out" \
+  || fail "retired alias failure was not actionable"
 
 rm "$APP/Contents/Resources/bin/cmux"
-ln -s amux "$APP/Contents/Resources/bin/cmux"
 plutil -replace CMUXRemoteDaemonManifestJSON -string '{}' "$APP/Contents/Info.plist"
 if AMUX_TEST_DMG_FIXTURE="$FIXTURE" AMUX_TEST_DMG_LOG="$DMG_LOG" \
     PATH="$WORK/fake-bin:$PATH" \

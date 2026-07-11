@@ -99,7 +99,7 @@
     "faqOrchestrationQ": "Чи може amux оркеструвати кількох агентів і субагентів?",
     "faqOrchestrationA": "Так. Коли агент породжує субагентів або учасників команди, amux перетворює їх на нативні панелі та розділення замість прихованих фонових процесів. Підтримується мультимодельна оркестрація <teamsLink>Claude Code teams</teamsLink> та <omoLink>oh-my-opencode</omoLink>, тож кожен агент у запуску видимий і керований.",
     "faqCustomizeQ": "Чи можу я налаштувати amux?",
-    "faqCustomizeA": "Так. Рендеринг термінала використовує вашу конфігурацію Ghostty, тож теми, шрифти, кольори та курсор переносяться напряму. Власні налаштування amux у <path>~/.config/cmux/cmux.json</path> керують бічною панеллю, панеллю вкладок, розділеними панелями та поведінкою, і кожне <shortcutsLink>сполучення клавіш</shortcutsLink> можна редагувати. Див. <link>конфігурацію</link>.",
+    "faqCustomizeA": "Так. Рендеринг термінала використовує вашу конфігурацію Ghostty, тож теми, шрифти, кольори та курсор переносяться напряму. Власні налаштування amux у <path>~/.config/amux/amux.json</path> керують бічною панеллю, панеллю вкладок, розділеними панелями та поведінкою, і кожне <shortcutsLink>сполучення клавіш</shortcutsLink> можна редагувати. Див. <link>конфігурацію</link>.",
     "faqIosQ": "Чи є застосунок для iOS?",
     "faqIosA": "Так, у беті. Сполучіть iPhone з Маком у вікні Mobile Connect і під'єднуйтеся до своїх терміналів з телефона, з опціональним пересиланням сповіщень термінала. Розповсюджується в TestFlight як amux BETA. Ранній доступ входить до <foundersLink>amux Founders Edition</foundersLink>.",
     "faqSkillsQ": "Чи має amux скіли?",
@@ -836,7 +836,7 @@
       "managingTitle": "Керування групою",
       "managingIntro": "Після створення групи контекстне меню її заголовка та кнопка + у заголовку дають змогу керувати групою й додавати до неї робочі простори. Жодна з цих дій не створює нову групу.",
       "headerMenuTitle": "З контекстного меню заголовка групи",
-      "headerMenuDesc": "Клацніть правою кнопкою миші заголовок наявної групи, щоб отримати «Перейменувати групу…», «Закріпити групу» / «Відкріпити групу», «Редагувати конфігурацію групи…» (яка відкриває ~/.config/cmux/cmux.json), «Відкрити документацію груп робочих областей», «Розгрупувати (зберегти робочі області)» та «Видалити групу (закрити робочі області)». Видалення є руйнівним і запитує підтвердження; розгрупування зберігає робочі області та лише прибирає контейнер.",
+      "headerMenuDesc": "Клацніть правою кнопкою миші заголовок наявної групи, щоб отримати «Перейменувати групу…», «Закріпити групу» / «Відкріпити групу», «Редагувати конфігурацію групи…» (яка відкриває ~/.config/amux/amux.json), «Відкрити документацію груп робочих областей», «Розгрупувати (зберегти робочі області)» та «Видалити групу (закрити робочі області)». Видалення є руйнівним і запитує підтвердження; розгрупування зберігає робочі області та лише прибирає контейнер.",
       "plusButtonTitle": "З кнопки + на заголовку групи",
       "plusButtonDesc": "Наведіть курсор на заголовок групи, щоб з'явилася кінцева кнопка +. Натисніть її, щоб створити нову робочу область у групі в каталозі прив'язки. Клацніть її правою кнопкою миші, щоб отримати «Нова робоча область у групі», «Редагувати конфігурацію групи…» та «Відкрити документацію груп робочих областей».",
       "plusButtonNote": "Натискання {shortcut}, коли активний робочий простір є якорем або учасником групи, також створює новий робочий простір усередині цієї групи. Розміщення за замовчуванням — After current: зі звичайного учасника групи новий робочий простір потрапляє одразу після активного учасника, а з якоря або заголовка він потрапляє на початок групи.",
@@ -850,7 +850,7 @@
       "cliExampleNew": "Запустити новий робочий простір усередині наявної групи, наприклад, прив'язаний до скрипту worktree:",
       "cliExampleList": "Перелічити групи у сфокусованому вікні:",
       "configTitle": "Конфігурація",
-      "configNote": "Конфігурація для кожної групи розташована під ключем workspaceGroups у ~/.config/cmux/cmux.json та індексується за робочим каталогом якірного робочого простору. Перелік підтримуваних ключів, зокрема глобальне розміщення нових робочих просторів, а також колір, піктограму, розміщення та дії контекстного меню для кожного каталогу, див. у довіднику з конфігурації.",
+      "configNote": "Конфігурація для кожної групи розташована під ключем workspaceGroups у ~/.config/amux/amux.json та індексується за робочим каталогом якірного робочого простору. Перелік підтримуваних ключів, зокрема глобальне розміщення нових робочих просторів, а також колір, піктограму, розміщення та дії контекстного меню для кожного каталогу, див. у довіднику з конфігурації.",
       "configLinkText": "довідник з конфігурації workspaceGroups",
       "persistenceTitle": "Збереження",
       "persistenceDesc": "Назва групи, якір, стан закріплення, стан згортання, колір та іконка зберігаються разом із вашими робочими просторами й відновлюються між запусками. Належність до групи зберігається в кожному робочому просторі."
@@ -959,8 +959,8 @@
     "customCommands": {
       "title": "Користувацькі команди",
       "metaTitle": "Користувацькі команди",
-      "metaDescription": "Визначайте дії, користувацькі команди та розкладки робочих просторів у cmux.json. Підтримує проєктну й глобальну конфігурацію з явним перезавантаженням.",
-      "intro": "Визначайте користувацькі команди та макети робочих просторів, додавши файл cmux.json до кореня проєкту або ~/.config/cmux/. Команди з'являються в палітрі команд.",
+      "metaDescription": "Визначайте дії, користувацькі команди та розкладки робочих просторів у amux.json. Підтримує проєктну й глобальну конфігурацію з явним перезавантаженням.",
+      "intro": "Визначайте користувацькі команди та макети робочих просторів, додавши файл amux.json до кореня проєкту або ~/.config/amux/. Команди з'являються в палітрі команд.",
       "fileLocations": "Розташування файлів",
       "fileLocationsDesc": "amux шукає конфігурацію у двох місцях:",
       "localConfig": "Для проєкту:",
@@ -969,13 +969,13 @@
       "fallbackLocalDesc": "і далі підтримується для наявних репозиторіїв",
       "nightlyFeatureCallout": "Реєстр дій — це функція nightly. Установіть найновішу nightly-збірку перед використанням <actions>actions</actions>, <shortcut>shortcut</shortcut> або <buttons>ui.surfaceTabBar.buttons</buttons>.",
       "trustCallout": "Локальні для проєкту дії одразу з’являються на surface tab bar і в Command Palette. Під час першого запуску все одно з’являється запит довіри. Довіра прив’язана до точного fingerprint дії, а не до репозиторію. Локальні для проєкту іконки-зображення залишаються заблокованими, доки цій дії не буде надано довіру.",
-      "schemaErrorCallout": "Якщо конфігурація проєкту або глобальна конфігурація має помилку схеми, amux повертається до наступної чинної конфігурації та показує рядок <title>cmux.json Schema Error</title> у Command Palette. Виберіть його, щоб відкрити файл конфігурації.",
+      "schemaErrorCallout": "Якщо конфігурація проєкту або глобальна конфігурація має помилку схеми, amux повертається до наступної чинної конфігурації та показує рядок <title>amux.json Schema Error</title> у Command Palette. Виберіть його, щоб відкрити файл конфігурації.",
       "globalConfig": "Глобально:",
       "globalConfigDesc": "застосовується до всіх проєктів, доповнює локально не визначені команди",
       "precedenceNote": "Локальні дії та команди перевизначають глобальні записи з тим самим ID або назвою.",
-      "liveReload": "Відредагуйте cmux.json, потім натисніть Cmd+Shift+, або виконайте amux reload-config, щоб застосувати зміни.",
+      "liveReload": "Відредагуйте amux.json, потім натисніть Cmd+Shift+, або виконайте amux reload-config, щоб застосувати зміни.",
       "schema": "Схема",
-      "schemaDesc": "Файл cmux.json містить масив commands. Кожна команда — це або проста shell-команда, або повне визначення робочого простору:",
+      "schemaDesc": "Файл amux.json містить масив commands. Кожна команда — це або проста shell-команда, або повне визначення робочого простору:",
       "schemaIntro": "<commands>commands</commands> і далі визначає повторно використовувані shell-команди та розкладки workspace. Nightly-збірки додають реєстр <actions>actions</actions>. Дії — це публічні ID, спільні для surface tab bar, Command Palette та скорочень рівня дії.",
       "nightlyActionRegistry": "Nightly-реєстр дій",
       "nightlyActionRegistryDesc": "<actions>actions</actions> зіставляє стабільні ID із поведінкою, яку можна запустити. Використовуйте вбудовані ID <newTerminal>cmux.newTerminal</newTerminal>, <newBrowser>cmux.newBrowser</newBrowser>, <splitRight>cmux.splitRight</splitRight> і <splitDown>cmux.splitDown</splitDown>, щоб перевизначити стандартні дії. Для інструментів проєкту використовуйте власні ID.",
@@ -1000,7 +1000,7 @@
       "actionFieldConfirm": "Запитувати підтвердження перед запуском дії.",
       "commandPaletteBehavior": "Поведінка Command Palette",
       "commandPaletteBehaviorDesc": "Command Palette читає розв’язаний реєстр дій. ID користувацьких дій додаються як рядки, коли <palette>palette</palette> не дорівнює false. Старі <commands>commands</commands> автоматично додаються як користувацькі рядки, якщо дія з тим самим згенерованим ID ще не існує. Вбудовані команди зберігають звичні назви в палітрі, але перевизначення вбудованого ID, як-от <newTerminal>cmux.newTerminal</newTerminal>, змінює поведінку за цією спільною точкою входу.",
-      "commandPaletteScreenshotAlt": "Command Palette amux показує користувацьку дію Worktree Agents з cmux.json",
+      "commandPaletteScreenshotAlt": "Command Palette amux показує користувацьку дію Worktree Agents з amux.json",
       "commandPaletteScreenshotCaption": "Користувацькі дії з увімкненим palette відображаються як рядки для пошуку в Command Palette.",
       "plusButtonScreenshotAlt": "Меню правого кліку кнопки плюс у amux показує Worktree Agents, New Terminal і New Browser",
       "plusButtonScreenshotCaption": "Меню правого кліку дотримується порядку з ui.newWorkspace.contextMenu.",
@@ -1262,10 +1262,10 @@
       "tmuxPassthrough": "Прохідний режим tmux",
       "tmuxDesc": "Якщо ви використовуєте tmux всередині amux, увімкніть прохідний режим:",
       "hooksTitle": "Хуки сповіщень",
-      "hooksIntro": "<config>cmux.json</config> може визначати хуки сповіщень, які отримують кожну політику сповіщення як JSON через stdin. Кожен хук повертає JSON через stdout. За замовчуванням хуки вимкнені; amux запускає їх лише тоді, коли <hooksMode>notifications.hooks</hooksMode> містить хоча б один увімкнений хук. amux застосовує повернений текст і ефекти, тому хуки можуть фільтрувати банери, зберігати або пропускати історію бічної панелі, запускати звуки чи зупиняти наступні хуки.",
-      "hooksJsonTitle": "cmux.json",
+      "hooksIntro": "<config>amux.json</config> може визначати хуки сповіщень, які отримують кожну політику сповіщення як JSON через stdin. Кожен хук повертає JSON через stdout. За замовчуванням хуки вимкнені; amux запускає їх лише тоді, коли <hooksMode>notifications.hooks</hooksMode> містить хоча б один увімкнений хук. amux застосовує повернений текст і ефекти, тому хуки можуть фільтрувати банери, зберігати або пропускати історію бічної панелі, запускати звуки чи зупиняти наступні хуки.",
+      "hooksJsonTitle": "amux.json",
       "hooksIOTitle": "Вхід і вихід хука",
-      "hooksDetails": "Хуки успадковуються з глобального файлу <globalConfig>~/.config/cmux/cmux.json</globalConfig> і проєктних файлів <projectConfig>.cmux/cmux.json</projectConfig> від батьківських каталогів до поточного workspace. Проєктні хуки перед запуском використовують той самий запит довіри, що й інші проєктні команди <config>cmux.json</config>. Банери схвалення Feed також проходять через ці хуки; вимкнення <desktop>desktop</desktop> приховує нативний банер, але залишає елемент Feed доступним у amux. Установіть <hooksMode>notifications.hooksMode</hooksMode> на <replace>replace</replace> у конфігурації проєкту, щоб ігнорувати успадковані хуки. Якщо хук завершується помилкою, перевищує час очікування або повертає недійсний JSON, amux використовує стандартну поведінку сповіщень і показує попередження про помилку хука."
+      "hooksDetails": "Хуки успадковуються з глобального файлу <globalConfig>~/.config/amux/amux.json</globalConfig> і проєктних файлів <projectConfig>.amux/amux.json</projectConfig> від батьківських каталогів до поточного workspace. Проєктні хуки перед запуском використовують той самий запит довіри, що й інші проєктні команди <config>amux.json</config>. Банери схвалення Feed також проходять через ці хуки; вимкнення <desktop>desktop</desktop> приховує нативний банер, але залишає елемент Feed доступним у amux. Установіть <hooksMode>notifications.hooksMode</hooksMode> на <replace>replace</replace> у конфігурації проєкту, щоб ігнорувати успадковані хуки. Якщо хук завершується помилкою, перевищує час очікування або повертає недійсний JSON, amux використовує стандартну поведінку сповіщень і показує попередження про помилку хука."
     },
     "browserAutomation": {
       "title": "Автоматизація браузера",
@@ -1474,7 +1474,7 @@
       "precedenceCallout": "Якщо існують і проєктна, і глобальна конфігурації, пріоритет має проєктна. Конфігурації вкладених проєктів застосовуються до свого дерева каталогів. Якщо проєктної конфігурації немає, Dock використовує глобальну. Якщо жодного файлу немає, Dock відкривається порожнім.",
       "trustCallout": "Проєктні конфігурації Dock можуть запускати команди. amux просить довіряти конфігурації проєкту перед запуском її елементів керування.",
       "exampleTitle": "Приклад dock.json",
-      "exampleIntro": "Файл Dock це JSON-об’єкт із масивом controls. Комітьте проєктні елементи керування в .cmux/dock.json, коли хочете, щоб команда мала спільний Dock. Замініть приклади команд інструментами, які справді є в репозиторії.",
+      "exampleIntro": "Файл Dock це JSON-об’єкт із масивом controls. Комітьте проєктні елементи керування в .amux/dock.json, коли хочете, щоб команда мала спільний Dock. Замініть приклади команд інструментами, які справді є в репозиторії.",
       "fieldsTitle": "Поля",
       "fieldHeader": "Поле",
       "descriptionHeader": "Опис",
@@ -1486,13 +1486,13 @@
       "fieldEnv": "Необов'язкові змінні середовища, що передаються лише цьому елементу керування.",
       "sharingTitle": "Спільне використання в команді",
       "sharingIntro": "Dock спроєктовано для спільного використання через source control, коли команди належать репозиторію.",
-      "sharingProject": "Покладіть елементи керування для репозиторію в .cmux/dock.json і закомітьте файл.",
-      "sharingGlobal": "Розміщуйте особисті елементи керування в ~/.config/cmux/dock.json, особливо поза репозиторієм, і не додавайте цей файл до спільного контролю версій.",
+      "sharingProject": "Покладіть елементи керування для репозиторію в .amux/dock.json і закомітьте файл.",
+      "sharingGlobal": "Розміщуйте особисті елементи керування в ~/.config/amux/dock.json, особливо поза репозиторієм, і не додавайте цей файл до спільного контролю версій.",
       "sharingSecrets": "Не кладіть секрети в dock.json. Читайте секрети з shell, локального env-файла або наявних інструментів розробки.",
       "agentPromptTitle": "Попросіть агента налаштувати це",
       "agentPromptIntro": "Використовуйте цей промпт, коли хочете, щоб coding agent створив елементи Dock. Він просить агента виконати `amux docs dock`, оглянути проєкт і запитати перед тим, як припускати.",
       "agentPromptCodeTitle": "Промпт агента",
-      "agentPrompt": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/cmux/dock.json`.\n- If both exist, project `.cmux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
+      "agentPrompt": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.amux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/amux/dock.json`.\n- If both exist, project `.amux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
     },
     "sessionRestore": {
       "title": "Відновлення сесії",
@@ -1535,7 +1535,7 @@
       "underHoodItemScrollback": "Terminal scrollback зберігається як обмежений текст і відтворюється через тимчасовий файл під час відновлення. Це best effort, бо термінальні застосунки можуть перемалювати або очистити екран.",
       "underHoodItemHooks": "Agent hooks записують ~/.cmuxterm/<agent>-hook-sessions.json з agent session ID, amux workspace ID, surface ID, cwd, process ID за наявності та sanitized launch command.",
       "underHoodItemResume": "Під час відновлення amux спочатку перебудовує вікна й панелі. Якщо автоматичне відновлення агентів увімкнене, він запускає одноразову shell-команду, яка виконує native resume command агента зі збереженим session ID.",
-      "underHoodMore": "Звичайна <configLink>документація конфігурації</configLink> описує cmux.json. Session restore тримає app layout окремо від налаштувань рендерингу термінала Ghostty.",
+      "underHoodMore": "Звичайна <configLink>документація конфігурації</configLink> описує amux.json. Session restore тримає app layout окремо від налаштувань рендерингу термінала Ghostty.",
       "feedPrePostToolUse": "PreToolUse, PostToolUse",
       "feedHermes": "pre_tool_call, post_tool_call, pre_approval_request, post_approval_response"
     },
@@ -1593,7 +1593,7 @@
       "daemonRelayHow": "Зворотний TCP-тунель із автентифікацією HMAC-SHA256, щоб віддалені процеси могли викликати команди amux локально",
       "daemonSession": "Керування сеансами",
       "daemonSessionHow": "Зберігає сеанси під час повторного підключення, змінює розмір PTY координат у кількох вкладеннях",
-      "daemonPath": "Двійковий файл демона зберігається в ~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote на віддаленому хості та перевіряється на маніфест SHA-256, вбудований у програму."
+      "daemonPath": "Двійковий файл демона зберігається в ~/.amux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote на віддаленому хості та перевіряється на маніфест SHA-256, вбудований у програму."
     },
     "textBox": {
       "title": "TextBox (бета)",
@@ -1606,8 +1606,8 @@
       "showSetting": "Show TextBox on New Terminals відкриває нові робочі простори, вкладки термінала й розділення з видимим TextBox, залишаючи фокус у терміналі.",
       "focusSetting": "Focus TextBox on New Terminals переносить фокус клавіатури в TextBox. Фокусування також показує TextBox.",
       "maxLinesSetting": "TextBox Max Lines обмежує висоту TextBox до початку прокручування вмісту.",
-      "configTitle": "cmux.json",
-      "configDesc": "Ті самі типові значення можна встановити в ~/.config/cmux/cmux.json у розділі terminal:",
+      "configTitle": "amux.json",
+      "configDesc": "Ті самі типові значення можна встановити в ~/.config/amux/amux.json у розділі terminal:",
       "focusNote": "Відновлені сеанси зберігають записану видимість TextBox і стан фокуса. Ці типові значення застосовуються лише до новостворених поверхонь термінала."
     },
     "ios": {

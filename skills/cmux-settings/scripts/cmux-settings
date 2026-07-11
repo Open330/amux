@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Inspect and edit ~/.config/cmux/cmux.json.
+"""Inspect and edit ~/.config/amux/amux.json.
 
-cmux watches the file and auto-reloads on save, so writes take effect
+amux watches the file and auto-reloads on save, so writes take effect
 immediately. The file is JSONC (JSON with // and /* */ comments); this
 script writes comment-free formatting (2-space indent, trailing newline)
 and only writes when the parsed value actually changes.
@@ -38,9 +38,9 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-DEFAULT_PATH = Path.home() / ".config" / "cmux" / "cmux.json"
+DEFAULT_PATH = Path.home() / ".config" / "amux" / "amux.json"
 SCHEMA_URL = (
-    "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json"
+    "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux.schema.json"
 )
 
 
@@ -345,7 +345,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
         print(f"ok: {path} parses")
         return 0
     unknown: list[str] = []
-    # Keep this in sync with top-level structural keys in web/data/cmux.schema.json.
+    # Keep this in sync with top-level structural keys in web/data/amux.schema.json.
     structural = {
         "$schema",
         "schemaVersion",

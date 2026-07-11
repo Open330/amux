@@ -40,7 +40,7 @@ Right-click any workspace in the sidebar, choose **New Empty Workspace Group** f
 
 ### From the group header context menu
 
-Right-click an existing group's header for: **Rename Group…**, **Pin / Unpin Group**, **Edit Group Config…** (opens `~/.config/cmux/cmux.json`), **Open Workspace Groups Docs**, **Ungroup (Keep Workspaces)**, **Delete Group (Close Workspaces)**. Delete is destructive and prompts for confirmation; ungroup keeps the workspaces and just removes the container.
+Right-click an existing group's header for: **Rename Group…**, **Pin / Unpin Group**, **Edit Group Config…** (opens `~/.config/amux/amux.json`), **Open Workspace Groups Docs**, **Ungroup (Keep Workspaces)**, **Delete Group (Close Workspaces)**. Delete is destructive and prompts for confirmation; ungroup keeps the workspaces and just removes the container.
 
 ### From the `+` button on a group header
 
@@ -94,7 +94,7 @@ cmux workspace-group list
 
 ## Configuration
 
-Per-group configuration is keyed by the anchor's working directory in `~/.config/cmux/cmux.json` (this surface lands in a follow-up; the file location is reserved). The intent:
+Per-group configuration is keyed by the anchor's working directory in `~/.config/amux/amux.json` (this surface lands in a follow-up; the file location is reserved). The intent:
 
 ```jsonc
 {
@@ -112,7 +112,7 @@ Per-group configuration is keyed by the anchor's working directory in `~/.config
         "icon": "ladybug.fill",
         "newWorkspacePlacement": "top",
         "contextMenu": [
-          // Entries reference actions defined elsewhere in cmux.json (in the
+          // Entries reference actions defined elsewhere in amux.json (in the
           // global `actions` block) or built-in actions like "newWorkspace".
           { "action": "newWorktreeAction", "title": "New Worktree" },
           { "action": "newWorkspace" }
@@ -132,7 +132,7 @@ Matching: keys containing `*` or `?` are globs; otherwise they are path prefixes
 Resolution order for group new-workspace placement:
 1. Explicit `--placement afterCurrent|top|end` on `cmux workspace-group new-workspace`, or `"placement"` in the v2 `workspace.group.new_workspace` params.
 2. The per-cwd entry above.
-3. Global default via Settings > App > Group New Workspace Placement or `workspaceGroups.newWorkspacePlacement` in `cmux.json` (defaults to `afterCurrent`).
+3. Global default via Settings > App > Group New Workspace Placement or `workspaceGroups.newWorkspacePlacement` in `amux.json` (defaults to `afterCurrent`).
 
 `Cmd-N` inside a group uses the active group workspace as the placement reference. The group header `+` button and CLI path use the anchor as the reference, so `afterCurrent` behaves like `top` there.
 
@@ -143,7 +143,7 @@ When the sidebar is in iMessage mode (latest unread floats to top), the intended
 - `sortInsideGroups` (default `true`): workspaces inside each group sort by latest unread; group section position is unchanged.
 - `floatGroups` (default `false`): the whole group section reorders by its most-recent unread member.
 
-Neither knob is wired up yet. The current build keeps the sidebar's existing iMessage-mode behavior unchanged regardless of groups. A follow-up will add the `sidebar.imessageMode.*` keys to `cmux.json`, the schema, and the Settings UI; this section is documented here so the eventual JSON shape is decided up front.
+Neither knob is wired up yet. The current build keeps the sidebar's existing iMessage-mode behavior unchanged regardless of groups. A follow-up will add the `sidebar.imessageMode.*` keys to `amux.json`, the schema, and the Settings UI; this section is documented here so the eventual JSON shape is decided up front.
 
 ## Persistence
 

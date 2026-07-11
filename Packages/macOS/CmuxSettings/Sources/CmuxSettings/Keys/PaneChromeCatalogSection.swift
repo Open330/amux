@@ -2,7 +2,7 @@ import Foundation
 
 /// Top-level cmux pane chrome settings.
 ///
-/// These keys intentionally keep their `cmux.json` paths at the root because
+/// These keys intentionally keep their `amux.json` paths at the root because
 /// they customize the workspace pane layout itself rather than a nested app
 /// section.
 public struct PaneChromeCatalogSection: SettingCatalogSection {

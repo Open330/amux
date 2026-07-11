@@ -28,7 +28,7 @@ enum RemoteInteractiveShellBootstrapBuilder {
         let relayWarmupLines = relayWarmupLines(remoteRelayPort: remoteRelayPort)
 
         var outerLines: [String] = [
-            "mkdir -p \"$HOME/.cmux/relay\"",
+            "mkdir -p \"$HOME/.amux/relay\"",
             "cmux_shell_dir=\"\(shellStateDir)\"",
             "mkdir -p \"$cmux_shell_dir\"",
         ]
@@ -179,8 +179,8 @@ enum RemoteInteractiveShellBootstrapBuilder {
         var lines = terminalSetupLines(terminfoSource: terminfoSource)
         lines.append(contentsOf: RemoteShellEnvironment.utf8LocaleSetupLines())
         lines.append(contentsOf: shellExportLines(shellFeatures: shellFeatures))
-        lines.append("export PATH=\"$HOME/.cmux/bin:$PATH\"")
-        lines.append("export CMUX_BUNDLED_CLI_PATH=\"$HOME/.cmux/bin/cmux\"")
+        lines.append("export PATH=\"$HOME/.amux/bin:$PATH\"")
+        lines.append("export CMUX_BUNDLED_CLI_PATH=\"$HOME/.amux/bin/amux\"")
         lines.append("export CMUX_SHELL_INTEGRATION_DIR=\"\(shellStateDir)\"")
         if let relaySocket {
             lines.append("export CMUX_SOCKET_PATH=\(relaySocket)")
@@ -292,14 +292,14 @@ enum RemoteInteractiveShellBootstrapBuilder {
             return []
         }
         return [
-            "cmux_relay_cli=\"${CMUX_BUNDLED_CLI_PATH:-$HOME/.cmux/bin/cmux}\"",
-            "if [ ! -x \"$cmux_relay_cli\" ]; then cmux_relay_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "cmux_relay_cli=\"${CMUX_BUNDLED_CLI_PATH:-$HOME/.amux/bin/amux}\"",
+            "if [ ! -x \"$cmux_relay_cli\" ]; then cmux_relay_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
             "cmux_relay_tty=\"${CMUX_BOOTSTRAP_TTY:-}\"",
             "if [ -z \"$cmux_relay_tty\" ]; then cmux_relay_tty=\"$(tty 2>/dev/null || true)\"; fi",
             "cmux_relay_tty=\"${cmux_relay_tty##*/}\"",
             "if [ -n \"$cmux_relay_tty\" ] && [ \"$cmux_relay_tty\" != \"not a tty\" ]; then",
-            "  mkdir -p \"$HOME/.cmux/relay\" >/dev/null 2>&1 || true",
-            "  printf '%s' \"$cmux_relay_tty\" > \"$HOME/.cmux/relay/\(remoteRelayPort).tty\" 2>/dev/null || true",
+            "  mkdir -p \"$HOME/.amux/relay\" >/dev/null 2>&1 || true",
+            "  printf '%s' \"$cmux_relay_tty\" > \"$HOME/.amux/relay/\(remoteRelayPort).tty\" 2>/dev/null || true",
             "fi",
             "if [ -n \"$cmux_relay_cli\" ] && [ -n \"$CMUX_WORKSPACE_ID\" ] && [ -n \"$cmux_relay_tty\" ] && [ \"$cmux_relay_tty\" != \"not a tty\" ]; then",
             "  (",
@@ -318,7 +318,7 @@ enum RemoteInteractiveShellBootstrapBuilder {
     }
 
     private static func shellStateDirForRemoteRelayPort(_ remoteRelayPort: Int) -> String {
-        "$HOME/.cmux/relay/\(max(remoteRelayPort, 0)).shell"
+        "$HOME/.amux/relay/\(max(remoteRelayPort, 0)).shell"
     }
 
     private static func normalizedEnvValue(_ value: String?) -> String? {

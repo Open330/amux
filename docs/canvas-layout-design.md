@@ -109,7 +109,7 @@ lefts/rights/tops/bottoms, equalize widths/heights, distribute
 horizontally/vertically, tidy canvas.
 
 All new shortcuts are registered in `KeyboardShortcutSettings`, editable in
-Settings, configurable in `~/.config/cmux/cmux.json`, and documented in the
+Settings, configurable in `~/.config/amux/amux.json`, and documented in the
 web docs. Settings: `canvas.paneGap` (points), `canvas.snapping` (bool).
 All user-facing strings localized (en + ja).
 

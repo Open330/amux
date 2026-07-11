@@ -4,7 +4,7 @@ import Foundation
 /// A single user-curated search entry surfaced by ``SettingsSearchIndex``.
 ///
 /// Each entry pairs a navigable ``SettingsSectionID`` with a stable id,
-/// localized row text, the cmux.json paths owned by that row, and a
+/// localized row text, the amux.json paths owned by that row, and a
 /// search synonym string mined from how users actually refer to the
 /// setting (the legacy `SettingsSearchAliasIndex` table is the source).
 ///
@@ -29,7 +29,7 @@ public struct CuratedSettingEntry: Sendable, Hashable {
     /// copy. Included in search text but not rendered in the sidebar.
     public let detailText: String
 
-    /// Dotted cmux.json paths that should scroll to this search entry's
+    /// Dotted amux.json paths that should scroll to this search entry's
     /// row. These mirror ``SettingsConfigurationReview`` paths used by
     /// the actual row.
     public let paths: [String]
@@ -40,7 +40,7 @@ public struct CuratedSettingEntry: Sendable, Hashable {
     /// `"terminal.copyOnSelect copy on selection clipboard"`.
     public let synonyms: String
 
-    /// Dotted cmux.json path used as the scroll/highlight anchor.
+    /// Dotted amux.json path used as the scroll/highlight anchor.
     ///
     /// When `nil`, ``SettingsSearchIndex`` falls back to dotted tokens
     /// in ``synonyms`` for existing entries. Set this when localized

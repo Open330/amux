@@ -5726,7 +5726,7 @@ final class Workspace: Identifiable, ObservableObject {
     /// `"CMUX_SOCKET_PATH\0x"` would dodge the exact-match check yet collapse to
     /// `CMUX_SOCKET_PATH` in the spawned shell, so reject any key containing a NUL
     /// (and `=`, which is never a valid env var name) and any value containing a
-    /// NUL. This is the single choke point for every entry point (CLI, cmux.json,
+    /// NUL. This is the single choke point for every entry point (CLI, amux.json,
     /// session restore), so the guard cannot be bypassed.
     // `nonisolated` so the nonisolated socket workspace-create parsing path
     // (`v2WorkspaceCreate`) can call this pure helper without hopping to the main
@@ -9872,7 +9872,7 @@ final class Workspace: Identifiable, ObservableObject {
           IFS= read -r _ || exit 0
           cmux_reconnect_cli="${CMUX_BUNDLED_CLI_PATH:-}"
           if [ -z "$cmux_reconnect_cli" ] || [ ! -x "$cmux_reconnect_cli" ]; then
-            cmux_reconnect_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
+            cmux_reconnect_cli="$(command -v amux 2>/dev/null || true)"
           fi
           cmux_reconnect_socket="${CMUX_SOCKET_PATH:-${CMUX_SOCKET:-}}"
           if [ -n "$cmux_reconnect_cli" ] && [ -n "$cmux_reconnect_socket" ] && [ -n "${CMUX_WORKSPACE_ID:-}" ]; then

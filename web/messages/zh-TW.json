@@ -99,7 +99,7 @@
     "faqOrchestrationQ": "amux 可以編排多個代理和子代理嗎？",
     "faqOrchestrationA": "可以。當一個代理衍生出子代理或協作者時，amux 會把它們變成原生窗格和分割，而不是隱藏的背景程序。它支援 <teamsLink>Claude Code teams</teamsLink> 和 <omoLink>oh-my-opencode</omoLink> 多模型編排，讓一次執行中的每個代理都可見、可控。",
     "faqCustomizeQ": "可以自訂 amux 嗎？",
-    "faqCustomizeA": "可以。終端機渲染使用你的 Ghostty 設定，因此主題、字型、色彩和游標會直接沿用。amux 本身的設定位於 <path>~/.config/cmux/cmux.json</path>，用於控制側邊欄、分頁列、分割窗格和行為，每個<shortcutsLink>鍵盤快捷鍵</shortcutsLink>都可編輯。請參閱<link>設定</link>。",
+    "faqCustomizeA": "可以。終端機渲染使用你的 Ghostty 設定，因此主題、字型、色彩和游標會直接沿用。amux 本身的設定位於 <path>~/.config/amux/amux.json</path>，用於控制側邊欄、分頁列、分割窗格和行為，每個<shortcutsLink>鍵盤快捷鍵</shortcutsLink>都可編輯。請參閱<link>設定</link>。",
     "faqIosQ": "有 iOS 應用程式嗎？",
     "faqIosA": "有，目前是 beta 版。在 Mobile Connect 視窗中將你的 iPhone 與 Mac 配對，即可從手機連接到你的終端機，並可選擇轉發終端機通知。它透過 TestFlight 以 amux BETA 的形式發布。<foundersLink>amux Founders Edition</foundersLink> 包含搶先存取權限。",
     "faqSkillsQ": "amux 有 skills 嗎？",
@@ -836,7 +836,7 @@
       "managingTitle": "管理群組",
       "managingIntro": "群組建立後，可以透過其標題的右鍵選單以及標題上的 + 按鈕來管理群組並向其中新增工作區。這兩者都不會建立新群組。",
       "headerMenuTitle": "透過群組標頭情境選單",
-      "headerMenuDesc": "對現有的群組標題列按右鍵，可使用 Rename Group…、Pin Group / Unpin Group、Edit Group Config…（會開啟 ~/.config/cmux/cmux.json）、Open Workspace Groups Docs、Ungroup (Keep Workspaces) 以及 Delete Group (Close Workspaces)。刪除是破壞性操作並會提示確認；取消群組則會保留工作區，僅移除容器。",
+      "headerMenuDesc": "對現有的群組標題列按右鍵，可使用 Rename Group…、Pin Group / Unpin Group、Edit Group Config…（會開啟 ~/.config/amux/amux.json）、Open Workspace Groups Docs、Ungroup (Keep Workspaces) 以及 Delete Group (Close Workspaces)。刪除是破壞性操作並會提示確認；取消群組則會保留工作區，僅移除容器。",
       "plusButtonTitle": "透過群組標頭上的 + 按鈕",
       "plusButtonDesc": "將滑鼠移到群組標題列上，即可顯示尾端的 + 按鈕。點按它即可在該群組中、於錨點工作目錄下建立新的工作區。對它按右鍵則可使用 New Workspace in Group、Edit Group Config… 以及 Open Workspace Groups Docs。",
       "plusButtonNote": "當目前作用中的工作區是某個群組的錨點或成員時，按下 {shortcut} 也會在該群組內建立新工作區。預設放置方式為 After current：從一般的群組成員出發時，新工作區會落在作用中成員的正後方；從錨點或標頭出發時，則會落在群組的頂端。",
@@ -850,7 +850,7 @@
       "cliExampleNew": "在現有群組內建立一個新工作區，例如連接到某個 worktree 指令稿：",
       "cliExampleList": "列出聚焦視窗中的群組：",
       "configTitle": "設定",
-      "configNote": "每個群組的設定位於 ~/.config/cmux/cmux.json 中的 workspaceGroups 鍵之下，並以錨點工作區的工作目錄作為鍵。請參閱設定參考，以了解所支援的鍵，包括全域新工作區放置位置，以及各目錄的色彩、圖示、放置位置和右鍵選單動作。",
+      "configNote": "每個群組的設定位於 ~/.config/amux/amux.json 中的 workspaceGroups 鍵之下，並以錨點工作區的工作目錄作為鍵。請參閱設定參考，以了解所支援的鍵，包括全域新工作區放置位置，以及各目錄的色彩、圖示、放置位置和右鍵選單動作。",
       "configLinkText": "workspaceGroups 設定參考",
       "persistenceTitle": "持久化",
       "persistenceDesc": "群組名稱、錨點、釘選狀態、折疊狀態、顏色與圖示都會與你的工作區一併儲存，並在重新啟動後還原。群組成員資格則儲存在每個工作區上。"
@@ -959,8 +959,8 @@
     "customCommands": {
       "title": "自訂指令",
       "metaTitle": "自訂指令",
-      "metaDescription": "在 cmux.json 中定義動作、自訂命令與工作區配置。支援專案層級與全域設定，並透過明確重新載入套用變更。",
-      "intro": "透過在專案根目錄或 ~/.config/cmux/ 中新增 cmux.json 檔案來定義自訂指令和工作區版面配置。指令將顯示於指令面板中。",
+      "metaDescription": "在 amux.json 中定義動作、自訂命令與工作區配置。支援專案層級與全域設定，並透過明確重新載入套用變更。",
+      "intro": "透過在專案根目錄或 ~/.config/amux/ 中新增 amux.json 檔案來定義自訂指令和工作區版面配置。指令將顯示於指令面板中。",
       "fileLocations": "檔案位置",
       "fileLocationsDesc": "amux 在兩個地方尋找設定：",
       "localConfig": "依專案：",
@@ -969,13 +969,13 @@
       "fallbackLocalDesc": "仍支援現有 repo",
       "nightlyFeatureCallout": "動作註冊表是 nightly 功能。使用 <actions>actions</actions>、<shortcut>shortcut</shortcut> 或 <buttons>ui.surfaceTabBar.buttons</buttons> 前，請安裝最新 nightly 建置。",
       "trustCallout": "專案本機動作會立即顯示在 surface 分頁列和 Command Palette 中。第一次執行仍會要求信任。信任是依精確的動作 fingerprint 計算，而不是依 repo 計算。專案本機圖片圖示會保持鎖定，直到該動作被信任。",
-      "schemaErrorCallout": "如果專案設定或全域設定有 schema 錯誤，amux 會退回到下一個有效設定，並在 Command Palette 中顯示 <title>cmux.json Schema Error</title> 列。選取它即可開啟設定檔。",
+      "schemaErrorCallout": "如果專案設定或全域設定有 schema 錯誤，amux 會退回到下一個有效設定，並在 Command Palette 中顯示 <title>amux.json Schema Error</title> 列。選取它即可開啟設定檔。",
       "globalConfig": "全域:",
       "globalConfigDesc": "適用於所有專案，補充本地未定義的指令",
       "precedenceNote": "本機動作與命令會覆寫具有相同 ID 或名稱的全域項目。",
-      "liveReload": "編輯 cmux.json 後，按 Cmd+Shift+, 或執行 amux reload-config 來套用變更。",
+      "liveReload": "編輯 amux.json 後，按 Cmd+Shift+, 或執行 amux reload-config 來套用變更。",
       "schema": "設定架構",
-      "schemaDesc": "cmux.json 檔案包含一個 commands 陣列。每個指令可以是簡單的 shell 指令或完整的工作區定義：",
+      "schemaDesc": "amux.json 檔案包含一個 commands 陣列。每個指令可以是簡單的 shell 指令或完整的工作區定義：",
       "schemaIntro": "<commands>commands</commands> 仍用來定義可重複使用的 shell 命令和 workspace 版面。Nightly 建置會加入 <actions>actions</actions> 註冊表。動作是 surface 分頁列、Command Palette 和動作層級快捷鍵共用的公開 ID。",
       "nightlyActionRegistry": "Nightly 動作註冊表",
       "nightlyActionRegistryDesc": "<actions>actions</actions> 將穩定 ID 對應到可執行的行為。使用內建 ID <newTerminal>cmux.newTerminal</newTerminal>、<newBrowser>cmux.newBrowser</newBrowser>、<splitRight>cmux.splitRight</splitRight> 和 <splitDown>cmux.splitDown</splitDown> 覆寫預設值。專案專用工具可使用自己的 ID。",
@@ -1000,7 +1000,7 @@
       "actionFieldConfirm": "執行動作前要求確認。",
       "commandPaletteBehavior": "Command Palette 行為",
       "commandPaletteBehaviorDesc": "Command Palette 會讀取解析後的動作登錄。當 <palette>palette</palette> 不是 false 時，自訂動作 ID 會新增為列。舊的 <commands>commands</commands> 會自動新增為自訂列，除非已存在相同產生 ID 的動作。內建命令會保留一般的面板標籤，但覆寫像 <newTerminal>cmux.newTerminal</newTerminal> 這樣的內建 ID 會改變該共用入口背後的行為。",
-      "commandPaletteScreenshotAlt": "amux Command Palette 顯示來自 cmux.json 的自訂 Worktree Agents 動作",
+      "commandPaletteScreenshotAlt": "amux Command Palette 顯示來自 amux.json 的自訂 Worktree Agents 動作",
       "commandPaletteScreenshotCaption": "啟用 palette 的自訂動作會在 Command Palette 中顯示為可搜尋的列。",
       "plusButtonScreenshotAlt": "amux 加號按鈕右鍵選單顯示 Worktree Agents、New Terminal 與 New Browser",
       "plusButtonScreenshotCaption": "右鍵選單會依照 ui.newWorkspace.contextMenu 的順序。",
@@ -1262,10 +1262,10 @@
       "tmuxDesc": "如果在 amux 內使用 tmux，請啟用透傳：",
       "metaTitle": "通知",
       "hooksTitle": "通知 Hook",
-      "hooksIntro": "<config>cmux.json</config> 可以定義通知 Hook，讓每個通知政策以 JSON 形式從 stdin 傳入。每個 Hook 會透過 stdout 回傳 JSON。Hook 預設為關閉；只有在 <hooksMode>notifications.hooks</hooksMode> 至少包含一個已啟用的 Hook 時，amux 才會執行它們。amux 會套用回傳的通知文字與效果，因此 Hook 可以篩選橫幅、保留或略過側邊欄歷史、播放聲音，或停止後續 Hook。",
-      "hooksJsonTitle": "cmux.json",
+      "hooksIntro": "<config>amux.json</config> 可以定義通知 Hook，讓每個通知政策以 JSON 形式從 stdin 傳入。每個 Hook 會透過 stdout 回傳 JSON。Hook 預設為關閉；只有在 <hooksMode>notifications.hooks</hooksMode> 至少包含一個已啟用的 Hook 時，amux 才會執行它們。amux 會套用回傳的通知文字與效果，因此 Hook 可以篩選橫幅、保留或略過側邊欄歷史、播放聲音，或停止後續 Hook。",
+      "hooksJsonTitle": "amux.json",
       "hooksIOTitle": "Hook 輸入與輸出",
-      "hooksDetails": "Hook 會從全域 <globalConfig>~/.config/cmux/cmux.json</globalConfig> 以及從父目錄到目前 workspace 的專案 <projectConfig>.cmux/cmux.json</projectConfig> 檔案繼承。專案 Hook 執行前會使用與其他專案 <config>cmux.json</config> 命令相同的信任提示。Feed 核准橫幅也會通過這些 Hook；停用 <desktop>desktop</desktop> 會抑制原生橫幅，同時讓 Feed 項目保留在 amux 中。若要忽略繼承的 Hook，請在專案設定中將 <hooksMode>notifications.hooksMode</hooksMode> 設為 <replace>replace</replace>。如果 Hook 失敗、逾時或回傳無效 JSON，amux 會使用預設通知行為並顯示 Hook 失敗提醒。"
+      "hooksDetails": "Hook 會從全域 <globalConfig>~/.config/amux/amux.json</globalConfig> 以及從父目錄到目前 workspace 的專案 <projectConfig>.amux/amux.json</projectConfig> 檔案繼承。專案 Hook 執行前會使用與其他專案 <config>amux.json</config> 命令相同的信任提示。Feed 核准橫幅也會通過這些 Hook；停用 <desktop>desktop</desktop> 會抑制原生橫幅，同時讓 Feed 項目保留在 amux 中。若要忽略繼承的 Hook，請在專案設定中將 <hooksMode>notifications.hooksMode</hooksMode> 設為 <replace>replace</replace>。如果 Hook 失敗、逾時或回傳無效 JSON，amux 會使用預設通知行為並顯示 Hook 失敗提醒。"
     },
     "browserAutomation": {
       "title": "瀏覽器自動化",
@@ -1389,7 +1389,7 @@
       "precedenceCallout": "如果專案設定和全域設定都存在，會以專案設定優先。巢狀專案設定會套用到其目錄樹。若沒有專案設定，Dock 會使用全域設定。若兩個檔案都不存在，Dock 會以空白狀態開啟。",
       "trustCallout": "專案 Dock 設定可以啟動命令。amux 會在啟動控制項前要求你信任專案設定。",
       "exampleTitle": "dock.json 範例",
-      "exampleIntro": "Dock 檔案是包含 controls 陣列的 JSON 物件。當你希望隊友共用同一個 Dock 時，請將專案控制項提交到 .cmux/dock.json。請把範例命令替換成此 repo 中實際存在的工具。",
+      "exampleIntro": "Dock 檔案是包含 controls 陣列的 JSON 物件。當你希望隊友共用同一個 Dock 時，請將專案控制項提交到 .amux/dock.json。請把範例命令替換成此 repo 中實際存在的工具。",
       "fieldsTitle": "欄位",
       "fieldHeader": "欄位",
       "descriptionHeader": "說明",
@@ -1401,13 +1401,13 @@
       "fieldEnv": "只傳遞給該控制項的選用環境變數。",
       "sharingTitle": "與團隊分享",
       "sharingIntro": "當命令屬於 repo 時，Dock 設計為可透過 source control 分享。",
-      "sharingProject": "將 repo 專用控制項放入 .cmux/dock.json，並提交該檔案。",
-      "sharingGlobal": "將個人控制項放在 ~/.config/cmux/dock.json，尤其是在 repo 外使用時，並且不要把該檔案加入共享的 source control。",
+      "sharingProject": "將 repo 專用控制項放入 .amux/dock.json，並提交該檔案。",
+      "sharingGlobal": "將個人控制項放在 ~/.config/amux/dock.json，尤其是在 repo 外使用時，並且不要把該檔案加入共享的 source control。",
       "sharingSecrets": "不要將 secrets 放入 dock.json。請從 shell、本機 env 檔案或既有開發工具讀取 secrets。",
       "agentPromptTitle": "請 agent 協助設定",
       "agentPromptIntro": "當你希望 coding agent 建立 Dock 控制項時，請使用這段 prompt。它會要求 agent 執行 `amux docs dock`、檢查專案，並在猜測前先提問。",
       "agentPromptCodeTitle": "Agent prompt",
-      "agentPrompt": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/cmux/dock.json`.\n- If both exist, project `.cmux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
+      "agentPrompt": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.amux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/amux/dock.json`.\n- If both exist, project `.amux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
     },
     "sessionRestore": {
       "title": "工作階段還原",
@@ -1450,7 +1450,7 @@
       "underHoodItemScrollback": "終端機 scrollback 會以有界文字儲存，並在還原時透過暫存檔 replay。這是盡力還原，因為終端機應用程式可以重繪或清除畫面。",
       "underHoodItemHooks": "Agent hooks 會寫入 ~/.cmuxterm/<agent>-hook-sessions.json，內容包含 agent 工作階段 ID、amux workspace ID、surface ID、cwd、可用時的程序 ID，以及清理過的啟動命令。",
       "underHoodItemResume": "還原時，amux 會先重建視窗和 pane。如果 agent 自動還原已啟用，它會啟動一次性 shell 命令，用儲存的工作階段 ID 執行 agent 的原生 resume 命令。",
-      "underHoodMore": "一般<configLink>設定文件</configLink>說明 cmux.json。工作階段還原會將應用程式佈局與 Ghostty 終端機渲染設定分開保存。",
+      "underHoodMore": "一般<configLink>設定文件</configLink>說明 amux.json。工作階段還原會將應用程式佈局與 Ghostty 終端機渲染設定分開保存。",
       "feedPrePostToolUse": "PreToolUse, PostToolUse",
       "feedHermes": "pre_tool_call, post_tool_call, pre_approval_request, post_approval_response"
     },
@@ -1508,7 +1508,7 @@
       "daemonRelayHow": "使用 HMAC-SHA256 驗證反向 TCP 隧道，以便遠端進程可以在本機上呼叫 amux 命令",
       "daemonSession": "會話管理",
       "daemonSessionHow": "在重新連線時保留會話，協調跨多個附件的 PTY 大小調整",
-      "daemonPath": "守護程式二進位檔案儲存在遠端主機上的 ~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote 中，並根據應用程式中嵌入的 SHA-256 清單進行驗證。"
+      "daemonPath": "守護程式二進位檔案儲存在遠端主機上的 ~/.amux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote 中，並根據應用程式中嵌入的 SHA-256 清單進行驗證。"
     },
     "textBox": {
       "title": "TextBox（測試版）",
@@ -1521,8 +1521,8 @@
       "showSetting": "Show TextBox on New Terminals 會讓新的工作區、終端機分頁和終端機分割在開啟時顯示 TextBox，同時將焦點保留在終端機。",
       "focusSetting": "Focus TextBox on New Terminals 會將鍵盤焦點放入 TextBox。啟用焦點也會顯示 TextBox。",
       "maxLinesSetting": "TextBox Max Lines 會限制 TextBox 在內容開始捲動前的最大高度。",
-      "configTitle": "cmux.json",
-      "configDesc": "也可以在 ~/.config/cmux/cmux.json 的 terminal 下設定相同預設值：",
+      "configTitle": "amux.json",
+      "configDesc": "也可以在 ~/.config/amux/amux.json 的 terminal 下設定相同預設值：",
       "focusNote": "還原的工作階段會保留已儲存的 TextBox 顯示和焦點狀態。這些預設值只會套用到新建的終端機介面。"
     },
     "ohMyOpenCode": {

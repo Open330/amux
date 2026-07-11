@@ -143,10 +143,10 @@ struct RemoteDaemonManifestRepositoryTests {
     func cachePathShape() throws {
         let home = try temporaryHome()
         let url = try makeRepository(home: home).cachedBinaryURL(version: "0.62.0", goOS: "linux", goArch: "arm64")
-        #expect(url.path == home.path + "/.local/state/cmux/remote-daemons/0.62.0/linux-arm64/cmuxd-remote")
+        #expect(url.path == home.path + "/.local/state/amux/remote-daemons/0.62.0/linux-arm64/cmuxd-remote")
         var isDirectory: ObjCBool = false
         let rootExists = FileManager.default.fileExists(
-            atPath: home.appendingPathComponent(".local/state/cmux/remote-daemons").path,
+            atPath: home.appendingPathComponent(".local/state/amux/remote-daemons").path,
             isDirectory: &isDirectory
         )
         #expect(rootExists && isDirectory.boolValue, "cache root is created eagerly")

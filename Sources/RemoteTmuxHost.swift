@@ -114,7 +114,7 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
 
     /// The SSH ControlMaster socket path shared by every operation against this host.
     ///
-    /// Namespaced under `~/.cmux/ssh/`. The filename combines the lossy
+    /// Namespaced under `~/.amux/ssh/`. The filename combines the lossy
     /// human-readable ``slug`` with the collision-resistant ``connectionHash`` of
     /// the exact connection identity (destination + port + identity file), so two
     /// distinct endpoints never collide on one socket (which would otherwise route
@@ -134,7 +134,7 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         // Fixed parts that can never be trimmed: directory, the `tmux-` prefix,
         // the `-<hash>.sock` tail, and the transient suffix OpenSSH binds first.
-        let prefix = "\(home)/.cmux/ssh/tmux-"
+        let prefix = "\(home)/.amux/ssh/tmux-"
         let suffix = "-\(connectionHash).sock"
         let fixedBytes = prefix.utf8.count + suffix.utf8.count + Self.opensshTransientSuffixLength
         let slugBudget = max(0, Self.maxUnixSocketPathLength - fixedBytes)

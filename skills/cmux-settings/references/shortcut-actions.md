@@ -1,6 +1,6 @@
 # Keyboard shortcut action ids
 
-Auto-generated from `web/data/cmux.schema.json` (`shortcuts.bindings.propertyNames.enum`).
+Auto-generated from `web/data/amux.schema.json` (`shortcuts.bindings.propertyNames.enum`).
 
 Values for `shortcuts.bindings.<action>`:
 

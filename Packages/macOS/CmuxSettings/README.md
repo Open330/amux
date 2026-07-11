@@ -9,7 +9,7 @@ Settings live in one of two stores:
 
 - **`UserDefaultsSettingsStore`** — wraps `UserDefaults`. User-toggled
   preferences that the Settings UI writes.
-- **`JSONConfigStore`** — wraps `~/.config/cmux/cmux.json`. Structured config
+- **`JSONConfigStore`** — wraps `~/.config/amux/amux.json`. Structured config
   authored by users (hooks, shortcut bindings) or MDM profiles.
 
 Each setting is declared once on a `SettingCatalog` instance with the typed
@@ -21,12 +21,12 @@ of key — wrong-store mismatches are compile errors, not runtime traps.
 - **UserDefaults** persists under the normal Apple-managed plist for the
   process's `Bundle.main.bundleIdentifier`, viewable with
   `defaults read <bundle-id>`.
-- **JSON config** lives at `~/.config/cmux/cmux.json` by default
+- **JSON config** lives at `~/.config/amux/amux.json` by default
   (`CmuxConfigLocation().userConfigFile`). The store creates the file (and
   parent directory) on first write. File is missing on first launch, in
   which case every read returns the key's default value.
 
-A populated cmux.json looks like this — pretty-printed, sorted keys, JSONC
+A populated amux.json looks like this — pretty-printed, sorted keys, JSONC
 comments tolerated on read but stripped on write:
 
 ```jsonc
@@ -89,7 +89,7 @@ import Foundation
 let tempDir = FileManager.default.temporaryDirectory
     .appending(path: "cmux-readme-\(UUID().uuidString)")
 try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-let fileURL = tempDir.appending(path: "cmux.json")
+let fileURL = tempDir.appending(path: "amux.json")
 
 let catalog = SettingCatalog()
 let json = JSONConfigStore(fileURL: fileURL)

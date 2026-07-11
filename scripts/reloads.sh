@@ -9,7 +9,7 @@ NAME_SET=0
 BUNDLE_SET=0
 DERIVED_SET=0
 TAG=""
-# Matches CmuxStateDirectory (non-TCC ~/.local/state/cmux) where the app/CLI now
+# Matches CmuxStateDirectory (non-TCC ~/.local/state/amux) where the app/CLI now
 # read the last-socket-path markers (https://github.com/manaflow-ai/cmux/issues/5146).
 # Resolve the real account home via getpwuid (the same syscall
 # homeDirectoryForCurrentUser uses) rather than $HOME, which a shell can override.
@@ -18,7 +18,7 @@ TAG=""
 # a second line. `|| true` keeps the lookup from aborting the script under
 # `set -euo pipefail`; an empty result falls back to $HOME.
 _cmux_account_home="$(perl -e 'print((getpwuid($<))[7])' 2>/dev/null || true)"
-LAST_SOCKET_PATH_DIR="${_cmux_account_home:-$HOME}/.local/state/cmux"
+LAST_SOCKET_PATH_DIR="${_cmux_account_home:-$HOME}/.local/state/amux"
 
 write_last_socket_path() {
   local socket_path="$1"

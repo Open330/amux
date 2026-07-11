@@ -93,7 +93,7 @@ enum CmuxExtensionWorktreePrototype {
 
             let branchName = "cmux-sidebar-\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(8).lowercased())"
             let worktreeRoot = projectRoot
-                .appendingPathComponent(".cmux", isDirectory: true)
+                .appendingPathComponent(".amux", isDirectory: true)
                 .appendingPathComponent("worktrees", isDirectory: true)
             try FileManager.default.createDirectory(at: worktreeRoot, withIntermediateDirectories: true)
             let worktree = worktreeRoot.appendingPathComponent(branchName, isDirectory: true)
@@ -141,11 +141,11 @@ enum CmuxExtensionWorktreePrototype {
         let alreadyIgnored = existing
             .split(whereSeparator: \.isNewline)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .contains { $0 == ".cmux" || $0 == ".cmux/" }
+            .contains { $0 == ".amux" || $0 == ".amux/" }
         guard !alreadyIgnored else { return }
 
         let separator = existing.isEmpty || existing.hasSuffix("\n") ? "" : "\n"
-        let next = existing + separator + "# cmux extension worktrees\n.cmux/\n"
+        let next = existing + separator + "# amux extension worktrees\n.amux/\n"
         try next.write(to: excludeURL, atomically: true, encoding: .utf8)
     }
 

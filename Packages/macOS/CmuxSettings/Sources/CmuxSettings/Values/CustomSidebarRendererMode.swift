@@ -3,7 +3,7 @@ import Foundation
 /// Where a custom sidebar's interpreted source is rendered.
 ///
 /// Stored under the catalog entry ``CustomSidebarsCatalogSection/renderer``
-/// (`customSidebars.renderer` in `~/.config/cmux/cmux.json`). The raw values
+/// (`customSidebars.renderer` in `~/.config/amux/amux.json`). The raw values
 /// are the on-disk strings, so they must not be renamed without a migration.
 public enum CustomSidebarRendererMode: String, CaseIterable, Sendable, SettingCodable {
     /// The containment lane: an out-of-process render worker

@@ -14,7 +14,7 @@ extension CMUXCLI {
         let configDirEnvOverrideSubpath: String? // e.g. "GROK_HOME" + "hooks"
         let createConfigDirIfMissing: Bool // for agents whose hook dir is created lazily
         let configDirResolver: (@Sendable () -> String)?
-        let sessionStoreSuffix: String // e.g. "cursor" -> ~/.cmuxterm/cursor-hook-sessions.json
+        let sessionStoreSuffix: String // e.g. "cursor" -> ~/.amux/cursor-hook-sessions.json
         let disableEnvVar: String   // e.g. "CMUX_CURSOR_HOOKS_DISABLED"
         let hookMarker: String      // Canonical marker in commands: "amux hooks cursor"
         let binaryName: String
@@ -239,7 +239,7 @@ extension CMUXCLI {
         }
         let routedArguments = routedHookArguments(command)
         let noOpSnippet = shellNoOpSnippet(noOpCommand)
-        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then { if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; } || \(noOpSnippet); else \(noOpSnippet); fi"
+        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then { if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; } || \(noOpSnippet); else \(noOpSnippet); fi"
     }
 
     private static func exitTwoPropagatingAgentHookShellCommand(
@@ -249,7 +249,7 @@ extension CMUXCLI {
     ) -> String {
         let routedArguments = routedHookArguments(command)
         let noOpSnippet = shellNoOpSnippet(noOpCommand)
-        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; status=$?; if [ \"$status\" -eq 2 ]; then exit 2; fi; if [ \"$status\" -ne 0 ]; then \(noOpSnippet); fi; else \(noOpSnippet); fi"
+        return "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"; if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || true)\"; fi; if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments); else \"$cmux_cli\" \(routedArguments); fi; status=$?; if [ \"$status\" -eq 2 ]; then exit 2; fi; if [ \"$status\" -ne 0 ]; then \(noOpSnippet); fi; else \(noOpSnippet); fi"
     }
 
     private static func usesPinnedHookDispatch(_ def: AgentHookDef) -> Bool {
@@ -292,11 +292,6 @@ extension CMUXCLI {
             routedArguments: routedArguments,
             socketPath: socketPath
         )
-        let legacyFallbackInvocation = pinnedHookInvocation(
-            executable: "cmux",
-            routedArguments: routedArguments,
-            socketPath: socketPath
-        )
         let dispatch: String
         if let cliPath = pinnedAgentHookCLIPath() {
             let quotedCLIPath = shellSingleQuote(cliPath)
@@ -305,9 +300,9 @@ extension CMUXCLI {
                 routedArguments: routedArguments,
                 socketPath: socketPath
             )
-            dispatch = "if [ -x \(quotedCLIPath) ]; then \(primaryInvocation); elif command -v amux >/dev/null 2>&1; then \(fallbackInvocation); elif command -v cmux >/dev/null 2>&1; then \(legacyFallbackInvocation); else \(noOpSnippet); fi"
+            dispatch = "if [ -x \(quotedCLIPath) ]; then \(primaryInvocation); elif command -v amux >/dev/null 2>&1; then \(fallbackInvocation); else \(noOpSnippet); fi"
         } else {
-            dispatch = "if command -v amux >/dev/null 2>&1; then \(fallbackInvocation); elif command -v cmux >/dev/null 2>&1; then \(legacyFallbackInvocation); else \(noOpSnippet); fi"
+            dispatch = "if command -v amux >/dev/null 2>&1; then \(fallbackInvocation); else \(noOpSnippet); fi"
         }
         return ": \(pinnedHookMarker(for: def)); \(shellTraceStart); printenv \(def.disableEnvVar) | grep -qx 1 && { \(shellTraceDisabled); \(noOpCommand); } || { \(dispatch); cmux_hook_status=$?; \(shellTraceExit); exit $cmux_hook_status; }"
     }
@@ -515,7 +510,7 @@ extension CMUXCLI {
     private static func bundledCLICmuxCommandTokenLists(from command: String) -> [[String]]? {
         guard command.contains("CMUX_BUNDLED_CLI_PATH"),
               command.contains("cmux_cli="),
-              command.contains("command -v cmux") else {
+              (command.contains("command -v amux") || command.contains("command -v cmux")) else {
             return nil
         }
 

@@ -209,7 +209,7 @@ export const changelogMedia: Record<string, VersionMedia> = {
       {
         title: "Workspace Groups",
         description:
-          "Select sidebar workspaces and press ⌘⇧G to gather them under a collapsible header. Each group has an anchor workspace, its own color and icon, and an unread badge on the header. Drag workspaces in and out, reorder inside a group, and control where new workspaces land per group or via cmux.json. A full `cmux workspace-group` CLI namespace creates, colors, moves, focuses, and deletes groups from scripts.",
+          "Select sidebar workspaces and press ⌘⇧G to gather them under a collapsible header. Each group has an anchor workspace, its own color and icon, and an unread badge on the header. Drag workspaces in and out, reorder inside a group, and control where new workspaces land per group or via amux.json. A full `cmux workspace-group` CLI namespace creates, colors, moves, focuses, and deletes groups from scripts.",
       },
       {
         title: "Focus & Recently Closed History",
@@ -492,7 +492,7 @@ export const changelogMedia: Record<string, VersionMedia> = {
       {
         title: "Custom Commands",
         description:
-          "Define project-specific actions in cmux.json that launch from the command palette. One file per repo, no global config needed.",
+          "Define project-specific actions in amux.json that launch from the command palette. One file per repo, no global config needed.",
       },
     ],
   },

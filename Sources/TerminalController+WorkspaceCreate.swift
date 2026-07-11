@@ -85,7 +85,7 @@ extension TerminalController {
             groupReferenceWorkspaceId = nil
         }
 
-        // Decode optional layout param (same JSON schema as cmux.json layout field).
+        // Decode optional layout param (same JSON schema as amux.json layout field).
         // Validate before creating the workspace so malformed layouts fail fast.
         var layoutNode: CmuxLayoutNode?
         if let rawLayout = params["layout"] {

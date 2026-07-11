@@ -165,7 +165,7 @@ public indirect enum ShortcutWhenClause: Equatable, Sendable {
     /// An unknown bare key parses to ``key(_:)`` (a valid, always-false clause),
     /// matching VS Code's treatment of undefined context keys.
     ///
-    /// - Parameter raw: The predicate source from `shortcuts.when` in cmux.json.
+    /// - Parameter raw: The predicate source from `shortcuts.when` in amux.json.
     /// - Returns: The parsed clause, or `nil` when the input is malformed.
     public static func parse(_ raw: String) -> ShortcutWhenClause? {
         if raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

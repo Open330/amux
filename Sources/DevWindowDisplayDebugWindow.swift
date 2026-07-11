@@ -6,7 +6,7 @@ import SwiftUI
 /// cmux windows open on.
 ///
 /// Reads and writes ``DevWindowDisplayDefault`` (persisted in the shared
-/// `cmux.json` via ``CmuxSettings``, not `@AppStorage`, so the value applies to
+/// `amux.json` via ``CmuxSettings``, not `@AppStorage`, so the value applies to
 /// every tagged dev build, not just this one). The same value is also settable
 /// from `cmux window default-display`.
 final class DevWindowDisplayDebugWindowController: ReleasingWindowController {

@@ -1,15 +1,15 @@
 ---
 name: cmux
-description: End-user control of cmux topology and routing (windows, workspaces, panes/surfaces, focus, moves, reorder, identify, trigger flash). Use when automation needs deterministic placement and navigation in a multi-pane cmux layout.
+description: End-user control of amux topology and routing (windows, workspaces, panes/surfaces, focus, moves, reorder, identify, trigger flash). Use when automation needs deterministic placement and navigation in a multi-pane amux layout.
 ---
 
-# cmux Core Control
+# amux Core Control
 
-Use this skill to control non-browser cmux topology and routing.
+Use this skill to control non-browser amux topology and routing.
 
 ## Core Concepts
 
-- Window: top-level macOS cmux window.
+- Window: top-level macOS amux window.
 - Workspace: tab-like group within a window.
 - Pane: split container in a workspace.
 - Surface: a tab within a pane (terminal or browser panel).
@@ -18,50 +18,50 @@ Use this skill to control non-browser cmux topology and routing.
 
 ```bash
 # identify current caller context
-cmux identify --json
+amux identify --json
 
 # list topology
-cmux list-windows
-cmux list-workspaces
-cmux list-panes
-cmux list-pane-surfaces --pane pane:1
+amux list-windows
+amux list-workspaces
+amux list-panes
+amux list-pane-surfaces --pane pane:1
 
 # create/focus/move
-cmux new-workspace
-cmux new-split right --panel pane:1
-cmux move-surface --surface surface:7 --pane pane:2 --focus true
-cmux split-off --surface surface:7 right
-cmux reorder-surface --surface surface:7 --before surface:3
+amux new-workspace
+amux new-split right --panel pane:1
+amux move-surface --surface surface:7 --pane pane:2 --focus true
+amux split-off --surface surface:7 right
+amux reorder-surface --surface surface:7 --before surface:3
 
 # attention cue
-cmux trigger-flash --surface surface:7
+amux trigger-flash --surface surface:7
 ```
 
 ## Settings and Docs
 
-Use `cmux docs settings` before changing cmux-owned settings. It prints the docs URL, schema URL, raw GitHub resources, cmux.json paths, and reload command.
+Use `amux docs settings` before changing amux-owned settings. It prints the docs URL, schema URL, raw GitHub resources, amux.json paths, and reload command.
 
 ```bash
-cmux docs settings
-cmux settings path
+amux docs settings
+amux settings path
 ```
 
-cmux-owned settings live in `~/.config/cmux/cmux.json`. Legacy `~/.config/cmux/settings.json` and `~/Library/Application Support/com.cmuxterm.app/settings.json` files are read only as fallback for missing keys. Before editing, copy any existing `cmux.json` file to a timestamped `.bak` next to it so the user can revert. Edit the user file, then reload:
+amux-owned settings live in `~/.config/amux/amux.json`. Legacy cmux files are imported once and are not active fallback sources. Before editing, copy any existing `amux.json` file to a timestamped `.bak` next to it so the user can revert. Edit the user file, then reload:
 
 ```bash
-cmux reload-config
+amux reload-config
 ```
 
-`cmux reload-config` reloads BOTH `cmux.json` and Ghostty config (`~/.config/ghostty/config`) and refreshes terminals in place. No app restart needed.
+`amux reload-config` reloads BOTH `amux.json` and Ghostty config (`~/.config/ghostty/config`) and refreshes terminals in place. No app restart needed.
 
-Use cmux settings for app behavior, sidebar, notifications, browser behavior, automation, workspace colors, and cmux-owned shortcuts. Terminal rendering settings such as font, cursor style, theme, scrollback, background transparency (`background-opacity`), and blur (`background-blur`) belong in Ghostty config at `~/.config/ghostty/config`.
+Use amux settings for app behavior, sidebar, notifications, browser behavior, automation, workspace colors, and amux-owned shortcuts. Terminal rendering settings such as font, cursor style, theme, scrollback, background transparency (`background-opacity`), and blur (`background-blur`) belong in Ghostty config at `~/.config/ghostty/config`.
 
 Open the UI when useful:
 
 ```bash
-cmux settings
-cmux settings cmux-json
-cmux settings shortcuts
+amux settings
+amux settings amux-json
+amux settings shortcuts
 ```
 
 ## Handle Model
@@ -79,6 +79,6 @@ cmux settings shortcuts
 | [references/panes-surfaces.md](references/panes-surfaces.md) | Splits, surfaces, move/reorder, focus routing |
 | [references/trigger-flash-and-health.md](references/trigger-flash-and-health.md) | Flash cue and surface health checks |
 | [../cmux-workspace/SKILL.md](../cmux-workspace/SKILL.md) | Current caller workspace rules and non-disruptive automation |
-| [../cmux-settings/SKILL.md](../cmux-settings/SKILL.md) | Safe cmux.json settings edits and validation |
+| [../cmux-settings/SKILL.md](../cmux-settings/SKILL.md) | Safe amux.json settings edits and validation |
 | [../cmux-browser/SKILL.md](../cmux-browser/SKILL.md) | Browser automation on surface-backed webviews |
 | [../cmux-markdown/SKILL.md](../cmux-markdown/SKILL.md) | Markdown viewer panel with live file watching |

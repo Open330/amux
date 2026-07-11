@@ -47,7 +47,7 @@ extension EnvironmentValues {
     }
 }
 
-/// Resolves a row's dotted cmux.json path (declared via
+/// Resolves a row's dotted amux.json path (declared via
 /// ``SettingsConfigurationReview``) to the stable sidebar/search anchor
 /// id the navigation layer scrolls to and highlights. Injected from the
 /// settings root, which owns the built ``SettingsSearchIndex``.

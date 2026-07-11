@@ -39,8 +39,8 @@ This is a **living implementation spec** (also called an **execution spec**): a 
 - `DONE` SOCKS handshake parsing now preserves pipelined post-connect payload bytes instead of dropping request-prefix bytes.
 - `DONE` `workspace.remote.configure.local_proxy_port` exists as an internal deterministic test hook for bind-conflict regression coverage.
 - `DONE` bootstrap/probe failures surface actionable details.
-- `DONE` bootstrap installs `~/.cmux/bin/cmux` wrapper (also tries `/usr/local/bin/cmux`) so `cmux` is available in PATH on the remote.
-- `DONE` normal `cmux ssh` launches `cmuxd-remote serve --stdio --persistent --slot <slot>`, where the stdio process proxies to a long-lived authenticated daemon with slot credentials under `~/.cmux/daemon/<version>/<slot>/` and a short per-user socket path under `/tmp/cmuxd-remote-<uid>/`.
+- `DONE` bootstrap installs `~/.amux/bin/amux` wrapper (also tries `/usr/local/bin/amux`) so `cmux` is available in PATH on the remote.
+- `DONE` normal `cmux ssh` launches `cmuxd-remote serve --stdio --persistent --slot <slot>`, where the stdio process proxies to a long-lived authenticated daemon with slot credentials under `~/.amux/daemon/<version>/<slot>/` and a short per-user socket path under `/tmp/cmuxd-remote-<uid>/`.
 - `DONE` persistent daemon slots advertise `pty.session.persistent_daemon`; cmux requires that capability before preserving a saved remote PTY session ID across app relaunch.
 
 ### 3.5 CLI Relay (Running cmux Commands From Remote)
@@ -48,12 +48,12 @@ This is a **living implementation spec** (also called an **execution spec**): a 
 - `DONE` busybox-style argv[0] detection: when invoked as `cmux` via wrapper/symlink, auto-dispatches to CLI relay.
 - `DONE` background `ssh -N -R 127.0.0.1:PORT:127.0.0.1:LOCAL_RELAY_PORT` process reverse-forwards a TCP port to a dedicated authenticated local relay server. Uses TCP instead of Unix socket forwarding because many servers have `AllowStreamLocalForwarding` disabled.
 - `DONE` relay process uses `-S none` / standalone SSH transport (avoids ControlMaster multiplexing and inherited `RemoteForward` directives) and `ExitOnForwardFailure=yes` so dead reverse binds fail fast instead of publishing bad relay metadata.
-- `DONE` relay address written to `~/.cmux/socket_addr` on the remote only after the reverse forward survives startup validation.
-- `DONE` Go CLI no longer polls for relay readiness. It dials the published relay once and only refreshes `~/.cmux/socket_addr` a single time to recover from a stale shared address rewrite.
+- `DONE` relay address written to `~/.amux/socket_addr` on the remote only after the reverse forward survives startup validation.
+- `DONE` Go CLI no longer polls for relay readiness. It dials the published relay once and only refreshes `~/.amux/socket_addr` a single time to recover from a stale shared address rewrite.
 - `DONE` `cmux ssh` startup exports session-local `CMUX_SOCKET_PATH=127.0.0.1:<relay_port>` so parallel sessions pin to their own relay instead of racing on shared socket_addr.
 - `DONE` session snapshots persist the relay port for persistent SSH PTYs and mint fresh relay credentials on restore, so a reattached remote shell can keep using its existing `CMUX_SOCKET_PATH=127.0.0.1:<relay_port>` after app relaunch.
-- `DONE` relay startup writes `~/.cmux/relay/<relay_port>.daemon_path`; remote `cmux` wrapper uses this to select the right daemon binary per session, including mixed local cmux versions.
-- `DONE` relay startup writes `~/.cmux/relay/<relay_port>.auth` with a relay ID and token; the local relay requires HMAC-SHA256 challenge-response before forwarding any command to the real local socket.
+- `DONE` relay startup writes `~/.amux/relay/<relay_port>.daemon_path`; remote `cmux` wrapper uses this to select the right daemon binary per session, including mixed local cmux versions.
+- `DONE` relay startup writes `~/.amux/relay/<relay_port>.auth` with a relay ID and token; the local relay requires HMAC-SHA256 challenge-response before forwarding any command to the real local socket.
 - `DONE` SSH agent forwarding is opt-in. `cmux ssh` preserves its live `SSH_AUTH_SOCK` for app-launched OpenSSH transports so `ForwardAgent yes` from ssh_config works normally, and accepts `-A` / `--forward-agent` or `-a` / `--no-forward-agent` for explicit forwarding control.
 - `DONE` ephemeral port range (49152-65535) filtered from probe results to exclude relay ports from other workspaces.
 - `DONE` multi-workspace port conflict detection uses TCP connect check (`isLoopbackPortReachable`) so ports already forwarded by another workspace are silently skipped instead of flagged as conflicts.

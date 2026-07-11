@@ -1,5 +1,6 @@
 import Foundation
 import CmuxFoundation
+import CmuxSettings
 
 extension CMUXCLI {
     func runConfigCommand(
@@ -108,13 +109,13 @@ extension CMUXCLI {
         return """
         Usage: amux config <doctor|check|validate|path|paths|docs|documentation|reload|get|set|sidebar-font-size|surface-tab-bar-font-size>
 
-        Inspect cmux.json, print configuration references, update selected Ghostty config keys, or reload the running app.
+        Inspect amux.json, print configuration references, update selected Ghostty config keys, or reload the running app.
 
         Subcommands:
           doctor|check|validate [--path <path>]   Validate JSONC syntax for amux config files.
-          path|paths                              Print cmux.json paths, docs URL, and schema URL.
+          path|paths                              Print amux.json paths, docs URL, and schema URL.
           docs|documentation                      Print the same output as `amux docs settings`.
-          reload                                  Reload Ghostty config + cmux.json and refresh terminals (alias for `amux reload-config`).
+          reload                                  Reload Ghostty config + amux.json and refresh terminals (alias for `amux reload-config`).
           get <key>                               Print sidebar-font-size or surface-tab-bar-font-size.
           set <key> <points>                      Set sidebar-font-size (10-20 pt) or surface-tab-bar-font-size (8-24 pt), then reload if amux is running.
           sidebar-font-size [points]              Get or set the left sidebar text size.
@@ -122,15 +123,16 @@ extension CMUXCLI {
 
         Config files:
           \(Self.primarySettingsDisplayPath)
-          legacy config: \(Self.legacySettingsDisplayPath)
-          legacy app support: \(Self.fallbackSettingsDisplayPath)
+          imported once from: \(Self.legacySettingsDisplayPath)
+                              \(Self.legacyFallbackSettingsDisplayPath)
+                              \(Self.fallbackSettingsDisplayPath)
 
         Related (not amux-owned, but amux reads it for terminal behavior):
           \(Self.ghosttyConfigDisplayPath)
 
         Examples:
           amux config doctor
-          amux config doctor --path .cmux/cmux.json
+          amux config doctor --path .amux/amux.json
           amux config set sidebar-font-size 14
           amux config sidebar-font-size 12.5
           amux config set surface-tab-bar-font-size 13
@@ -142,8 +144,11 @@ extension CMUXCLI {
     func printSettingsPaths(jsonOutput: Bool) {
         let payload: [String: Any] = [
             "primary": Self.primarySettingsDisplayPath,
-            "legacy": Self.legacySettingsDisplayPath,
-            "fallback": Self.fallbackSettingsDisplayPath,
+            "imported_from": [
+                Self.legacySettingsDisplayPath,
+                Self.legacyFallbackSettingsDisplayPath,
+                Self.fallbackSettingsDisplayPath,
+            ],
             "ghostty_config": [
                 "path": Self.ghosttyConfigDisplayPath,
                 "note": "Not amux-owned, but amux reads it. Use for terminal transparency (background-opacity), blur, font, theme, etc.",
@@ -151,8 +156,8 @@ extension CMUXCLI {
             "docs_url": Self.settingsDocsURL,
             "schema_url": Self.settingsSchemaURL,
             "reload_command": "amux reload-config",
-            "reload_scope": "Reloads Ghostty config + cmux.json and refreshes terminals in place. No app restart needed.",
-            "backup": "Back up any existing cmux.json file to a timestamped .bak copy before editing so the user can revert.",
+            "reload_scope": "Reloads Ghostty config + amux.json and refreshes terminals in place. No app restart needed.",
+            "backup": "Back up any existing amux.json file to a timestamped .bak copy before editing so the user can revert.",
         ]
 
         if jsonOutput {
@@ -162,8 +167,9 @@ extension CMUXCLI {
 
         print("Config files:")
         print("  primary:  \(Self.primarySettingsDisplayPath)")
-        print("  legacy config: \(Self.legacySettingsDisplayPath)")
-        print("  legacy app support: \(Self.fallbackSettingsDisplayPath)")
+        print("  imported once from: \(Self.legacySettingsDisplayPath)")
+        print("                      \(Self.legacyFallbackSettingsDisplayPath)")
+        print("                      \(Self.fallbackSettingsDisplayPath)")
         print()
         print("Related (not amux-owned, but amux reads it for terminal behavior):")
         print("  \(Self.ghosttyConfigDisplayPath)")
@@ -174,10 +180,10 @@ extension CMUXCLI {
         print("Schema:")
         print("  \(Self.settingsSchemaURL)")
         print()
-        print("Before editing cmux.json:")
-        print("  Back up any existing cmux.json file to a timestamped .bak copy so the user can revert.")
+        print("Before editing amux.json:")
+        print("  Back up any existing amux.json file to a timestamped .bak copy so the user can revert.")
         print()
-        print("Reload after editing (covers BOTH cmux.json and Ghostty config; no app restart needed):")
+        print("Reload after editing (covers BOTH amux.json and Ghostty config; no app restart needed):")
         print("  amux reload-config")
     }
 
@@ -503,26 +509,6 @@ extension CMUXCLI {
             )
         }
 
-        let optionalPaths = [
-            ("legacy config", Self.legacySettingsDisplayPath),
-            ("legacy app support", Self.fallbackSettingsDisplayPath),
-        ]
-        for (label, displayPath) in optionalPaths {
-            let path = Self.absoluteConfigPath(displayPath)
-            guard path != primary,
-                  FileManager.default.fileExists(atPath: path),
-                  !targets.contains(where: { $0.path == path }) else {
-                continue
-            }
-            targets.append(
-                ConfigDoctorTarget(
-                    label: label,
-                    displayPath: displayPath,
-                    path: path,
-                    missingIsError: false
-                )
-            )
-        }
         return targets
     }
 
@@ -535,10 +521,14 @@ extension CMUXCLI {
             if current == homePath {
                 return nil
             }
+            try? AmuxPathMigration.migrateProjectData(
+                at: URL(fileURLWithPath: current, isDirectory: true),
+                fileManager: fileManager
+            )
             let candidates = [
-                ((current as NSString).appendingPathComponent(".cmux") as NSString)
-                    .appendingPathComponent("cmux.json"),
-                (current as NSString).appendingPathComponent("cmux.json"),
+                ((current as NSString).appendingPathComponent(".amux") as NSString)
+                    .appendingPathComponent("amux.json"),
+                (current as NSString).appendingPathComponent("amux.json"),
             ]
             for candidate in candidates {
                 var isDirectory = ObjCBool(false)

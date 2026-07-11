@@ -1093,7 +1093,7 @@ enum SurfaceResumeApprovalStore {
     }
 
     private static func storesRecordsInCmuxSettings(_ fileURL: URL) -> Bool {
-        fileURL.lastPathComponent == "cmux.json"
+        fileURL.lastPathComponent == "amux.json"
     }
 
     private static func legacyURL(forCmuxSettingsURL fileURL: URL) -> URL {

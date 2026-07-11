@@ -2,7 +2,7 @@ public import Foundation
 
 public enum SocketPathMarkerFiles {
     public static let stableMarkerFileName = "last-socket-path"
-    public static let stableTmpPath = "/tmp/cmux-last-socket-path"
+    public static let stableTmpPath = "/tmp/amux-last-socket-path"
     public static let nightlyBundleIdentifier = "com.open330.amux.nightly"
     public static let stagingBundleIdentifier = "com.open330.amux.staging"
     public static let defaultBaseDebugBundleIdentifier = "com.open330.amux.debug"

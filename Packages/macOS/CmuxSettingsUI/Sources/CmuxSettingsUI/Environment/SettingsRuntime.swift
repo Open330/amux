@@ -18,7 +18,7 @@ public struct SettingsRuntime: @unchecked Sendable {
     public let searchIndex: SettingsSearchIndex
     /// UserDefaults-backed settings store.
     public let userDefaultsStore: UserDefaultsSettingsStore
-    /// cmux.json-backed settings store.
+    /// amux.json-backed settings store.
     public let jsonStore: JSONConfigStore
     /// Secret-file-backed settings store.
     public let secretStore: SecretFileStore
@@ -37,7 +37,7 @@ public struct SettingsRuntime: @unchecked Sendable {
     /// - Parameters:
     ///   - catalog: Immutable setting declarations used by stores and section views.
     ///   - userDefaultsStore: UserDefaults-backed settings store.
-    ///   - jsonStore: cmux.json-backed settings store.
+    ///   - jsonStore: amux.json-backed settings store.
     ///   - secretStore: Secret-file-backed settings store.
     ///   - errorLog: Rolling settings error log displayed as alerts.
     ///   - accountFlow: Optional host-owned account flow actions.

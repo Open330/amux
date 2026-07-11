@@ -14,7 +14,7 @@ public struct WorkspaceGroupsCatalogSection: SettingCatalogSection {
     )
 
     /// Global default for the per-group `+` placement. Used when neither the
-    /// per-cwd `cmux.json` entry nor an explicit call-site override pins a
+    /// per-cwd `amux.json` entry nor an explicit call-site override pins a
     /// placement. The legacy writer removed the stored object when setting
     /// the default value; preserve that by resetting the key instead of
     /// writing `.afterCurrent`.

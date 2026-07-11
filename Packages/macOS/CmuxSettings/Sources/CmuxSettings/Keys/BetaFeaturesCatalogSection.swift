@@ -3,7 +3,7 @@ import Foundation
 /// Beta-feature toggles. Each key here gates an experimental code path
 /// in the running app. The id prefix is `rightSidebar.beta.*` for the
 /// existing right-sidebar Dock toggle; new betas should follow the
-/// pattern `<feature-domain>.beta.<flag-name>` so the cmux.json view
+/// pattern `<feature-domain>.beta.<flag-name>` so the amux.json view
 /// groups them sensibly.
 public struct BetaFeaturesCatalogSection: SettingCatalogSection {
     /// Right-sidebar Feed: an experimental mode that surfaces inline agent
@@ -37,7 +37,7 @@ public struct BetaFeaturesCatalogSection: SettingCatalogSection {
     )
 
     /// Custom sidebars: user/agent-authored sidebars (interpreted Swift or
-    /// JSON) discovered from `~/.config/cmux/sidebars/` and selectable in the
+    /// JSON) discovered from `~/.config/amux/sidebars/` and selectable in the
     /// sidebar button's provider picker. Defaults on; while off, no custom
     /// sidebar appears in the picker and a persisted custom selection falls
     /// back to the default workspaces sidebar.

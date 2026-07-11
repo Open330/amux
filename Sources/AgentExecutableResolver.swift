@@ -215,10 +215,10 @@ struct AgentExecutableResolver {
         let shimRoots: [String?] = [
             environment["CMUX_CLAUDE_WRAPPER_SHIM_ROOT"],
             URL(fileURLWithPath: environment["TMPDIR"] ?? NSTemporaryDirectory(), isDirectory: true)
-                .appendingPathComponent("cmux-cli-shims", isDirectory: true)
+                .appendingPathComponent("amux-cli-shims", isDirectory: true)
                 .standardizedFileURL
                 .path,
-            "/tmp/cmux-cli-shims",
+            "/tmp/amux-cli-shims",
         ]
         for shimRoot in shimRoots {
             guard let shimRoot = shimRoot?.trimmingCharacters(in: .whitespacesAndNewlines),

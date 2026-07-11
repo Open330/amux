@@ -27,7 +27,7 @@ public struct AnySettingKey: Sendable {
         case jsonConfig
 
         /// The key persists in its own private `0600` file managed by
-        /// ``SecretFileStore``, never in the shared `cmux.json`.
+        /// ``SecretFileStore``, never in the shared `amux.json`.
         ///
         /// - Parameter fileName: The secret's file name under the secret
         ///   store's base directory.

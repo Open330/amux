@@ -14,7 +14,7 @@ public enum WorkspaceGroupNewPlacement: String, CaseIterable, Sendable, Identifi
 
     public var id: String { rawValue }
 
-    /// Tolerant parse used by every configuration surface (`cmux.json`,
+    /// Tolerant parse used by every configuration surface (`amux.json`,
     /// `settings.json`, the control socket): trims whitespace and accepts
     /// `aftercurrent` / `after-current` / `after_current` spellings
     /// case-insensitively.
@@ -43,7 +43,7 @@ public enum WorkspaceGroupNewPlacement: String, CaseIterable, Sendable, Identifi
 
     public func encodeForUserDefaults() -> Any { rawValue }
 
-    /// JSON config values get the same tolerant parse (`cmux.json` accepted
+    /// JSON config values get the same tolerant parse (`amux.json` accepted
     /// the variant spellings through `init(rawString:)` before extraction).
     public static func decodeFromJSON(_ raw: Any?) -> WorkspaceGroupNewPlacement? {
         guard let string = raw as? String else { return nil }

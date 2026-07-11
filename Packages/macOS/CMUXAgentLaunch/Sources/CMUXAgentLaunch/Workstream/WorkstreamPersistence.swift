@@ -44,7 +44,7 @@ public actor WorkstreamPersistence {
     public static func defaultFileURL() -> URL {
         let home = FileManager.default.homeDirectoryForCurrentUser
         return home
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("workstream.jsonl", isDirectory: false)
     }
 

@@ -9,7 +9,7 @@ import SwiftUI
 enum KeyboardShortcutSettings {
     static let didChangeNotification = Notification.Name("cmux.keyboardShortcutSettingsDidChange")
     static let actionUserInfoKey = "action"
-    static let settingsFileDisplayPath = "~/.config/cmux/cmux.json"
+    static let settingsFileDisplayPath = "~/.config/amux/amux.json"
     static var settingsFileStore: KeyboardShortcutSettingsFileStore = .shared {
         didSet { notifySettingsFileDidChange() }
     }
@@ -561,7 +561,7 @@ enum KeyboardShortcutSettings {
                 // modifier tier web pages rarely bind, so it stays out of the page's
                 // way while focus mode is off and cmux owns the shortcut, and it
                 // avoids the Ctrl+Cmd+Return global hotkey some screen recorders use.
-                // Exit stays double-Escape; rebind in Settings or cmux.json.
+                // Exit stays double-Escape; rebind in Settings or amux.json.
                 return StoredShortcut(key: "\r", command: true, shift: false, option: true, control: false)
             case .toggleReactGrab:
                 return StoredShortcut(key: "g", command: true, shift: true, option: false, control: false)
@@ -690,7 +690,7 @@ enum KeyboardShortcutSettings {
         }
 
         func normalizedSettingsFileShortcut(_ shortcut: StoredShortcut) -> StoredShortcut? {
-            // cmux.json can load while the global settings store is still initializing.
+            // amux.json can load while the global settings store is still initializing.
             // Keep this path free of conflict and hotkey checks that consult global shortcut state.
             if shortcut.isUnbound {
                 return .unbound

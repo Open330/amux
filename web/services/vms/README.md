@@ -105,7 +105,7 @@ Freestyle:
 - Codex CLI from `@openai/codex@0.130.0`.
 - Pi from `@earendil-works/pi-coding-agent@0.74.0`.
 - `cmuxd-remote` as `/usr/local/bin/cmuxd-remote`.
-- `/usr/local/bin/cmux` symlinked to `cmuxd-remote` so the Linux relay CLI is on `PATH`.
+- `/usr/local/bin/amux` symlinked to `cmuxd-remote` so the Linux relay CLI is on `PATH`.
 
 The image smoke checks run `node --version`, `npm --version`, `bun --version`, `claude --version`,
 `opencode --version`, `codex --version`, `pi --version`, `cmux --help`, and `cmuxd-remote version`.

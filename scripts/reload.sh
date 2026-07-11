@@ -17,7 +17,7 @@ CMUX_DEV_PORT_RANGE=""
 CMUX_DEV_ORIGIN=""
 CLI_PATH=""
 NO_GLOBAL_CLI_LINKS="${CMUX_RELOAD_NO_GLOBAL_CLI_LINKS:-0}"
-# Matches CmuxStateDirectory (non-TCC ~/.local/state/cmux) where the app/CLI now
+# Matches CmuxStateDirectory (non-TCC ~/.local/state/amux) where the app/CLI now
 # read the last-socket-path markers (https://github.com/manaflow-ai/cmux/issues/5146).
 # Resolve the real account home via getpwuid (the same syscall
 # homeDirectoryForCurrentUser uses) rather than $HOME, which a shell can override.
@@ -26,7 +26,7 @@ NO_GLOBAL_CLI_LINKS="${CMUX_RELOAD_NO_GLOBAL_CLI_LINKS:-0}"
 # a second line. `|| true` keeps the lookup from aborting the script under
 # `set -euo pipefail`; an empty result falls back to $HOME.
 _cmux_account_home="$(perl -e 'print((getpwuid($<))[7])' 2>/dev/null || true)"
-LAST_SOCKET_PATH_DIR="${_cmux_account_home:-$HOME}/.local/state/cmux"
+LAST_SOCKET_PATH_DIR="${_cmux_account_home:-$HOME}/.local/state/amux"
 AUTO_SKIP_ZIG_BUILD_REASON=""
 SWIFT_FRONTEND_WORKAROUND=0
 XCODEBUILD_STARTED=0
@@ -52,7 +52,7 @@ write_dev_cli_shim() {
 # amux dev shim (managed by scripts/reload.sh)
 set -euo pipefail
 
-CLI_PATH_FILES=("/tmp/amux-last-cli-path" "/tmp/cmux-last-cli-path")
+CLI_PATH_FILES=("/tmp/amux-last-cli-path")
 SOCKET_ARG=""
 EXPECT_SOCKET_VALUE=0
 for arg in "\$@"; do
@@ -78,9 +78,6 @@ if [[ -n "\$SOCKET_ARG" ]]; then
     if [[ "\$TAG" =~ ^[A-Za-z0-9_-]+$ ]]; then
       TAG_APP="\$HOME/Library/Developer/Xcode/DerivedData/cmux-\$TAG/Build/Products/Debug/amux DEV \$TAG.app"
       TAG_CLI="\$TAG_APP/Contents/Resources/bin/amux"
-      if [[ ! -x "\$TAG_CLI" ]]; then
-        TAG_CLI="\$TAG_APP/Contents/Resources/bin/cmux"
-      fi
       if [[ -x "\$TAG_CLI" ]] && [[ "\$TAG_CLI" != "\$0" ]]; then
         exec "\$TAG_CLI" "\$@"
       fi
@@ -166,10 +163,6 @@ select_amux_shim_target() {
   select_cli_shim_target amux
 }
 
-select_cmux_shim_target() {
-  select_cli_shim_target cmux
-}
-
 publish_reload_cli_path() {
   local cli_path="$1"
   if [[ ! -x "$cli_path" ]]; then
@@ -180,23 +173,14 @@ publish_reload_cli_path() {
   fi
 
   (umask 077; printf '%s\n' "$cli_path" > /tmp/amux-last-cli-path) || true
-  (umask 077; printf '%s\n' "$cli_path" > /tmp/cmux-last-cli-path) || true
   ln -sfn "$cli_path" /tmp/amux-cli || true
-  ln -sfn "$cli_path" /tmp/cmux-cli || true
 
   # Stable shim that always follows the last reload-selected dev CLI.
   DEV_CLI_SHIM="$HOME/.local/bin/amux-dev"
   write_dev_cli_shim "$DEV_CLI_SHIM" "/Applications/amux.app/Contents/Resources/bin/amux"
-  COMPAT_DEV_CLI_SHIM="$HOME/.local/bin/cmux-dev"
-  write_dev_cli_shim "$COMPAT_DEV_CLI_SHIM" "/Applications/amux.app/Contents/Resources/bin/amux"
-
   AMUX_SHIM_TARGET="$(select_amux_shim_target || true)"
   if [[ -n "${AMUX_SHIM_TARGET:-}" ]]; then
     write_dev_cli_shim "$AMUX_SHIM_TARGET" "/Applications/amux.app/Contents/Resources/bin/amux"
-  fi
-  CMUX_SHIM_TARGET="$(select_cmux_shim_target || true)"
-  if [[ -n "${CMUX_SHIM_TARGET:-}" ]]; then
-    write_dev_cli_shim "$CMUX_SHIM_TARGET" "/Applications/amux.app/Contents/Resources/bin/amux"
   fi
 }
 
@@ -656,14 +640,9 @@ reload_finalize() {
       echo "  preserved existing global cmux CLI links (--no-global-cli-links)"
     else
       echo "  /tmp/amux-cli ..."
-      echo "  /tmp/cmux-cli ... (compatibility)"
       echo "  $HOME/.local/bin/amux-dev ..."
-      echo "  $HOME/.local/bin/cmux-dev ... (compatibility)"
       if [[ -n "${AMUX_SHIM_TARGET:-}" ]]; then
         echo "  $AMUX_SHIM_TARGET ..."
-      fi
-      if [[ -n "${CMUX_SHIM_TARGET:-}" ]]; then
-        echo "  $CMUX_SHIM_TARGET ... (compatibility)"
       fi
       echo "If your shell still resolves an old CLI path, run: rehash"
     fi
@@ -1056,11 +1035,7 @@ if [[ "${CMUX_SKIP_AMUX_RUNTIME:-}" != "1" ]]; then
   fi
 fi
 CLI_BIN_DIR="$APP_PATH/Contents/Resources/bin"
-if [[ -x "$CLI_BIN_DIR/amux" ]]; then
-  ln -sf amux "$CLI_BIN_DIR/cmux"
-elif [[ -x "$CLI_BIN_DIR/cmux" ]]; then
-  ln -sf cmux "$CLI_BIN_DIR/amux"
-fi
+rm -f "$CLI_BIN_DIR/cmux"
 if command -v xattr >/dev/null 2>&1; then
   xattr -cr "$APP_PATH" || true
 fi

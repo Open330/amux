@@ -458,7 +458,7 @@ final class ShortcutListModel {
     }
 
     /// Drops conflict banners for actions whose binding now resolves cleanly
-    /// (e.g. after an external cmux.json edit removes the colliding binding).
+    /// (e.g. after an external amux.json edit removes the colliding binding).
     private func pruneConflictRejections(changedActionIds: Set<String> = []) {
         guard !conflictRejections.isEmpty else { return }
         for key in Array(conflictRejections.keys) {

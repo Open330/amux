@@ -60,13 +60,12 @@ printf '%s' "$REMOTE_MANIFEST" | jq -e '
 }
 
 AMUX_CLI="$APP/Contents/Resources/bin/amux"
-CMUX_ALIAS="$APP/Contents/Resources/bin/cmux"
 [[ -x "$AMUX_CLI" && ! -L "$AMUX_CLI" ]] || {
   echo "error: mounted app is missing the canonical amux CLI executable" >&2
   exit 1
 }
-[[ -L "$CMUX_ALIAS" && "$(readlink "$CMUX_ALIAS")" == "amux" ]] || {
-  echo "error: mounted app must provide cmux as a relative symlink to amux" >&2
+[[ ! -e "$APP/Contents/Resources/bin/cmux" && ! -L "$APP/Contents/Resources/bin/cmux" ]] || {
+  echo "error: mounted app must not include the retired cmux CLI alias" >&2
   exit 1
 }
 "$AMUX_CLI" --help | grep -Fq "amux - control amux via Unix socket" || {
@@ -77,11 +76,6 @@ CMUX_ALIAS="$APP/Contents/Resources/bin/cmux"
   echo "error: mounted amux CLI reports a non-amux version identity" >&2
   exit 1
 }
-"$CMUX_ALIAS" --version | grep -Eq '^amux [0-9]+\.[0-9]+\.[0-9]+' || {
-  echo "error: cmux compatibility alias does not report the canonical amux identity" >&2
-  exit 1
-}
-
 codesign --verify --deep --strict --verbose=2 "$APP"
 if [[ "$REQUIRE_GATEKEEPER" == "1" ]]; then
   spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG_PATH"

@@ -46,7 +46,7 @@ public actor JSONConfigStore {
 
     private var cachedRoot: [String: Any] = [:]
     private var cacheValid = false
-    // Resolution identity the cache was loaded under. A cmux.json symlink can be
+    // Resolution identity the cache was loaded under. A amux.json symlink can be
     // retargeted at any time without a watcher event having been processed (or
     // with no subscriber at all, since drains spawn on first subscribe), so
     // cacheValid alone must never authorize reusing a root that was read from a
@@ -288,7 +288,7 @@ public actor JSONConfigStore {
 
     /// Resolves the location a write should target for `url`.
     ///
-    /// When `url` is a symlink — e.g. a `cmux.json` symlinked into a dotfiles
+    /// When `url` is a symlink — e.g. a `amux.json` symlinked into a dotfiles
     /// repo — an atomic write (`options: [.atomic]`) does a temp-file
     /// `rename()` onto the link path, which *replaces the symlink with a
     /// regular file* and silently breaks the dotfiles setup. Following the link

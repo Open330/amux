@@ -5,7 +5,7 @@ public struct RightSidebarWidthSettings: Sendable {
     /// Creates a stateless right sidebar width policy value.
     public init() {}
 
-    /// The `cmux.json` key under `sidebar` that stores the right sidebar maximum width.
+    /// The `amux.json` key under `sidebar` that stores the right sidebar maximum width.
     public static let jsonKey = "rightMaxWidth"
 
     /// The dotted settings path for the right sidebar maximum width override.
@@ -29,7 +29,7 @@ public struct RightSidebarWidthSettings: Sendable {
     /// The width restored when enabling the override without a remembered value.
     public static let defaultConfiguredMaximumWidth = builtInMaximumWidth
 
-    /// The largest width accepted by settings editors and imported `cmux.json` values.
+    /// The largest width accepted by settings editors and imported `amux.json` values.
     public static let settingsEditorMaximumWidth = 4096.0
 
     /// Returns the effective configured maximum width for a stored value.

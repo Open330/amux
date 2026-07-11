@@ -30,7 +30,7 @@ struct RemotePlatformProbeScriptTests {
         let home = root.appendingPathComponent("home", isDirectory: true)
         let bin = root.appendingPathComponent("bin", isDirectory: true)
         let daemonURL = home
-            .appendingPathComponent(".cmux/bin/cmuxd-remote/test-version/linux-amd64", isDirectory: true)
+            .appendingPathComponent(".amux/bin/cmuxd-remote/test-version/linux-amd64", isDirectory: true)
             .appendingPathComponent("cmuxd-remote", isDirectory: false)
         try fileManager.createDirectory(at: daemonURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fileManager.createDirectory(at: bin, withIntermediateDirectories: true)
@@ -123,7 +123,7 @@ struct RemotePlatformProbeScriptTests {
         let home = root.appendingPathComponent("home", isDirectory: true)
         let bin = root.appendingPathComponent("bin", isDirectory: true)
         let daemonURL = home
-            .appendingPathComponent(".cmux/bin/cmuxd-remote/dev/linux-amd64", isDirectory: true)
+            .appendingPathComponent(".amux/bin/cmuxd-remote/dev/linux-amd64", isDirectory: true)
             .appendingPathComponent("cmuxd-remote", isDirectory: false)
         try fileManager.createDirectory(at: daemonURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fileManager.createDirectory(at: bin, withIntermediateDirectories: true)

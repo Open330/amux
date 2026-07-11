@@ -1,17 +1,17 @@
 public import Foundation
 
 /// One-time migration that moves a plaintext secret out of the shared
-/// `cmux.json` config file and into a secure secret sink, then removes the
-/// plaintext from `cmux.json`.
+/// `amux.json` config file and into a secure secret sink, then removes the
+/// plaintext from `amux.json`.
 ///
 /// The socket-control password used to be storable as a plaintext string in
-/// `cmux.json` (an editable, copyable, versionable file). Convergence makes the
+/// `amux.json` (an editable, copyable, versionable file). Convergence makes the
 /// secure ``SecretFileStore`` file the single source of truth, so any lingering
 /// plaintext copy must be lifted into the secret sink and then scrubbed from the
 /// config.
 ///
 /// The migration is **pure and synchronous** by design: the host runs it at the
-/// very start of launch, before any managed-config layer reads `cmux.json`, so
+/// very start of launch, before any managed-config layer reads `amux.json`, so
 /// scrubbing the key can never race a config reload that would otherwise treat
 /// the now-missing key as a removed managed override. All side-effecting
 /// dependencies (the secret sink, the timestamp, the file system) are injected,
@@ -31,7 +31,7 @@ public import Foundation
 public enum PlaintextSecretMigration {
     /// The result of a migration attempt, surfaced for logging and tests.
     public enum Outcome: Equatable, Sendable {
-        /// `cmux.json` does not exist or could not be read; nothing to do.
+        /// `amux.json` does not exist or could not be read; nothing to do.
         case noConfigFile
         /// The file parsed but does not contain the plaintext key; nothing to do.
         case noPlaintextKey
@@ -39,22 +39,22 @@ public enum PlaintextSecretMigration {
         /// completely intact so a malformed/unsupported config is never
         /// corrupted; the plaintext (if any) is not migrated.
         case parseFailedLeftIntact
-        /// Copying the plaintext into the secret sink failed, so `cmux.json` was
+        /// Copying the plaintext into the secret sink failed, so `amux.json` was
         /// left completely intact (not scrubbed). The plaintext is preserved so a
         /// later run can retry rather than losing the only copy of the secret.
         case saveFailedLeftIntact
         /// A plaintext value was copied into the empty secret sink and then
-        /// removed from `cmux.json`.
+        /// removed from `amux.json`.
         case migratedAndScrubbed
         /// The key was present but the secret sink already held a value (so the
         /// plaintext was not copied, to avoid clobbering), and the plaintext was
-        /// removed from `cmux.json`. Also covers an empty/whitespace plaintext.
+        /// removed from `amux.json`. Also covers an empty/whitespace plaintext.
         case scrubbedWithoutCopy
     }
 
-    /// Lifts a plaintext secret at `plaintextKeyPath` out of `cmux.json` into the
+    /// Lifts a plaintext secret at `plaintextKeyPath` out of `amux.json` into the
     /// secret sink (only when the sink is empty), then removes the key from
-    /// `cmux.json` after backing the file up.
+    /// `amux.json` after backing the file up.
     ///
     /// Idempotent: once the key is gone, later runs return ``Outcome/noPlaintextKey``.
     /// Never overwrites an existing secret. Never corrupts an unparseable file.
@@ -62,10 +62,10 @@ public enum PlaintextSecretMigration {
     /// - Parameters:
     ///   - plaintextKeyPath: The nested object path to the plaintext value, e.g.
     ///     `["automation", "socketPassword"]`.
-    ///   - configURL: The `cmux.json` location.
+    ///   - configURL: The `amux.json` location.
     ///   - loadCurrentSecret: Returns the current secret-sink value, or `nil`/empty when unset.
     ///   - saveSecret: Persists a value into the secret sink. If it throws, the
-    ///     plaintext is left in `cmux.json` (``Outcome/saveFailedLeftIntact``) so
+    ///     plaintext is left in `amux.json` (``Outcome/saveFailedLeftIntact``) so
     ///     the only copy of the secret is never lost to a failed write.
     ///   - backupTimestamp: A filename-safe timestamp used for the `.bak` copy
     ///     (injected so the result is deterministic in tests).
@@ -100,7 +100,7 @@ public enum PlaintextSecretMigration {
                 do {
                     try saveSecret(plaintext)
                 } catch {
-                    // The secure write failed; leave the plaintext in cmux.json so a
+                    // The secure write failed; leave the plaintext in amux.json so a
                     // later run can retry rather than losing the only copy.
                     return .saveFailedLeftIntact
                 }
@@ -137,7 +137,7 @@ public enum PlaintextSecretMigration {
     }
 
     /// Removes `//` line comments, `/* */` block comments, and trailing commas
-    /// that appear outside of string literals, so a JSONC `cmux.json` can be
+    /// that appear outside of string literals, so a JSONC `amux.json` can be
     /// parsed by `JSONSerialization`. String contents (including any `//` or
     /// commas inside them) are preserved verbatim.
     private static func stripJSONC(_ text: String) -> String {

@@ -60,8 +60,8 @@ Environment:
 | --- | --- |
 | `welcome` | Print the welcome screen. |
 | `docs` | Print canonical docs URLs, raw GitHub resources, and useful commands for a topic. |
-| `settings` | Open Settings, print cmux.json paths, or print settings docs. |
-| `config` | Validate cmux.json syntax, print config references, or reload config. |
+| `settings` | Open Settings, print amux.json paths, or print settings docs. |
+| `config` | Validate amux.json syntax, print config references, or reload config. |
 | `shortcuts` | Open Settings to Keyboard Shortcuts. |
 | `disable-browser` | Disable cmux browser creation and link interception until re-enabled. |
 | `enable-browser` | Re-enable cmux browser creation and link interception. |
@@ -94,7 +94,7 @@ Environment:
 | `close-window` | Close a window by handle. |
 | `window displays` | List connected displays (name, index, main flag). |
 | `window display <name\|index>` | Move the instance's window(s) onto a display by name (exact, substring) or index, preserving size. Does not steal focus. With `--window`, targets that window; otherwise moves all main windows. `--list` aliases `window displays`. |
-| `window default-display [<name>\|--clear]` | Set, show (no arg), or clear (`--clear`) the shared, cross-tag default display that DEBUG dev builds open new windows on, stored in `~/.config/cmux/cmux.json` under `app.devWindowDisplay`. No running app required; applied at window creation. Also settable in Debug > Debug Windows > Dev Window Display. |
+| `window default-display [<name>\|--clear]` | Set, show (no arg), or clear (`--clear`) the shared, cross-tag default display that DEBUG dev builds open new windows on, stored in `~/.config/amux/amux.json` under `app.devWindowDisplay`. No running app required; applied at window creation. Also settable in Debug > Debug Windows > Dev Window Display. |
 | `move-workspace-to-window` | Move a workspace into a target window. |
 | `reorder-workspace` | Reorder a workspace inside a window. |
 | `reorder-workspaces` | Atomically reorder workspaces inside pinned and unpinned groups. |
@@ -237,7 +237,7 @@ Setting them:
   `--env-file` reads `KEY=VALUE` lines (blank lines and `#` comments ignored, an
   optional leading `export ` stripped). When both are given, `--env` overrides a
   value from a file.
-- Project config (`cmux.json`): an `env` object on a workspace definition, e.g.
+- Project config (`amux.json`): an `env` object on a workspace definition, e.g.
   `{ "name": "Build", "cwd": ".", "env": { "AWS_PROFILE": "prod" } }`.
 - Socket: the `workspace_env` param on `workspace.create`.
 
@@ -367,7 +367,7 @@ Custom sidebar commands:
 
 | Command | Contract |
 | --- | --- |
-| `sidebar validate [name]` | Validate all custom sidebars, or one named sidebar, under `~/.config/cmux/sidebars`. |
+| `sidebar validate [name]` | Validate all custom sidebars, or one named sidebar, under `~/.config/amux/sidebars`. |
 | `sidebar reload [name]` | Validate all custom sidebars, then request a reload for every valid one. |
 | `sidebar select <name>` | Validate and activate one custom sidebar in the sidebar picker. |
 | `sidebar open <name>` | Validate and open one custom sidebar as a normal Bonsplit pane tab, preferring the right-side split from the focused surface. |
@@ -377,7 +377,7 @@ Docs topics:
 | Command | Contract |
 | --- | --- |
 | `docs` | List docs topics without a socket. |
-| `docs settings` | Print the configuration docs URL, raw schema URL, cmux.json paths, backup reminder, and reload command. |
+| `docs settings` | Print the configuration docs URL, raw schema URL, amux.json paths, backup reminder, and reload command. |
 | `docs shortcuts` | Print shortcut docs and raw shortcut data resources. |
 | `docs api` | Print API docs and raw CLI contract resources. |
 | `docs browser` | Print browser automation docs and raw browser skill resources. |
@@ -389,7 +389,7 @@ Settings subcommands:
 | --- | --- |
 | `settings` | Open the Settings window, launching cmux if needed. |
 | `settings open [target]` | Open Settings to an optional target section. |
-| `settings path` | Print cmux.json paths, docs URL, schema URL, backup reminder, and reload command without a socket. |
+| `settings path` | Print amux.json paths, docs URL, schema URL, backup reminder, and reload command without a socket. |
 | `settings docs` | Print the same output as `docs settings` without a socket. |
 | `settings <target>` | Open Settings to a target section. Supported aliases include `shortcuts`, `json`, `cmux-json`, `browser`, and `automation`. |
 
@@ -397,8 +397,8 @@ Config subcommands:
 
 | Command | Contract |
 | --- | --- |
-| `config doctor [--path <file>]`, `config check`, `config validate` | Validate JSONC syntax for config files. When `--path` is absent, default discovery checks the primary config, project-level `.cmux/cmux.json` or `cmux.json`, and legacy config files. `--path <file>` may be repeated to validate multiple explicit files. Exits 0 on success and 1 on any error. Supports `--json`. Works without a socket. |
-| `config path`, `config paths` | Print cmux.json paths, docs URL, schema URL, backup reminder, and reload command without a socket. |
+| `config doctor [--path <file>]`, `config check`, `config validate` | Validate JSONC syntax for config files. When `--path` is absent, default discovery checks the primary config, project-level `.amux/amux.json` or `amux.json`, and legacy config files. `--path <file>` may be repeated to validate multiple explicit files. Exits 0 on success and 1 on any error. Supports `--json`. Works without a socket. |
+| `config path`, `config paths` | Print amux.json paths, docs URL, schema URL, backup reminder, and reload command without a socket. |
 | `config docs`, `config documentation` | Print the same output as `docs settings` without a socket. |
 | `config reload` | Ask the running cmux app to reload configuration. Requires a socket. |
 | `config get sidebar-font-size` | Print the effective sidebar text size. |
@@ -433,7 +433,7 @@ response frame is an `ack`; sequence resume metadata lives under `ack.resume` as
 carry a process-local monotonic `seq` and a stable `id` for dedupe. Clients
 should persist `seq` after processing each event and reconnect with that value.
 See [events.md](events.md) for the full protocol and event catalog. Every emitted event is also appended to
-`~/.cmuxterm/events.jsonl`, including model lifecycle events for window
+`~/.amux/events.jsonl`, including model lifecycle events for window
 creation, close, focus, key-window state, workspace selection, pane focus, and
 surface selection, focus, creation, or closure. The stream is bounded: cmux keeps
 4,096 replay events in memory, caps each encoded event frame at 16 KiB, closes

@@ -127,7 +127,7 @@ def write_marker(home: str, marker_name: str, socket_path: str) -> None:
 
 def temporary_socket_home(prefix: str) -> tempfile.TemporaryDirectory:
     # Darwin caps Unix socket paths at a little over 100 bytes. Keep fake HOME
-    # roots short because stable sockets live under ~/.local/state/cmux.
+    # roots short because stable sockets live under ~/.local/state/amux.
     return tempfile.TemporaryDirectory(prefix=prefix, dir="/tmp")
 
 

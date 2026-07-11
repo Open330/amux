@@ -349,7 +349,7 @@ extension CMUXCLI {
     private func bundleIdentifierForThemeReloadSocketPath(_ socketPath: String) -> String? {
         let name = URL(fileURLWithPath: socketPath).lastPathComponent
         switch name {
-        case "cmux.sock":
+        case "amux.sock":
             return Self.cmuxThemeOverrideBundleIdentifier
         case "cmux-debug.sock":
             return "com.open330.amux.debug"

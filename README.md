@@ -140,14 +140,19 @@ Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.
 
 Download the signed, notarized build from [Releases](https://github.com/Open330/amux/releases/latest).
 
-### Legacy compatibility contract
+### Migration from cmux
 
-`amux` is the product and canonical CLI name. The following inherited names are
-compatibility interfaces, not product branding: existing `CMUX_*` environment variables,
-`cmux.json`, `.cmux/` project directories, `cmux.*` action IDs, and the `cmux` CLI alias
-remain supported so cmux configurations and agent integrations continue to work after migration.
-New user-facing examples and release artifacts use `amux`.
-The full boundary is documented in [`docs/amux-identity.md`](docs/amux-identity.md).
+`amux` now owns its CLI and storage paths. On first launch it imports existing
+`~/.config/cmux/cmux.json`, `~/.config/cmux/`, `~/.cmux/`, `~/.cmuxterm/`, and
+project `.cmux/` data into `~/.config/amux/amux.json`, `~/.config/amux/`,
+`~/.amux/`, and project `.amux/`. Existing amux files always win and legacy
+sources are left untouched for rollback. After import, only amux paths are read
+and written; the release no longer installs a `cmux` CLI alias.
+
+Inherited `CMUX_*` environment variables and `cmux.*` action identifiers remain
+protocol-level names for existing integrations. They are not executable or
+configuration-path aliases. The boundary is documented in
+[`docs/amux-identity.md`](docs/amux-identity.md).
 
 ## Relationship to cmux
 

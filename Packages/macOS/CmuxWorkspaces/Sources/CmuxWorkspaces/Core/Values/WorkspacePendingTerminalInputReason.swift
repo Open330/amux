@@ -6,7 +6,7 @@ public import Foundation
 /// `WorkspacePendingTerminalInputPolicy` namespace; the policy's timeout
 /// lookup is now a property on the reason itself (one source of truth).
 public enum WorkspacePendingTerminalInputReason: Sendable, Equatable {
-    /// Input injected by a workspace configuration command (cmux.json).
+    /// Input injected by a workspace configuration command (amux.json).
     case configurationCommand
 
     /// How long queued input for this reason may wait for shell readiness

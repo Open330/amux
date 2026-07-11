@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import hashlib
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -593,7 +594,7 @@ def cmux_codex_hook_command(subcommand: str) -> str:
     routed_arguments = f"hooks codex {subcommand}"
     return (
         'cmux_cli="${CMUX_BUNDLED_CLI_PATH:-}"; if [ -z "$cmux_cli" ] || [ ! -x "$cmux_cli" ]; '
-        'then cmux_cli="$(command -v cmux 2>/dev/null || true)"; fi; if [ -n "$CMUX_SURFACE_ID" ] '
+        'then cmux_cli="$(command -v amux 2>/dev/null || true)"; fi; if [ -n "$CMUX_SURFACE_ID" ] '
         '&& [ "$CMUX_CODEX_HOOKS_DISABLED" != "1" ] && [ -n "$cmux_cli" ]; then { '
         f'if [ -n "${{CMUX_SOCKET_PATH:-}}" ]; then "$cmux_cli" --socket "$CMUX_SOCKET_PATH" {routed_arguments}; '
         f'else "$cmux_cli" {routed_arguments}; fi; '
@@ -606,7 +607,7 @@ def cmux_codex_feed_command(agent_event: str) -> str:
     noop_command = "{ cat >/dev/null 2>/dev/null || true; echo '{}'; }"
     return (
         'cmux_cli="${CMUX_BUNDLED_CLI_PATH:-}"; if [ -z "$cmux_cli" ] || [ ! -x "$cmux_cli" ]; '
-        'then cmux_cli="$(command -v cmux 2>/dev/null || true)"; fi; if [ -n "$CMUX_SURFACE_ID" ] '
+        'then cmux_cli="$(command -v amux 2>/dev/null || true)"; fi; if [ -n "$CMUX_SURFACE_ID" ] '
         '&& [ "$CMUX_CODEX_HOOKS_DISABLED" != "1" ] && [ -n "$cmux_cli" ]; then { '
         f'if [ -n "${{CMUX_SOCKET_PATH:-}}" ]; then "$cmux_cli" --socket "$CMUX_SOCKET_PATH" {routed_arguments}; '
         f'else "$cmux_cli" {routed_arguments}; fi; '
@@ -617,7 +618,29 @@ def cmux_codex_feed_command(agent_event: str) -> str:
 def is_cmux_codex_hook_command(command: str) -> bool:
     hook_commands = {cmux_codex_hook_command(subcommand) for subcommand in CMUX_CODEX_HOOK_SUBCOMMANDS}
     feed_commands = {cmux_codex_feed_command(agent_event) for agent_event in CMUX_CODEX_FEED_EVENTS}
-    return command in hook_commands or command in feed_commands
+    return any(hook_command_matches(command, expected) for expected in hook_commands | feed_commands)
+
+
+def hook_command_matches(command: str, expected_inline: str) -> bool:
+    if command == expected_inline:
+        return True
+    path = Path(command)
+    if not path.is_file():
+        return False
+    try:
+        contents = path.read_text(encoding="utf-8")
+        if contents == f"#!/bin/sh\n{expected_inline}\n":
+            return True
+        route = re.search(
+            r"hooks (?:codex [a-z-]+|feed --source [a-z0-9_-]+ --event [A-Za-z0-9_-]+)",
+            expected_inline,
+        )
+        return route is not None \
+            and route.group(0) in contents \
+            and "command -v amux" in contents \
+            and "command -v cmux" not in contents
+    except OSError:
+        return False
 
 
 def toml_basic_string_unescape(value: str) -> str:
@@ -755,7 +778,7 @@ def test_install_adds_codex_permission_request_hook(cli_path: str, root: Path) -
         if not groups:
             raise AssertionError(f"missing {event_name} hook group: {hooks!r}")
         command = groups[-1]["hooks"][0]["command"]
-        if command != cmux_codex_feed_command(event_name):
+        if not hook_command_matches(command, cmux_codex_feed_command(event_name)):
             raise AssertionError(f"wrong {event_name} feed command: {command!r}")
         if groups[-1]["hooks"][0].get("timeout") != 5:
             raise AssertionError(f"wrong {event_name} timeout: {groups[-1]!r}")
@@ -850,7 +873,7 @@ def test_install_preserves_codex_hook_position_with_third_party_hooks(cli_path: 
     groups = hooks["hooks"]["PreToolUse"]
     first_command = groups[0]["hooks"][0]["command"]
     second_command = groups[1]["hooks"][0]["command"]
-    if first_command != cmux_pre_tool:
+    if not hook_command_matches(first_command, cmux_pre_tool):
         raise AssertionError(f"cmux hook did not keep its existing position: {groups!r}")
     if second_command != orca_hook:
         raise AssertionError(f"third-party hook was not preserved after cmux hook: {groups!r}")
@@ -900,13 +923,9 @@ def test_install_deduplicates_interleaved_codex_hook_positions(
 
     hooks = json.loads((codex_home / "hooks.json").read_text(encoding="utf-8"))
     commands = [group["hooks"][0]["command"] for group in hooks["hooks"]["PreToolUse"]]
-    expected = [
-        user_hook_before,
-        cmux_pre_tool,
-        user_hook_middle,
-        user_hook_after,
-    ]
-    if commands != expected:
+    if len(commands) != 4 or commands[0] != user_hook_before \
+            or not hook_command_matches(commands[1], cmux_pre_tool) \
+            or commands[2:] != [user_hook_middle, user_hook_after]:
         raise AssertionError(f"interleaved cmux hook dedupe changed: {commands!r}")
 
 
@@ -950,12 +969,9 @@ def test_install_collapses_consecutive_codex_hook_positions(cli_path: str, root:
 
     hooks = json.loads((codex_home / "hooks.json").read_text(encoding="utf-8"))
     commands = [group["hooks"][0]["command"] for group in hooks["hooks"]["PreToolUse"]]
-    expected = [
-        user_hook_before,
-        cmux_pre_tool,
-        user_hook_after,
-    ]
-    if commands != expected:
+    if len(commands) != 3 or commands[0] != user_hook_before \
+            or not hook_command_matches(commands[1], cmux_pre_tool) \
+            or commands[2] != user_hook_after:
         raise AssertionError(f"consecutive cmux hooks were not collapsed: {commands!r}")
 
 
@@ -1005,9 +1021,9 @@ def test_install_replaces_legacy_codex_hook_commands(cli_path: str, root: Path) 
     commands = codex_hook_commands(hooks)
     if any("cmux codex-hook" in command or "cmux feed-hook --source" in command for command in commands):
         raise AssertionError(f"legacy cmux hook commands were not removed: {commands!r}")
-    if cmux_codex_hook_command("stop") not in commands:
+    if not any(hook_command_matches(command, cmux_codex_hook_command("stop")) for command in commands):
         raise AssertionError(f"current Stop hook was not installed: {commands!r}")
-    if cmux_codex_feed_command("PreToolUse") not in commands:
+    if not any(hook_command_matches(command, cmux_codex_feed_command("PreToolUse")) for command in commands):
         raise AssertionError(f"current PreToolUse feed hook was not installed: {commands!r}")
 
 
@@ -1402,7 +1418,7 @@ def test_install_recovers_hook_trust_when_cmux_marker_is_unclosed(
         )
 
     config_toml = (codex_home / "config.toml").read_text(encoding="utf-8")
-    if "approved cmux hooks" not in result.stdout:
+    if "approved amux hooks" not in result.stdout:
         raise AssertionError(f"install did not report recovered hook trust approval: {result.stdout!r}")
     if config_toml.count("# cmux-codex-hook-trust-f5cc24da-7a09-4b20-a756-89e7786f6738 begin") != 1:
         raise AssertionError(f"install did not write one fresh cmux hook trust marker: {config_toml!r}")
@@ -1431,7 +1447,10 @@ def test_install_preserves_plugin_tables_inside_stale_cmux_hook_trust_marker(
     stale_old_cmux_hash = codex_command_hook_hash(
         event_label="pre_tool_use",
         matcher=None,
-        command=cmux_codex_feed_command("PreToolUse"),
+        command=cmux_codex_feed_command("PreToolUse").replace(
+            "command -v amux 2>/dev/null || true",
+            "command -v cmux 2>/dev/null || true",
+        ),
         timeout=120_000,
         status_message=None,
     )

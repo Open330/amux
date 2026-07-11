@@ -10,11 +10,11 @@ extension RemoteSessionCoordinator {
     public static func remoteRelayMetadataCleanupScript(relayPort: Int) -> String {
         """
         relay_socket='127.0.0.1:\(relayPort)'
-        socket_addr_file="$HOME/.cmux/socket_addr"
+        socket_addr_file="$HOME/.amux/socket_addr"
         if [ -r "$socket_addr_file" ] && [ "$(tr -d '\\r\\n' < "$socket_addr_file")" = "$relay_socket" ]; then
           rm -f "$socket_addr_file"
         fi
-        rm -f "$HOME/.cmux/relay/\(relayPort).auth" "$HOME/.cmux/relay/\(relayPort).daemon_path" "$HOME/.cmux/relay/\(relayPort).slot" "$HOME/.cmux/relay/\(relayPort).tty"
+        rm -f "$HOME/.amux/relay/\(relayPort).auth" "$HOME/.amux/relay/\(relayPort).daemon_path" "$HOME/.amux/relay/\(relayPort).slot" "$HOME/.amux/relay/\(relayPort).tty"
         """
     }
 
@@ -108,15 +108,15 @@ extension RemoteSessionCoordinator {
           if [ -z "$cmux_child_pids" ]; then
             cmux_cleanup_reason=metadata
             cmux_metadata_ok=0
-            cmux_slot_file="$HOME/.cmux/relay/${cmux_relay_port}.slot"
+            cmux_slot_file="$HOME/.amux/relay/${cmux_relay_port}.slot"
             cmux_metadata_slot_ok=0
             if [ -r "$cmux_slot_file" ]; then
               cmux_stored_slot="$(tr -d '\\r\\n' < "$cmux_slot_file")"
               [ "$cmux_stored_slot" = "$cmux_persistent_slot" ] && cmux_metadata_slot_ok=1
             fi
             if [ "$cmux_metadata_slot_ok" -eq 1 ]; then
-              cmux_daemon_map="$HOME/.cmux/relay/${cmux_relay_port}.daemon_path"
-              cmux_auth_file="$HOME/.cmux/relay/${cmux_relay_port}.auth"
+              cmux_daemon_map="$HOME/.amux/relay/${cmux_relay_port}.daemon_path"
+              cmux_auth_file="$HOME/.amux/relay/${cmux_relay_port}.auth"
               if [ -r "$cmux_daemon_map" ]; then
                 cmux_daemon_path="$(tr -d '\\r\\n' < "$cmux_daemon_map")"
                 case "$cmux_daemon_path" in
@@ -160,15 +160,15 @@ extension RemoteSessionCoordinator {
         #!/bin/sh
         set -eu
 
-        daemon="$HOME/.cmux/bin/cmuxd-remote-current"
+        daemon="$HOME/.amux/bin/cmuxd-remote-current"
         socket_path="${CMUX_SOCKET_PATH:-}"
-        if [ -z "$socket_path" ] && [ -r "$HOME/.cmux/socket_addr" ]; then
-          socket_path="$(tr -d '\\r\\n' < "$HOME/.cmux/socket_addr")"
+        if [ -z "$socket_path" ] && [ -r "$HOME/.amux/socket_addr" ]; then
+          socket_path="$(tr -d '\\r\\n' < "$HOME/.amux/socket_addr")"
         fi
 
         if [ -n "$socket_path" ] && [ "${socket_path#/}" = "$socket_path" ] && [ "${socket_path#*:}" != "$socket_path" ]; then
           relay_port="${socket_path##*:}"
-          relay_map="$HOME/.cmux/relay/${relay_port}.daemon_path"
+          relay_map="$HOME/.amux/relay/${relay_port}.daemon_path"
           if [ -r "$relay_map" ]; then
             mapped_daemon="$(tr -d '\\r\\n' < "$relay_map")"
             if [ -n "$mapped_daemon" ] && [ -x "$mapped_daemon" ]; then
@@ -185,14 +185,14 @@ extension RemoteSessionCoordinator {
         let trimmedRemotePath = daemonRemotePath.trimmingCharacters(in: .whitespacesAndNewlines)
         let daemonPathExpression = remoteDaemonPathShellExpression(trimmedRemotePath)
         return """
-        mkdir -p "$HOME/.cmux/bin" "$HOME/.cmux/relay"
-        ln -sf \(daemonPathExpression) "$HOME/.cmux/bin/cmuxd-remote-current"
-        wrapper_tmp="$HOME/.cmux/bin/.cmux-wrapper.tmp.$$"
+        mkdir -p "$HOME/.amux/bin" "$HOME/.amux/relay"
+        ln -sf \(daemonPathExpression) "$HOME/.amux/bin/cmuxd-remote-current"
+        wrapper_tmp="$HOME/.amux/bin/.amux-wrapper.tmp.$$"
         cat > "$wrapper_tmp" <<'CMUXWRAPPER'
         \(remoteCLIWrapperScript())
         CMUXWRAPPER
         chmod 755 "$wrapper_tmp"
-        mv -f "$wrapper_tmp" "$HOME/.cmux/bin/cmux"
+        mv -f "$wrapper_tmp" "$HOME/.amux/bin/amux"
         """
     }
 
@@ -207,25 +207,25 @@ extension RemoteSessionCoordinator {
         let daemonPathExpression = remoteDaemonPathShellExpression(trimmedRemotePath)
         let slotMetadataLine: String
         if let slot = normalizedPersistentDaemonSlotForRemoteCleanup(persistentDaemonSlot) {
-            slotMetadataLine = "printf '%s' \(slot.shellSingleQuoted) > \"$HOME/.cmux/relay/\(relayPort).slot\"\nchmod 600 \"$HOME/.cmux/relay/\(relayPort).slot\""
+            slotMetadataLine = "printf '%s' \(slot.shellSingleQuoted) > \"$HOME/.amux/relay/\(relayPort).slot\"\nchmod 600 \"$HOME/.amux/relay/\(relayPort).slot\""
         } else {
-            slotMetadataLine = "rm -f \"$HOME/.cmux/relay/\(relayPort).slot\""
+            slotMetadataLine = "rm -f \"$HOME/.amux/relay/\(relayPort).slot\""
         }
         let authPayload = """
         {"relay_id":"\(relayID)","relay_token":"\(relayToken)"}
         """
         return """
         umask 077
-        mkdir -p "$HOME/.cmux" "$HOME/.cmux/relay"
-        chmod 700 "$HOME/.cmux/relay"
+        mkdir -p "$HOME/.cmux" "$HOME/.amux/relay"
+        chmod 700 "$HOME/.amux/relay"
         \(remoteCLIWrapperInstallScript(daemonRemotePath: trimmedRemotePath))
-        printf '%s' \(daemonPathExpression) > "$HOME/.cmux/relay/\(relayPort).daemon_path"
+        printf '%s' \(daemonPathExpression) > "$HOME/.amux/relay/\(relayPort).daemon_path"
         \(slotMetadataLine)
-        cat > "$HOME/.cmux/relay/\(relayPort).auth" <<'CMUXRELAYAUTH'
+        cat > "$HOME/.amux/relay/\(relayPort).auth" <<'CMUXRELAYAUTH'
         \(authPayload)
         CMUXRELAYAUTH
-        chmod 600 "$HOME/.cmux/relay/\(relayPort).auth"
-        printf '%s' '127.0.0.1:\(relayPort)' > "$HOME/.cmux/socket_addr"
+        chmod 600 "$HOME/.amux/relay/\(relayPort).auth"
+        printf '%s' '127.0.0.1:\(relayPort)' > "$HOME/.amux/socket_addr"
         """
     }
 

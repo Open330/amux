@@ -23,7 +23,7 @@ public struct WorkspaceGroup: Identifiable, Equatable, Sendable {
     /// whose `groupId == self.id`. Closing this workspace dissolves the group.
     public var anchorWorkspaceId: UUID
     /// Group-level color override (hex string). When nil, falls back to the
-    /// cwd-config color resolved from `cmux.json` for the anchor's cwd, then
+    /// cwd-config color resolved from `amux.json` for the anchor's cwd, then
     /// to no tint.
     public var customColor: String?
     /// SF symbol name for the header icon. When nil, defaults to `folder.fill`.

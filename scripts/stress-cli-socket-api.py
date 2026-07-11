@@ -484,7 +484,7 @@ class Diagnostics:
         roots = [
             pathlib.Path.home() / "Library/Logs/DiagnosticReports",
             pathlib.Path("/Library/Logs/DiagnosticReports"),
-            pathlib.Path.home() / ".local/state/cmux/crash",
+            pathlib.Path.home() / ".local/state/amux/crash",
         ]
         for root in roots:
             if not root.exists():
@@ -1534,7 +1534,7 @@ def resolve_cli_path(raw: str | None, tag: str | None) -> str:
         candidates.append(os.path.expanduser(env_cli))
     if tag:
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux DEV {tag}.app/Contents/Resources/bin/amux"))
-        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux DEV {tag}.app/Contents/Resources/bin/cmux"))
+        candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux DEV {tag}.app/Contents/Resources/bin/amux"))
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/amux"))
         candidates.append(os.path.expanduser(f"~/Library/Developer/Xcode/DerivedData/cmux-{tag}/Build/Products/Debug/cmux"))
     last_cli = pathlib.Path("/tmp/amux-last-cli-path")
@@ -1543,7 +1543,7 @@ def resolve_cli_path(raw: str | None, tag: str | None) -> str:
             candidates.append(last_cli.read_text(encoding="utf-8").strip())
         except OSError:
             pass
-    last_cli = pathlib.Path("/tmp/cmux-last-cli-path")
+    last_cli = pathlib.Path("/tmp/amux-last-cli-path")
     if last_cli.exists():
         try:
             candidates.append(last_cli.read_text(encoding="utf-8").strip())

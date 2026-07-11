@@ -574,7 +574,7 @@ extension FeedCoordinator {
 
     /// Parses `workstreamId` in the form `<agent>-<sessionId>` and
     /// looks up the matching hook-session entry in
-    /// `~/.cmuxterm/<agent>-hook-sessions.json` (written by
+    /// `~/.amux/<agent>-hook-sessions.json` (written by
     /// `cmux <agent>-hook session-start`). Returns `true` if a match
     /// was found so the UI can gate the jump gesture.
     ///
@@ -623,7 +623,7 @@ extension FeedCoordinator {
     }
 }
 
-/// Reads the per-agent hook session stores (`~/.cmuxterm/<agent>-hook-sessions.json`)
+/// Reads the per-agent hook session stores (`~/.amux/<agent>-hook-sessions.json`)
 /// to map a feed `workstream_id` back to a cmux `(workspaceId, surfaceId)` pair.
 /// The schema is the same one written by `cmux <agent>-hook session-start`.
 enum FeedJumpResolver {
@@ -643,7 +643,7 @@ enum FeedJumpResolver {
     static func lookup(agent: String, sessionId: String) -> Target? {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let file = home
-            .appendingPathComponent(".cmuxterm", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("\(agent)-hook-sessions.json", isDirectory: false)
         guard let data = try? Data(contentsOf: file),
               let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any]

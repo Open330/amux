@@ -2,7 +2,7 @@ import Foundation
 
 /// Host-supplied callbacks the package's section views invoke for
 /// actions that live outside the catalog — clearing browser history,
-/// opening the user's editor on cmux.json, sending feedback, posting
+/// opening the user's editor on amux.json, sending feedback, posting
 /// test notifications, restarting the app after a language change,
 /// and launching the browser import workflow.
 ///

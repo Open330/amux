@@ -2,7 +2,7 @@
 
 Opt-in AI naming of sidebar workspaces and tabs from agent conversation content. With several concurrent agent sessions, the sidebar otherwise shows identical rows ("Claude Code", "codex"); auto-naming turns them into short, topic-bearing names that refresh as each conversation moves.
 
-Off by default. Enable it in **Settings > Automation > Workspace Auto-Naming** or via `automation.workspaceAutoNaming` in `cmux.json` (see [configuration.md](configuration.md#automationworkspaceautonaming)).
+Off by default. Enable it in **Settings > Automation > Workspace Auto-Naming** or via `automation.workspaceAutoNaming` in `amux.json` (see [configuration.md](configuration.md#automationworkspaceautonaming)).
 
 ## What it does
 
@@ -44,4 +44,4 @@ The other hook integrations are intentionally skipped for now:
 
 ## Mechanics
 
-The Claude Code wrapper registers an async `Stop` hook (`cmux hooks claude auto-name`); other supported agents spawn an equivalent detached pass from their turn-end hook. Each pass reads the adapter's transcript source, evaluates the throttle against per-session state in `~/.cmuxterm/<agent>-hook-sessions.json`, and applies the title through the `workspace.set_auto_title` socket method, which enforces the setting and the user-provenance rule app-side.
+The Claude Code wrapper registers an async `Stop` hook (`cmux hooks claude auto-name`); other supported agents spawn an equivalent detached pass from their turn-end hook. Each pass reads the adapter's transcript source, evaluates the throttle against per-session state in `~/.amux/<agent>-hook-sessions.json`, and applies the title through the `workspace.set_auto_title` socket method, which enforces the setting and the user-provenance rule app-side.

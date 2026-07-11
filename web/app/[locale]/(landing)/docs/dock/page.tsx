@@ -33,10 +33,10 @@ export default function DockPage() {
       <p>{t("configIntro")}</p>
       <ol>
         <li>
-          <code>.cmux/dock.json</code> {t("projectConfig")}
+          <code>.amux/dock.json</code> {t("projectConfig")}
         </li>
         <li>
-          <code>~/.config/cmux/dock.json</code> {t("globalConfig")}
+          <code>~/.config/amux/dock.json</code> {t("globalConfig")}
         </li>
       </ol>
       <Callout type="info">{t("precedenceCallout")}</Callout>
@@ -44,7 +44,7 @@ export default function DockPage() {
 
       <DocsHeading level={2} id="example-title">{t("exampleTitle")}</DocsHeading>
       <p>{t("exampleIntro")}</p>
-      <CodeBlock title=".cmux/dock.json" lang="json">{`{
+      <CodeBlock title=".amux/dock.json" lang="json">{`{
   "controls": [
     {
       "id": "git",

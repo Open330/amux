@@ -26,7 +26,7 @@ Supported agent names are `codex`, `grok`, `opencode`, `pi`, `omp`, `amp`, `curs
 | Amp | `amp` | `~/.config/amp/plugins/cmux-session.ts` | `amp threads continue <id>` | none |
 | Cursor CLI | `cursor-agent` | `~/.cursor/hooks.json` | `cursor-agent --resume <id>` | beforeShellExecution |
 | Gemini | `gemini` | `~/.gemini/settings.json` | `gemini --resume <id>` | PreToolUse |
-| Kiro CLI | `kiro-cli` | `~/.kiro/agents/cmux.json` or `$KIRO_HOME/agents/cmux.json` | `kiro-cli chat --resume-id <id>` | preToolUse, postToolUse |
+| Kiro CLI | `kiro-cli` | `~/.kiro/agents/amux.json` or `$KIRO_HOME/agents/amux.json` | `kiro-cli chat --resume-id <id>` | preToolUse, postToolUse |
 | Rovo Dev | `acli` | `~/.rovodev/config.yml` | `acli rovodev run --restore <id>` | none |
 | Copilot | `copilot` | `~/.copilot/config.json` | `copilot --resume <id>` | PreToolUse |
 | CodeBuddy | `codebuddy` | `~/.codebuddy/settings.json` | `codebuddy --resume <id>` | PreToolUse |
@@ -44,7 +44,7 @@ That writes `.opencode/plugins/cmux-feed.js` in the current directory.
 
 ## What the hooks record
 
-Session hooks write `~/.cmuxterm/<agent>-hook-sessions.json`. Each entry stores the agent session ID, cmux workspace ID, surface ID, cwd, process ID when available, current lifecycle (`running`, `idle`, `needsInput`, or `unknown`), and a sanitized launch command. On app relaunch, cmux rebuilds each workspace and runs the agent's native resume command with the saved session ID.
+Session hooks write `~/.amux/<agent>-hook-sessions.json`. Each entry stores the agent session ID, cmux workspace ID, surface ID, cwd, process ID when available, current lifecycle (`running`, `idle`, `needsInput`, or `unknown`), and a sanitized launch command. On app relaunch, cmux rebuilds each workspace and runs the agent's native resume command with the saved session ID.
 
 The sanitizer preserves model, sandbox, config, and cwd-related flags. It drops prompts, credentials, old session selectors, and noninteractive commands so relaunch resumes the session instead of starting a new task or leaking secrets.
 
@@ -89,7 +89,7 @@ cmux agent-hibernation on
 cmux agent-hibernation off
 ```
 
-Tune the idle window and live-terminal limit from Settings, or set them in `~/.config/cmux/cmux.json`:
+Tune the idle window and live-terminal limit from Settings, or set them in `~/.config/amux/amux.json`:
 
 ```json
 {
@@ -117,7 +117,7 @@ Approvals are prefix-based and signed by cmux. They also bind the working direct
 To restore panes without automatically restarting saved agent sessions, turn off
 **Settings > Terminal > Resume Agent Sessions on Reopen**.
 
-You can also set the same preference in `~/.config/cmux/cmux.json`:
+You can also set the same preference in `~/.config/amux/amux.json`:
 
 ```json
 {
@@ -156,7 +156,7 @@ OMP uses OMP's native extension system. OMP native extension discovery scans `${
 
 Kiro stores hooks inside agent configuration files. The cmux installer creates or updates a `cmux` agent config with lifecycle, tool, and completion hooks; merge the generated `hooks` block into another Kiro agent config if you want the same cmux notifications on that agent.
 
-Kiro Feed verbosity follows **Settings > Automation > Kiro Notification Level** or `automation.kiroNotificationLevel` in `cmux.json`. `minimal` keeps actionable approval cards only, `standard` also keeps mutating tool events, and `verbose` keeps every Kiro tool event.
+Kiro Feed verbosity follows **Settings > Automation > Kiro Notification Level** or `automation.kiroNotificationLevel` in `amux.json`. `minimal` keeps actionable approval cards only, `standard` also keeps mutating tool events, and `verbose` keeps every Kiro tool event.
 
 ## Troubleshooting
 
@@ -164,4 +164,4 @@ Run `cmux hooks <agent> install --yes` to reinstall one integration. Run `cmux h
 
 If Feed shows nothing, confirm the terminal has `CMUX_SURFACE_ID` and the hook file contains a `cmux hooks feed --source <agent>` command, generated extension bridge, or OpenCode feed plugin. Pi reports non-blocking tool execution telemetry through its generated extension. OMP and Rovo Dev currently provide lifecycle and restore hooks only, so they do not create Feed approval cards. Amp's bundled plugin reports live tab-status updates (idle / thinking / running / reading / done / error / interrupted) and lifecycle restore but does not create Feed approval cards.
 
-If relaunch does not resume an agent, check `~/.cmuxterm/<agent>-hook-sessions.json` for the saved session and verify the agent's resume command still works outside cmux.
+If relaunch does not resume an agent, check `~/.amux/<agent>-hook-sessions.json` for the saved session and verify the agent's resume command still works outside cmux.

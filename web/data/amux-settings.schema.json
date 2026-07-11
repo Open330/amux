@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux-settings.schema.json",
+  "$ref": "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux.schema.json",
+  "description": "Alias schema for amux settings. Use amux.schema.json for new amux.json files."
+}

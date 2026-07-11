@@ -18,7 +18,7 @@ extension CMUXCLI {
         [
             "cmux_ssh_remote_reconnect() {",
             "  cmux_reconnect_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"",
-            "  if [ -z \"$cmux_reconnect_cli\" ] || [ ! -x \"$cmux_reconnect_cli\" ]; then cmux_reconnect_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "  if [ -z \"$cmux_reconnect_cli\" ] || [ ! -x \"$cmux_reconnect_cli\" ]; then cmux_reconnect_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
             "  cmux_reconnect_socket=\"${CMUX_SOCKET_PATH:-${CMUX_SOCKET:-}}\"",
             "  if [ -z \"$cmux_reconnect_cli\" ] || [ -z \"$cmux_reconnect_socket\" ] || [ -z \"${CMUX_WORKSPACE_ID:-}\" ]; then return 0; fi",
             "  cmux_reconnect_payload=\"{\\\"workspace_id\\\":\\\"$CMUX_WORKSPACE_ID\\\"\"",

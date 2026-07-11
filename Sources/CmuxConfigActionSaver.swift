@@ -1,6 +1,6 @@
 import Foundation
 
-/// Persists saved workspace layout results into the global cmux.json,
+/// Persists saved workspace layout results into the global amux.json,
 /// preserving JSONC comments and formatting via `JSONCObjectEditor`.
 enum CmuxConfigActionSaver {
 
@@ -33,7 +33,7 @@ enum CmuxConfigActionSaver {
 
     static let emptyConfigTemplate = """
     {
-      "$schema": "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json"
+      "$schema": "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux.schema.json"
     }
 
     """
@@ -232,7 +232,7 @@ enum CmuxConfigActionSaver {
             withIntermediateDirectories: true,
             attributes: [.posixPermissions: 0o700]
         )
-        let tempURL = directoryURL.appendingPathComponent(".cmux.json.tmp-\(UUID().uuidString)")
+        let tempURL = directoryURL.appendingPathComponent(".amux.json.tmp-\(UUID().uuidString)")
         guard fileManager.createFile(
             atPath: tempURL.path,
             contents: Data(content.utf8),

@@ -1,6 +1,6 @@
 # All settings keys
 
-Auto-generated from `web/data/cmux.schema.json`. For the rendered docs, see `https://cmux.com/docs/configuration`.
+Auto-generated from `web/data/amux.schema.json`. For the rendered docs, see `https://cmux.com/docs/configuration`.
 
 ## app
 
@@ -66,8 +66,8 @@ Sidebar content and metadata visibility from Settings > Sidebar.
 | `sidebar.showBranchDirectory` | boolean | `true` | Show the workspace working directory. |
 | `sidebar.showPullRequests` | boolean | `true` | Show pull request metadata in the sidebar. |
 | `sidebar.makePullRequestsClickable` | boolean | `true` | Allow sidebar pull request metadata to open links when clicked. |
-| `sidebar.openPullRequestLinksInCmuxBrowser` | boolean | `true` | Open sidebar pull request links in the embedded cmux browser. |
-| `sidebar.openPortLinksInCmuxBrowser` | boolean | `true` | Open sidebar port links in the embedded cmux browser. |
+| `sidebar.openPullRequestLinksInCmuxBrowser` | boolean | `true` | Open sidebar pull request links in the embedded amux browser. |
+| `sidebar.openPortLinksInCmuxBrowser` | boolean | `true` | Open sidebar port links in the embedded amux browser. |
 | `sidebar.showSSH` | boolean | `true` | Show SSH connection details. |
 | `sidebar.showPorts` | boolean | `true` | Show listening ports. |
 | `sidebar.showLog` | boolean | `true` | Show recent log snippets. |
@@ -97,7 +97,7 @@ Sidebar tint settings from Settings > Sidebar Appearance.
 | `sidebarAppearance.tintColor` | colorHex | `"#000000"` | Base sidebar tint color used when light/dark overrides are not set. |
 | `sidebarAppearance.lightModeTintColor` | colorHexOrNull | `null` | Sidebar tint override for light appearance. |
 | `sidebarAppearance.darkModeTintColor` | colorHexOrNull | `null` | Sidebar tint override for dark appearance. |
-| `sidebarAppearance.tintOpacity` | number | `0.03` | Sidebar tint opacity from 0 to 1. Note: this only controls the sidebar tint, not terminal/window transparency. For terminal background transparency or blur, set `background-opacity` and `background-blur` in `~/.config/ghostty/config` and run `cmux reload-config`. |
+| `sidebarAppearance.tintOpacity` | number | `0.03` | Sidebar tint opacity from 0 to 1. Note: this only controls the sidebar tint, not terminal/window transparency. For terminal background transparency or blur, set `background-opacity` and `background-blur` in `~/.config/ghostty/config` and run `amux reload-config`. |
 
 ## automation
 

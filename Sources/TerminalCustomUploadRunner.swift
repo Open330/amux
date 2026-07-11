@@ -40,7 +40,7 @@ struct TerminalCustomUploadRunner {
 
     /// The command matching `endpoint.destination`, or nil when the built-in
     /// transport should be used. Reads the `terminal.uploadCommands` rules from the
-    /// settings catalog (cmux.json). Called on the main thread from the drop/paste
+    /// settings catalog (amux.json). Called on the main thread from the drop/paste
     /// sites, so the catalog is read via `MainActor.assumeIsolated`.
     private func matchedCommand(for endpoint: Endpoint) -> String? {
         let rules = MainActor.assumeIsolated {

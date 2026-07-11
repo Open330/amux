@@ -3,7 +3,7 @@ import CmuxTerminal
 
 extension AppDelegate.MainWindowContext {
     /// The Dock for this window, created on first access and retained until
-    /// the context is unregistered. Seeded from `~/.config/cmux/dock.json`
+    /// the context is unregistered. Seeded from `~/.config/amux/dock.json`
     /// with a home base directory, like the app-wide Dock was on a fresh launch.
     func windowDockStore() -> DockSplitStore {
         if let existing = windowDock { return existing }
@@ -35,7 +35,7 @@ extension AppDelegate.MainWindowContext {
 /// Every main window hosts its own independent `DockSplitStore`: a window's
 /// right-sidebar Dock panel mounts that window's store, created lazily the
 /// first time the window shows the Dock and seeded from the global Dock config
-/// (`~/.config/cmux/dock.json`) exactly like a fresh launch. A window's Dock —
+/// (`~/.config/amux/dock.json`) exactly like a fresh launch. A window's Dock —
 /// including its live terminal/browser panels — is torn down when the window
 /// unregisters, so no PTYs outlive their window.
 ///

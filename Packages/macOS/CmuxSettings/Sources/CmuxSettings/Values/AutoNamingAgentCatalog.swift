@@ -4,7 +4,7 @@ import Foundation
 ///
 /// The naming agent is stored as an open string (the agent `slug`, or
 /// ``AutoNamingAgentCatalog/autoSlug``) so it stays fully customizable — a
-/// power user can name a custom agent in `~/.config/cmux/cmux.json` even if it
+/// power user can name a custom agent in `~/.config/amux/amux.json` even if it
 /// is not listed here. The Settings picker is populated from
 /// ``AutoNamingAgentCatalog/agents`` and the bundled CLI consults the same
 /// catalog when deciding which summarizer binary to invoke, so the two never

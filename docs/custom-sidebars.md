@@ -39,8 +39,8 @@ SwiftUI, files, or syntax. Concretely:
 
 Write a named file (the name becomes the menu label; use short kebab-case):
 
-    ~/.config/cmux/sidebars/<name>.swift     # interpreted Swift (preferred)
-    ~/.config/cmux/sidebars/<name>.json      # declarative JSON (simpler, static)
+    ~/.config/amux/sidebars/<name>.swift     # interpreted Swift (preferred)
+    ~/.config/amux/sidebars/<name>.json      # declarative JSON (simpler, static)
 
 Each file shows up as an option in the **sidebar toggle button's right-click
 menu** and can also open as a normal Bonsplit pane tab. Pick it from the menu
@@ -63,7 +63,7 @@ remote renderer, an out-of-process worker. That is the containment lane: a
 crash or hang caused by the interpreted file cannot take down cmux, but
 input is limited to forwarded clicks (no hover, focus, or keyboard).
 
-Set it in **Settings → Custom Sidebars**, or in `~/.config/cmux/cmux.json`:
+Set it in **Settings → Custom Sidebars**, or in `~/.config/amux/amux.json`:
 
     { "customSidebars": { "renderer": "remote" } }
 
@@ -84,9 +84,9 @@ The repo includes ready-to-copy sidebars in `Examples/CustomSidebars/`:
 
 Install one from a cmux checkout:
 
-    mkdir -p ~/.config/cmux/sidebars
-    cp Examples/CustomSidebars/status-board.swift ~/.config/cmux/sidebars/status-board.swift
-    cp Examples/CustomSidebars/finder.swift ~/.config/cmux/sidebars/finder.swift
+    mkdir -p ~/.config/amux/sidebars
+    cp Examples/CustomSidebars/status-board.swift ~/.config/amux/sidebars/status-board.swift
+    cp Examples/CustomSidebars/finder.swift ~/.config/amux/sidebars/finder.swift
 
 Then validate and open it as a Bonsplit pane:
 
@@ -99,7 +99,7 @@ normal pane tab that can live in a right-side split.
 
 ## Quick start
 
-    cat > ~/.config/cmux/sidebars/mine.swift <<'SWIFT'
+    cat > ~/.config/amux/sidebars/mine.swift <<'SWIFT'
     VStack(alignment: .leading, spacing: 8) {
         Text("My sidebar").font(.title3).bold()
         Text(clock.time).font(.caption).foregroundColor(.secondary)

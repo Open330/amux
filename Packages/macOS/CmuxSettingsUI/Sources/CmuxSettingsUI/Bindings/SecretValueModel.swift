@@ -7,7 +7,7 @@ import Observation
 ///
 /// Same shape as ``DefaultsValueModel`` and ``JSONValueModel`` but bound to a
 /// ``SecretFileStore``. The secret lives in its own `0600` file, never in the
-/// shared `cmux.json`. Set / reset failures populate ``lastWriteError`` and
+/// shared `amux.json`. Set / reset failures populate ``lastWriteError`` and
 /// are pushed into the injected ``SettingsErrorLog`` so the UI surfaces them
 /// centrally; the model never silently swallows a failure.
 ///

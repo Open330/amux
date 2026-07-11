@@ -2,9 +2,10 @@ import Foundation
 
 extension CMUXCLI {
     static let settingsDocsURL = "https://github.com/Open330/amux/blob/main/docs/configuration.md"
-    static let settingsSchemaURL = "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json"
-    static let primarySettingsDisplayPath = "~/.config/cmux/cmux.json"
-    static let legacySettingsDisplayPath = "~/.config/cmux/settings.json"
+    static let settingsSchemaURL = "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux.schema.json"
+    static let primarySettingsDisplayPath = "~/.config/amux/amux.json"
+    static let legacySettingsDisplayPath = "~/.config/cmux/cmux.json"
+    static let legacyFallbackSettingsDisplayPath = "~/.config/cmux/settings.json"
     static let fallbackSettingsDisplayPath = "~/Library/Application Support/com.cmuxterm.app/settings.json"
     static let ghosttyConfigDisplayPath = "~/.config/ghostty/config"
 
@@ -25,8 +26,8 @@ extension CMUXCLI {
     private static let docsReferences: [DocsReference] = [
         DocsReference(
             topic: "settings",
-            aliases: ["configuration", "config", "cmux-json", "settings-json", "settingsjson", "schema"],
-            summary: "amux-owned settings, cmux.json locations, schema, and reload flow.",
+            aliases: ["configuration", "config", "amux-json", "settings-json", "settingsjson", "schema"],
+            summary: "amux-owned settings, amux.json locations, schema, and reload flow.",
             webURL: settingsDocsURL,
             rawResources: [
                 DocsResource(label: "settings schema", url: settingsSchemaURL),
@@ -34,7 +35,7 @@ extension CMUXCLI {
             ],
             commands: [
                 "amux settings path",
-                "amux settings cmux-json",
+                "amux settings amux-json",
                 "amux config doctor",
                 "amux reload-config",
             ]
@@ -45,7 +46,7 @@ extension CMUXCLI {
             summary: "amux-owned keyboard shortcuts and two-step chord syntax.",
             webURL: "https://github.com/Open330/amux/blob/main/docs/configuration.md",
             rawResources: [
-                DocsResource(label: "shortcut data", url: "https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux-shortcuts.ts"),
+                DocsResource(label: "shortcut data", url: "https://raw.githubusercontent.com/Open330/amux/main/web/data/amux-shortcuts.ts"),
                 DocsResource(label: "settings schema", url: settingsSchemaURL),
             ],
             commands: [
@@ -103,7 +104,7 @@ extension CMUXCLI {
         DocsReference(
             topic: "dock",
             aliases: ["doc", "controls", "right-sidebar", "dock-json"],
-            summary: "Custom right-sidebar terminal controls from .cmux/dock.json or ~/.config/cmux/dock.json.",
+            summary: "Custom right-sidebar terminal controls from .amux/dock.json or ~/.config/amux/dock.json.",
             webURL: "https://github.com/Open330/amux/blob/main/docs/dock.md",
             rawResources: [
                 DocsResource(label: "dock docs", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/dock.md"),
@@ -112,21 +113,21 @@ extension CMUXCLI {
             commands: [
                 "amux docs dock",
                 "amux docs dock --json",
-                "python3 -m json.tool .cmux/dock.json",
+                "python3 -m json.tool .amux/dock.json",
             ]
         ),
         DocsReference(
             topic: "sidebars",
             aliases: ["sidebar", "custom-sidebar", "custom-sidebars", "vibe-sidebar"],
-            summary: "Vibe-code a custom sidebar: a runtime-interpreted SwiftUI-style file in ~/.config/cmux/sidebars/ (beta).",
+            summary: "Vibe-code a custom sidebar: a runtime-interpreted SwiftUI-style file in ~/.config/amux/sidebars/ (beta).",
             webURL: "https://github.com/Open330/amux/blob/main/docs/custom-sidebars.md",
             rawResources: [
                 DocsResource(label: "custom sidebar authoring guide", url: "https://raw.githubusercontent.com/Open330/amux/main/docs/custom-sidebars.md"),
             ],
             commands: [
-                "mkdir -p ~/.config/cmux/sidebars",
-                "cat > ~/.config/cmux/sidebars/mine.swift   # write a SwiftUI-style view, then right-click the sidebar button to pick it",
-                "amux docs api   # discover cmux() action methods/params",
+                "mkdir -p ~/.config/amux/sidebars",
+                "cat > ~/.config/amux/sidebars/mine.swift   # write a SwiftUI-style view, then right-click the sidebar button to pick it",
+                "amux docs api   # discover amux action methods and parameters",
             ]
         ),
     ]
@@ -182,9 +183,9 @@ extension CMUXCLI {
         This command does not require a running amux app or socket.
 
         Agents:
-          Use `amux docs settings` before editing ~/.config/cmux/cmux.json.
-          Use `amux docs dock` before creating or editing .cmux/dock.json.
-          Back up any existing cmux.json file to a timestamped .bak copy before editing so the user can revert.
+          Use `amux docs settings` before editing ~/.config/amux/amux.json.
+          Use `amux docs dock` before creating or editing .amux/dock.json.
+          Back up any existing amux.json file to a timestamped .bak copy before editing so the user can revert.
           Fetch raw resources with the printed curl commands when you need the latest schema.
         """
     }
@@ -214,16 +215,19 @@ extension CMUXCLI {
         if reference.topic == "settings" {
             payload["settings_files"] = [
                 "primary": Self.primarySettingsDisplayPath,
-                "legacy": Self.legacySettingsDisplayPath,
-                "fallback": Self.fallbackSettingsDisplayPath,
+                "imported_from": [
+                    Self.legacySettingsDisplayPath,
+                    Self.legacyFallbackSettingsDisplayPath,
+                    Self.fallbackSettingsDisplayPath,
+                ],
             ]
             payload["ghostty_config"] = [
                 "path": Self.ghosttyConfigDisplayPath,
                 "note": "Not amux-owned, but amux reads it. Use for terminal transparency (background-opacity), blur, font, theme, etc.",
             ]
-            payload["backup"] = "Back up any existing cmux.json file to a timestamped .bak copy before editing so the user can revert."
+            payload["backup"] = "Back up any existing amux.json file to a timestamped .bak copy before editing so the user can revert."
             payload["reload_command"] = "amux reload-config"
-            payload["reload_scope"] = "Reloads Ghostty config + cmux.json and refreshes terminals in place. No app restart needed."
+            payload["reload_scope"] = "Reloads Ghostty config + amux.json and refreshes terminals in place. No app restart needed."
         }
         return payload
     }
@@ -267,17 +271,18 @@ extension CMUXCLI {
             print()
             print("Config files:")
             print("  primary: \(Self.primarySettingsDisplayPath)")
-            print("  legacy config: \(Self.legacySettingsDisplayPath)")
-            print("  legacy app support: \(Self.fallbackSettingsDisplayPath)")
+            print("  imported once from: \(Self.legacySettingsDisplayPath)")
+            print("                      \(Self.legacyFallbackSettingsDisplayPath)")
+            print("                      \(Self.fallbackSettingsDisplayPath)")
             print()
             print("Related (not amux-owned, but amux reads it for terminal behavior):")
             print("  \(Self.ghosttyConfigDisplayPath)")
             print("  Use this for terminal transparency (background-opacity), blur, font, theme, etc.")
             print()
-            print("Before editing cmux.json:")
-            print("  Back up any existing cmux.json file to a timestamped .bak copy so the user can revert.")
+            print("Before editing amux.json:")
+            print("  Back up any existing amux.json file to a timestamped .bak copy so the user can revert.")
             print()
-            print("Reload after editing cmux.json or Ghostty config:")
+            print("Reload after editing amux.json or Ghostty config:")
             print("  amux reload-config   (reloads BOTH and refreshes terminals; no app restart needed)")
         }
     }
@@ -361,31 +366,32 @@ extension CMUXCLI {
         return """
         Usage: amux settings [open [target]|path|docs|<target>]
 
-        Open amux Settings, print cmux.json paths, or show settings documentation.
+        Open amux Settings, print amux.json paths, or show settings documentation.
 
         Subcommands:
           open [target]       Open Settings, optionally to a target section.
-          path                Print cmux.json paths, docs URL, and schema URL.
+          path                Print amux.json paths, docs URL, and schema URL.
           docs                Print the same output as `amux docs settings`.
 
         Targets:
           account, app, terminal, sidebar-appearance, custom-sidebars,
           automation, browser, browser-import, global-hotkey,
-          keyboard-shortcuts, shortcuts, workspace-colors, cmux-json,
+          keyboard-shortcuts, shortcuts, workspace-colors, amux-json,
           json, reset
 
         Config file:
           \(Self.primarySettingsDisplayPath)
-          legacy config: \(Self.legacySettingsDisplayPath)
-          legacy app support: \(Self.fallbackSettingsDisplayPath)
+          imported once from: \(Self.legacySettingsDisplayPath)
+                              \(Self.legacyFallbackSettingsDisplayPath)
+                              \(Self.fallbackSettingsDisplayPath)
 
         Related (not amux-owned, but amux reads it for terminal behavior):
           \(Self.ghosttyConfigDisplayPath)
 
-        Before editing cmux.json:
-          Back up any existing cmux.json file to a timestamped .bak copy so the user can revert.
+        Before editing amux.json:
+          Back up any existing amux.json file to a timestamped .bak copy before editing so the user can revert.
 
-        Reload after editing cmux.json or Ghostty config:
+        Reload after editing amux.json or Ghostty config:
           amux reload-config   (reloads BOTH and refreshes terminals; no app restart needed)
         """
     }
@@ -419,7 +425,7 @@ extension CMUXCLI {
             return "keyboardShortcuts"
         case "workspace-colors", "workspacecolors", "colors":
             return "workspaceColors"
-        case "cmux-json", "cmuxjson", "settings-json", "settingsjson", "json", "file", "settings-file":
+        case "amux-json", "amuxjson", "settings-json", "settingsjson", "json", "file", "settings-file":
             return "settingsJSON"
         case "reset":
             return "reset"

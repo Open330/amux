@@ -1,10 +1,10 @@
-# cmux.json settings
+# amux.json settings
 
-Global app preferences live in `~/.config/cmux/cmux.json`.
+Global app preferences live in `~/.config/amux/amux.json`.
 
 ## `paneBorderColor` and `activePaneBorderColor`
 
-Customize split-workspace pane boundaries controlled by cmux.
+Customize split-workspace pane boundaries controlled by amux.
 
 ```json
 {
@@ -13,10 +13,10 @@ Customize split-workspace pane boundaries controlled by cmux.
 }
 ```
 
-- `paneBorderColor`: overrides the divider color between cmux panes in split workspaces.
-- `activePaneBorderColor`: draws a border around the focused cmux pane in split workspaces.
+- `paneBorderColor`: overrides the divider color between amux panes in split workspaces.
+- `activePaneBorderColor`: draws a border around the focused amux pane in split workspaces.
 
-Both settings accept 6-digit hex colors (`#RRGGBB`). Omit a key, or set it to `null`, to keep the built-in appearance. These settings apply to cmux's multi-surface pane layout, not Ghostty's internal splits; Ghostty settings such as `split-divider-color` still only affect splits inside one Ghostty instance.
+Both settings accept 6-digit hex colors (`#RRGGBB`). Omit a key, or set it to `null`, to keep the built-in appearance. These settings apply to amux's multi-surface pane layout, not Ghostty's internal splits; Ghostty settings such as `split-divider-color` still only affect splits inside one Ghostty instance.
 
 ## `app.windowTitleTemplate`
 
@@ -25,7 +25,7 @@ Opt-in template for the macOS `NSWindow.title`. Leave it unset or set it to an e
 ```json
 {
   "app": {
-    "windowTitleTemplate": "[cmux:{windowToken}] {activeWorkspace}"
+    "windowTitleTemplate": "[amux:{windowToken}] {activeWorkspace}"
   }
 }
 ```
@@ -36,14 +36,14 @@ Supported placeholders:
 - `{windowToken}`: the first 8 characters of the persisted window UUID.
 - `{activeWorkspace}`: the active workspace title, falling back to the default title when the workspace title is blank.
 - `{activeDirectory}`: the active workspace's current directory.
-- `{defaultTitle}`: the title cmux would have used without a template.
-- `{appName}`: `cmux`.
+- `{defaultTitle}`: the title amux would have used without a template.
+- `{appName}`: `amux`.
 
-For tiling window managers such as AeroSpace or yabai, match on the stable token in the title. For example, the template above gives each restored macOS window a title containing `[cmux:abcd1234]`, so a rule can match `\\[cmux:abcd1234\\]`. The token is stable across relaunches for restored windows because it comes from the persisted window UUID.
+For tiling window managers such as AeroSpace or yabai, match on the stable token in the title. For example, the template above gives each restored macOS window a title containing `[amux:abcd1234]`, so a rule can match `\\[amux:abcd1234\\]`. The token is stable across relaunches for restored windows because it comes from the persisted window UUID.
 
 ## `app.confirmQuit`
 
-Controls when cmux asks before quitting:
+Controls when amux asks before quitting:
 
 - `always`: show the quit confirmation on Cmd+Q or app quit.
 - `dirty-only`: show it only when a workspace has a terminal or panel that reports close confirmation is needed.
@@ -63,7 +63,7 @@ Default: `right`.
 
 ## `terminal.agentHibernation`
 
-Opt-in Agent Hibernation. cmux kills idle background agent processes to free RAM and CPU, then resumes each one with its saved session when you visit its tab. See [agent-hooks.md](agent-hooks.md#agent-hibernation) for the full behavior, including the confirmation settle window and how resume works.
+Opt-in Agent Hibernation. amux kills idle background agent processes to free RAM and CPU, then resumes each one with its saved session when you visit its tab. See [agent-hooks.md](agent-hooks.md#agent-hibernation) for the full behavior, including the confirmation settle window and how resume works.
 
 ```json
 {
@@ -79,21 +79,21 @@ Opt-in Agent Hibernation. cmux kills idle background agent processes to free RAM
 
 - `enabled`: turn Agent Hibernation on. Default: `false`.
 - `idleSeconds`: seconds a background idle agent terminal must be quiet before it can hibernate. A ~60s confirmation settle window still applies on top of this. Default: `5`. Range: `5`-`604800`.
-- `maxLiveTerminals`: how many live restorable agent terminals to keep before cmux hibernates the oldest idle background ones. Nothing hibernates while you are at or under this count. Default: `12`. Range: `1`-`256`.
+- `maxLiveTerminals`: how many live restorable agent terminals to keep before amux hibernates the oldest idle background ones. Nothing hibernates while you are at or under this count. Default: `12`. Range: `1`-`256`.
 
-Enable it from the command palette (`⌘⇧P` -> Enable Agent Hibernation), from **Settings > Terminal > Agent Hibernation**, or with `cmux agent-hibernation on`.
+Enable it from the command palette (`⌘⇧P` -> Enable Agent Hibernation), from **Settings > Terminal > Agent Hibernation**, or with `amux agent-hibernation on`.
 
 ## `terminal.showTextBoxOnNewTerminals` and `terminal.focusTextBoxOnNewTerminals`
 
 `terminal.showTextBoxOnNewTerminals` opens the TextBox on newly-created terminal sessions without moving keyboard focus into it.
 
-`terminal.focusTextBoxOnNewTerminals` opens the TextBox and focuses it for foreground terminal sessions created from the app UI, such as new terminal workspaces, tabs, and splits. Terminals created through the cmux CLI/control socket do not auto-focus the TextBox, even when this setting is enabled, so background automation does not steal keyboard focus.
+`terminal.focusTextBoxOnNewTerminals` opens the TextBox and focuses it for foreground terminal sessions created from the app UI, such as new terminal workspaces, tabs, and splits. Terminals created through the amux CLI/control socket do not auto-focus the TextBox, even when this setting is enabled, so background automation does not steal keyboard focus.
 
 ## `terminal.textBoxSubmitActions`
 
 Controls what the TextBox submit button does for new terminal sessions. Active agent sessions such as Claude, Codex, OpenCode, and Pi always use plain Text Entry so prompts go into the running agent instead of launching another command.
 
-Press Shift-Tab in the TextBox to cycle the default action. This shortcut is `shortcuts.bindings.cycleTextBoxSubmitAction`; rebind or disable it from Settings > Keyboard Shortcuts or `cmux.json`. Right-click the submit button to pick any configured action or open this documentation.
+Press Shift-Tab in the TextBox to cycle the default action. This shortcut is `shortcuts.bindings.cycleTextBoxSubmitAction`; rebind or disable it from Settings > Keyboard Shortcuts or `amux.json`. Right-click the submit button to pick any configured action or open this documentation.
 
 ```json
 {
@@ -134,7 +134,7 @@ Action fields:
 - `title`: menu label for custom actions.
 - `kind`: `textEntry` or `commandTemplate`.
 - `commandTemplate`: shell command for `commandTemplate`. Include `{{prompt}}` where the prompt should be shell-quoted into the command line.
-- `preservePromptAfterLaunch`: optional boolean for custom launch-only actions. When `true`, cmux submits `commandTemplate` as a provider launch command while keeping the TextBox prompt intact for the active agent session.
+- `preservePromptAfterLaunch`: optional boolean for custom launch-only actions. When `true`, amux submits `commandTemplate` as a provider launch command while keeping the TextBox prompt intact for the active agent session.
 - `systemImage`: fallback SF Symbol name shown on the submit button.
 - `assetName`: optional app asset catalog image name, for example `AgentIcons/Codex`.
 - `imagePath`: optional PNG or image path for the submit button.
@@ -144,9 +144,9 @@ Action fields:
 
 Replace the built-in `scp` for terminal file drops and pastes over SSH with a
 command you choose. When you drop or paste a file into a terminal running an SSH
-session, cmux normally `scp`s it to `/tmp/cmux-drop-<uuid>` on the host and types
+session, amux normally `scp`s it to `/tmp/amux-drop-<uuid>` on the host and types
 the remote path. `terminal.uploadCommands` is an ordered list of host-scoped
-rules; when the ssh destination matches a rule, cmux runs that rule's command
+rules; when the ssh destination matches a rule, amux runs that rule's command
 instead and inserts what the command prints.
 
 ```json
@@ -168,7 +168,7 @@ instead and inserts what the command prints.
   it, or set it to `null`, for a catch-all.
 - `command`: run through `/bin/sh -c`, **once per file**. It receives the file and
   endpoint on its environment: `CMUX_UPLOAD_LOCAL_PATH`, `CMUX_UPLOAD_REMOTE_PATH`
-  (the `/tmp/cmux-drop-<uuid>` path cmux picked), `CMUX_UPLOAD_DESTINATION`,
+  (the `/tmp/amux-drop-<uuid>` path amux picked), `CMUX_UPLOAD_DESTINATION`,
   `CMUX_UPLOAD_PORT`, `CMUX_UPLOAD_IDENTITY_FILE`, and `CMUX_UPLOAD_SSH_OPTIONS`
   (newline-separated; the last three are unset when the session has none). The
   rest of the environment is inherited, so a one-liner resolves tools on `PATH`.
@@ -180,12 +180,12 @@ unchanged, so other hosts are untouched.
 
 ### How the command's output is used
 
-cmux inserts the command's **stdout** at the cursor:
+amux inserts the command's **stdout** at the cursor:
 
 - Non-empty stdout is inserted **verbatim** (with control characters stripped),
   so a rule can emit a remote path, a URL, or any reference — for example a line
   an agent in the terminal will read.
-- If the command prints **nothing**, cmux inserts the shell-escaped remote path it
+- If the command prints **nothing**, amux inserts the shell-escaped remote path it
   chose, so the simplest rule just moves the file and behaves like the built-in.
 - For a multi-file drop, each file's output is joined with spaces.
 
@@ -197,7 +197,7 @@ inserts nothing — exactly like an `scp` failure.
 
 ## `automation.workspaceAutoNaming`
 
-Opt-in AI auto-naming of workspaces and tabs from agent conversation content. When enabled, cmux summarizes supported agent sessions into short sidebar and tab names using each agent's own binary, and refreshes them as the conversation topic shifts. See [workspace-auto-naming.md](workspace-auto-naming.md) for the supported adapter list and full behavior.
+Opt-in AI auto-naming of workspaces and tabs from agent conversation content. When enabled, amux summarizes supported agent sessions into short sidebar and tab names using each agent's own binary, and refreshes them as the conversation topic shifts. See [workspace-auto-naming.md](workspace-auto-naming.md) for the supported adapter list and full behavior.
 
 ```json
 {
@@ -225,4 +225,4 @@ Default: `unified`.
 }
 ```
 
-The toolbar layout toggle persists the last user choice for future generated diff viewers. Passing `cmux diff --layout split` or `cmux diff --layout unified` overrides both the saved toolbar choice and this default for that invocation.
+The toolbar layout toggle persists the last user choice for future generated diff viewers. Passing `amux diff --layout split` or `amux diff --layout unified` overrides both the saved toolbar choice and this default for that invocation.

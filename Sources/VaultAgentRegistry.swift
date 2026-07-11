@@ -1,4 +1,5 @@
 import Foundation
+import CmuxSettings
 import OSLog
 
 struct CmuxVaultConfigDefinition: Codable, Hashable, Sendable {
@@ -417,7 +418,7 @@ struct CmuxVaultAgentRegistry: Sendable {
         fileManager: FileManager
     ) -> [String] {
         let home = (homeDirectory as NSString).standardizingPath
-        var paths = [(home as NSString).appendingPathComponent(".config/cmux/cmux.json")]
+        var paths = [(home as NSString).appendingPathComponent(".config/amux/amux.json")]
         let startingDirectory = workingDirectory?.trimmingCharacters(in: .whitespacesAndNewlines)
             ?? environment["PWD"]?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let startingDirectory, !startingDirectory.isEmpty,
@@ -435,9 +436,13 @@ struct CmuxVaultAgentRegistry: Sendable {
             : (path as NSString).deletingLastPathComponent
         var current = (start as NSString).standardizingPath
         while true {
+            try? AmuxPathMigration.migrateProjectData(
+                at: URL(fileURLWithPath: current, isDirectory: true),
+                fileManager: fileManager
+            )
             let candidates = [
-                ((current as NSString).appendingPathComponent(".cmux") as NSString).appendingPathComponent("cmux.json"),
-                (current as NSString).appendingPathComponent("cmux.json"),
+                ((current as NSString).appendingPathComponent(".amux") as NSString).appendingPathComponent("amux.json"),
+                (current as NSString).appendingPathComponent("amux.json"),
             ]
             for candidate in candidates where fileManager.fileExists(atPath: candidate) {
                 return candidate

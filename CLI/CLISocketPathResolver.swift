@@ -87,8 +87,8 @@ enum CLISocketPathResolver {
         case inaccessible(errnoCode: Int32)
     }
 
-    private static let stableSocketFileName = "cmux.sock"
-    static let legacyDefaultSocketPath = "/tmp/cmux.sock"
+    private static let stableSocketFileName = "amux.sock"
+    static let legacyDefaultSocketPath = "/tmp/amux.sock"
     private static let fallbackSocketPath = "/tmp/cmux-debug.sock"
     private static let nightlySocketPath = "/tmp/cmux-nightly.sock"
     private static let stagingSocketPath = "/tmp/cmux-staging.sock"
@@ -122,7 +122,7 @@ enum CLISocketPathResolver {
     }
 
     private static func legacyUserScopedStableSocketPath(currentUserID: uid_t = getuid()) -> String {
-        "/tmp/cmux-\(currentUserID).sock"
+        "/tmp/amux-\(currentUserID).sock"
     }
 
     static func isImplicitDefaultPath(
@@ -499,7 +499,7 @@ enum CLISocketPathResolver {
 
     /// The directory holding the control socket and its marker files.
     ///
-    /// Resolves to ``CmuxStateDirectory`` (`~/.local/state/cmux`), matching the
+    /// Resolves to ``CmuxStateDirectory`` (`~/.local/state/amux`), matching the
     /// app's `SocketControlSettings.stableSocketDirectoryURL()`. This keeps the
     /// CLI off the app's TCC-protected Application Support data on the agent hook
     /// path (https://github.com/manaflow-ai/cmux/issues/5146). The CLI is a

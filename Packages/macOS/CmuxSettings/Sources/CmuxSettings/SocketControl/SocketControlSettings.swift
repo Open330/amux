@@ -21,9 +21,9 @@ public struct SocketControlSettings {
     /// Base bundle identifier shared by all debug builds.
     public static let baseDebugBundleIdentifier = "com.open330.amux.debug"
     private static let stableReleaseBundleIdentifiers = ["com.open330.amux", "com.cmuxterm.app"]
-    private static let stableSocketFileName = "cmux.sock"
+    private static let stableSocketFileName = "amux.sock"
     /// Legacy stable socket path used before the Application Support location.
-    public static let legacyStableDefaultSocketPath = "/tmp/cmux.sock"
+    public static let legacyStableDefaultSocketPath = "/tmp/amux.sock"
 
     /// The stable build's default socket path (within ``CmuxStateDirectory``, falling back to `/tmp`).
     public static var stableDefaultSocketPath: String {
@@ -432,7 +432,7 @@ public struct SocketControlSettings {
 
     /// The directory holding the control socket and its marker files.
     ///
-    /// Resolves to ``CmuxStateDirectory`` (`~/.local/state/cmux`) rather than
+    /// Resolves to ``CmuxStateDirectory`` (`~/.local/state/amux`) rather than
     /// Application Support: the separately-signed `cmux` CLI connects to this
     /// socket on every agent hook, and a different-identity process reaching into
     /// the app's Application Support data triggers the macOS Sequoia "access data

@@ -9,7 +9,7 @@ import Foundation
 ///
 /// Display names + group categorization are metadata derived from the
 /// enum case in extensions below; the raw value is the stable
-/// identifier persisted in cmux.json.
+/// identifier persisted in amux.json.
 public enum ShortcutAction: String, CaseIterable, Sendable, Hashable, SettingCodable {
     // MARK: App
     case openSettings

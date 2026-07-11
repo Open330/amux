@@ -140,7 +140,7 @@ class CmuxPerfRunner:
         amux_path = self.app_path / "Contents/Resources/bin/amux"
         if amux_path.exists():
             return amux_path
-        return self.app_path / "Contents/Resources/bin/cmux"
+        return self.app_path / "Contents/Resources/bin/amux"
 
     def check_paths(self) -> None:
         if not self.binary_path.exists():

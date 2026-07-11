@@ -2,7 +2,7 @@ import CmuxFoundation
 import CmuxSettings
 import SwiftUI
 
-/// **cmux.json** section — mirrors the legacy in-app section: a card
+/// **amux.json** section — mirrors the legacy in-app section: a card
 /// containing the User Config File row (display path + Open button)
 /// and the Documentation row (Open Docs link).
 @MainActor
@@ -17,7 +17,7 @@ public struct SettingsJSONSection: View {
 
     public var body: some View {
         Group {
-            SettingsSectionHeader(String(localized: "settings.section.settingsJSON", defaultValue: "cmux.json"), section: .settingsJSON)
+            SettingsSectionHeader(String(localized: "settings.section.settingsJSON", defaultValue: "amux.json"), section: .settingsJSON)
                 .accessibilityIdentifier("SettingsJSONSection")
             SettingsCard {
                 userConfigFileRow

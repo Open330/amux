@@ -12,14 +12,14 @@ extension RemoteTmuxHost {
     /// The local unix-socket path amux binds as the forwarded end of this
     /// host's remote muxad socket.
     ///
-    /// Lives next to the ControlMaster socket under `~/.cmux/ssh/` and uses
+    /// Lives next to the ControlMaster socket under `~/.amux/ssh/` and uses
     /// the same slug + ``connectionHash`` scheme, so two distinct endpoints
     /// never collide on one forward. The slug is trimmed to the AF_UNIX path
     /// budget exactly like ``controlSocketPath`` (keeping the OpenSSH
     /// transient-suffix reserve for headroom); the hash is never trimmed.
     var muxaForwardSocketPath: String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
-        let prefix = "\(home)/.cmux/ssh/muxa-"
+        let prefix = "\(home)/.amux/ssh/muxa-"
         let suffix = "-\(connectionHash).sock"
         let fixedBytes = prefix.utf8.count + suffix.utf8.count + Self.opensshTransientSuffixLength
         let slugBudget = max(0, Self.maxUnixSocketPathLength - fixedBytes)

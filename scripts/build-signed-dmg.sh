@@ -133,7 +133,6 @@ if [[ ! -x "$BIN_DIR/amux" || -L "$BIN_DIR/amux" ]]; then
   echo "error: release bundle is missing the amux CLI" >&2
   exit 1
 fi
-ln -sfn amux "$BIN_DIR/cmux"
 
 echo "==> signing (Developer ID, hardened runtime, inside-out)"
 # Deliberately sign WITHOUT the keychain-access-groups entitlement. It is a

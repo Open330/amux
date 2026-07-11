@@ -38,8 +38,8 @@ describe("docs search utilities", () => {
         {
           title: "Keyboard shortcuts",
           url: "/docs/configuration/#keyboard-shortcuts",
-          excerpt: "Set <mark>shortcuts</mark> in cmux.json.",
-          plain_excerpt: "Set shortcuts in cmux.json.",
+          excerpt: "Set <mark>shortcuts</mark> in amux.json.",
+          plain_excerpt: "Set shortcuts in amux.json.",
           weighted_locations: [{ balanced_score: 1000 }],
         },
       ],
@@ -49,8 +49,8 @@ describe("docs search utilities", () => {
       href: "/docs/configuration#keyboard-shortcuts",
       title: "Keyboard shortcuts",
       section: "Docs",
-      excerptHtml: "Set <mark>shortcuts</mark> in cmux.json.",
-      plainExcerpt: "Set shortcuts in cmux.json.",
+      excerptHtml: "Set <mark>shortcuts</mark> in amux.json.",
+      plainExcerpt: "Set shortcuts in amux.json.",
     });
   });
 

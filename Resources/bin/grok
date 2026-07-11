@@ -43,7 +43,7 @@ resolve_cmux_bin() {
         return 0
     fi
 
-    bundled_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
+    bundled_cli="$(command -v amux 2>/dev/null || true)"
     if [[ -n "$bundled_cli" ]]; then
         printf '%s' "$bundled_cli"
         return 0

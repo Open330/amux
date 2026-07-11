@@ -99,7 +99,7 @@
     "faqOrchestrationQ": "amux birden fazla ajanı ve alt ajanı yönetebilir mi?",
     "faqOrchestrationA": "Evet. Bir ajan alt ajanlar veya ekip arkadaşları oluşturduğunda, amux bunları gizli arka plan süreçleri yerine yerel panellere ve bölmelere dönüştürür. <teamsLink>Claude Code ekiplerini</teamsLink> ve <omoLink>oh-my-opencode</omoLink> çok modelli orkestrasyonu destekler, böylece bir çalıştırmadaki her ajan görünür ve kontrol edilebilir olur.",
     "faqCustomizeQ": "amux'u özelleştirebilir miyim?",
-    "faqCustomizeA": "Evet. Terminal işleme sizin Ghostty yapılandırmanızı kullanır, bu yüzden temalar, yazı tipleri, renkler ve imleç doğrudan aktarılır. amux'un kendi ayarları <path>~/.config/cmux/cmux.json</path> içinde kenar çubuğunu, sekme çubuğunu, bölünmüş panelleri ve davranışı kontrol eder ve her <shortcutsLink>klavye kısayolu</shortcutsLink> düzenlenebilir. <link>yapılandırma</link> bölümüne bakın.",
+    "faqCustomizeA": "Evet. Terminal işleme sizin Ghostty yapılandırmanızı kullanır, bu yüzden temalar, yazı tipleri, renkler ve imleç doğrudan aktarılır. amux'un kendi ayarları <path>~/.config/amux/amux.json</path> içinde kenar çubuğunu, sekme çubuğunu, bölünmüş panelleri ve davranışı kontrol eder ve her <shortcutsLink>klavye kısayolu</shortcutsLink> düzenlenebilir. <link>yapılandırma</link> bölümüne bakın.",
     "faqIosQ": "Bir iOS uygulaması var mı?",
     "faqIosA": "Evet, beta aşamasında. iPhone'unuzu Mobile Connect penceresinden Mac'inizle eşleştirin ve terminallerinize telefonunuzdan bağlanın; isteğe bağlı olarak terminal bildirimlerini de iletebilirsiniz. TestFlight üzerinde amux BETA olarak sunulur. Erken erişim <foundersLink>amux Founders Edition</foundersLink> ile birlikte gelir.",
     "faqSkillsQ": "amux'un becerileri var mı?",
@@ -836,7 +836,7 @@
       "managingTitle": "Bir grubu yönetme",
       "managingIntro": "Bir grup oluşturulduktan sonra, başlığının bağlam menüsü ve başlıktaki + düğmesi grubu yönetmenize ve ona workspace eklemenize olanak tanır. İkisi de yeni bir grup oluşturmaz.",
       "headerMenuTitle": "Grup başlığı bağlam menüsünden",
-      "headerMenuDesc": "Mevcut bir grup başlığına sağ tıklayarak Grubu yeniden adlandır…, Grubu sabitle / Grubu sabitlemekten çıkar, Grup yapılandırmasını düzenle… (~/.config/cmux/cmux.json dosyasını açar), Çalışma alanı grupları belgelerini aç, Grubu çöz (çalışma alanlarını koru) ve Grubu sil (çalışma alanlarını kapat) seçeneklerine erişebilirsiniz. Silme işlemi yıkıcıdır ve onay ister; grubu çözmek çalışma alanlarını korur ve yalnızca kapsayıcıyı kaldırır.",
+      "headerMenuDesc": "Mevcut bir grup başlığına sağ tıklayarak Grubu yeniden adlandır…, Grubu sabitle / Grubu sabitlemekten çıkar, Grup yapılandırmasını düzenle… (~/.config/amux/amux.json dosyasını açar), Çalışma alanı grupları belgelerini aç, Grubu çöz (çalışma alanlarını koru) ve Grubu sil (çalışma alanlarını kapat) seçeneklerine erişebilirsiniz. Silme işlemi yıkıcıdır ve onay ister; grubu çözmek çalışma alanlarını korur ve yalnızca kapsayıcıyı kaldırır.",
       "plusButtonTitle": "Grup başlığındaki + düğmesinden",
       "plusButtonDesc": "Sonda bir + düğmesini görüntülemek için bir grup başlığının üzerine gelin. Çapa çalışma dizininde grupta yeni bir çalışma alanı oluşturmak için ona tıklayın. Grupta yeni çalışma alanı, Grup yapılandırmasını düzenle… ve Çalışma alanı grupları belgelerini aç için ona sağ tıklayın.",
       "plusButtonNote": "Etkin çalışma alanı bir grup bağlantısı ya da üyesiyken {shortcut} tuşlarına basmak da yeni çalışma alanını o grubun içinde oluşturur. Varsayılan yerleşim After current şeklindedir: sıradan bir grup üyesinden yeni çalışma alanı etkin üyenin hemen ardına yerleşir, bağlantıdan ya da başlıktan ise grubun en üstüne yerleşir.",
@@ -850,7 +850,7 @@
       "cliExampleNew": "Mevcut bir grubun içinde, örneğin bir worktree betiğine bağlı yeni bir çalışma alanı oluşturun:",
       "cliExampleList": "Odaktaki penceredeki grupları listeleyin:",
       "configTitle": "Yapılandırma",
-      "configNote": "Her gruba özel yapılandırma, ~/.config/cmux/cmux.json içindeki workspaceGroups anahtarı altında, çapa workspace'in çalışma dizinine göre anahtarlanmış olarak bulunur. Genel yeni workspace yerleşimi ile dizin başına renk, simge, yerleşim ve bağlam menüsü eylemleri dâhil olmak üzere desteklenen anahtarlar için yapılandırma referansına bakın.",
+      "configNote": "Her gruba özel yapılandırma, ~/.config/amux/amux.json içindeki workspaceGroups anahtarı altında, çapa workspace'in çalışma dizinine göre anahtarlanmış olarak bulunur. Genel yeni workspace yerleşimi ile dizin başına renk, simge, yerleşim ve bağlam menüsü eylemleri dâhil olmak üzere desteklenen anahtarlar için yapılandırma referansına bakın.",
       "configLinkText": "workspaceGroups yapılandırma referansı",
       "persistenceTitle": "Kalıcılık",
       "persistenceDesc": "Grup adı, bağlantı, sabitleme durumu, daraltma durumu, renk ve simge çalışma alanlarınızla birlikte kaydedilir ve başlatmalar arasında geri yüklenir. Grup üyeliği her çalışma alanında saklanır."
@@ -959,8 +959,8 @@
     "customCommands": {
       "title": "Özel Komutlar",
       "metaTitle": "Özel Komutlar",
-      "metaDescription": "cmux.json içinde eylemler, özel komutlar ve çalışma alanı düzenleri tanımlayın. Proje bazlı ve genel yapılandırmayı açık yeniden yükleme ile destekler.",
-      "intro": "Proje köküne veya ~/.config/cmux/ dizinine bir cmux.json dosyası ekleyerek özel komutlar ve workspace düzenleri tanımlayın. Komutlar komut paletinde görünür.",
+      "metaDescription": "amux.json içinde eylemler, özel komutlar ve çalışma alanı düzenleri tanımlayın. Proje bazlı ve genel yapılandırmayı açık yeniden yükleme ile destekler.",
+      "intro": "Proje köküne veya ~/.config/amux/ dizinine bir amux.json dosyası ekleyerek özel komutlar ve workspace düzenleri tanımlayın. Komutlar komut paletinde görünür.",
       "fileLocations": "Dosya konumları",
       "fileLocationsDesc": "amux yapılandırmayı iki yerde arar:",
       "localConfig": "Proje başına:",
@@ -969,13 +969,13 @@
       "fallbackLocalDesc": "mevcut repolar için hâlâ desteklenir",
       "nightlyFeatureCallout": "Eylem kayıt defteri bir nightly özelliğidir. <actions>actions</actions>, <shortcut>shortcut</shortcut> veya <buttons>ui.surfaceTabBar.buttons</buttons> kullanmadan önce en yeni nightly derlemeyi yükleyin.",
       "trustCallout": "Projeye yerel eylemler surface sekme çubuğunda ve Command Palette içinde hemen görünür. İlk çalıştırma yine güven ister. Güven repo başına değil, tam eylem parmak izi başına verilir. Projeye yerel görüntü ikonları, o eyleme güvenilene kadar kilitli kalır.",
-      "schemaErrorCallout": "Bir proje veya global config içinde şema hatası varsa amux bir sonraki geçerli config’e döner ve Command Palette içinde <title>cmux.json Schema Error</title> satırını gösterir. Config dosyasını açmak için seçin.",
+      "schemaErrorCallout": "Bir proje veya global config içinde şema hatası varsa amux bir sonraki geçerli config’e döner ve Command Palette içinde <title>amux.json Schema Error</title> satırını gösterir. Config dosyasını açmak için seçin.",
       "globalConfig": "Genel yapılandırma:",
       "globalConfigDesc": "tüm projeler için geçerlidir, yerel olarak tanımlanmayan komutları tamamlar",
       "precedenceNote": "Yerel eylemler ve komutlar, aynı ID veya ada sahip genel girdilerin yerine geçer.",
-      "liveReload": "cmux.json dosyasını düzenleyin, ardından Cmd+Shift+, tuşlarına basın veya değişiklikleri uygulamak için amux reload-config çalıştırın.",
+      "liveReload": "amux.json dosyasını düzenleyin, ardından Cmd+Shift+, tuşlarına basın veya değişiklikleri uygulamak için amux reload-config çalıştırın.",
       "schema": "Şema",
-      "schemaDesc": "Bir cmux.json dosyası bir commands dizisi içerir. Her komut ya basit bir shell komutu ya da tam bir workspace tanımıdır:",
+      "schemaDesc": "Bir amux.json dosyası bir commands dizisi içerir. Her komut ya basit bir shell komutu ya da tam bir workspace tanımıdır:",
       "schemaIntro": "<commands>commands</commands> yeniden kullanılabilir shell komutlarını ve çalışma alanı düzenlerini tanımlamaya devam eder. Nightly derlemeler bir <actions>actions</actions> kayıt defteri ekler. Eylemler surface sekme çubuğu, Command Palette ve eylem düzeyi kısayollar tarafından paylaşılan genel ID’lerdir.",
       "nightlyActionRegistry": "Nightly eylem kayıt defteri",
       "nightlyActionRegistryDesc": "<actions>actions</actions> kararlı ID’leri çalıştırılabilir davranışa eşler. Varsayılanları geçersiz kılmak için yerleşik ID’ler olan <newTerminal>cmux.newTerminal</newTerminal>, <newBrowser>cmux.newBrowser</newBrowser>, <splitRight>cmux.splitRight</splitRight> ve <splitDown>cmux.splitDown</splitDown> kullanın. Projeye özel araçlar için kendi ID’lerinizi kullanın.",
@@ -1000,7 +1000,7 @@
       "actionFieldConfirm": "Eylemi çalıştırmadan önce onay iste.",
       "commandPaletteBehavior": "Command Palette davranışı",
       "commandPaletteBehaviorDesc": "Command Palette çözümlenmiş eylem kayıt defterini okur. <palette>palette</palette> false değilse özel eylem ID’leri satır olarak eklenir. Eski <commands>commands</commands>, aynı oluşturulmuş ID’ye sahip bir eylem zaten yoksa otomatik olarak özel satırlar olarak eklenir. Yerleşik komutlar normal palet etiketlerini korur, ancak <newTerminal>cmux.newTerminal</newTerminal> gibi yerleşik bir ID’yi geçersiz kılmak bu ortak giriş noktasının arkasındaki davranışı değiştirir.",
-      "commandPaletteScreenshotAlt": "amux Command Palette, cmux.json içinden özel Worktree Agents eylemini gösteriyor",
+      "commandPaletteScreenshotAlt": "amux Command Palette, amux.json içinden özel Worktree Agents eylemini gösteriyor",
       "commandPaletteScreenshotCaption": "palette etkin olan özel eylemler Command Palette içinde aranabilir satırlar olarak görünür.",
       "plusButtonScreenshotAlt": "amux artı düğmesinin sağ tık menüsünde Worktree Agents, New Terminal ve New Browser görünüyor",
       "plusButtonScreenshotCaption": "Sağ tık menüsü ui.newWorkspace.contextMenu sırasını izler.",
@@ -1262,10 +1262,10 @@
       "tmuxDesc": "amux içinde tmux kullanıyorsanız, passthrough'u etkinleştirin:",
       "metaTitle": "Bildirimler",
       "hooksTitle": "Bildirim hookları",
-      "hooksIntro": "<config>cmux.json</config>, her bildirim politikasını stdin üzerinden JSON olarak alan bildirim hookları tanımlayabilir. Her hook stdout üzerinden JSON döndürür. Hooklar varsayılan olarak kapalıdır; amux bunları yalnızca <hooksMode>notifications.hooks</hooksMode> içinde en az bir etkin hook olduğunda çalıştırır. amux dönen bildirim metnini ve etkileri uygular; böylece hooklar bannerları filtreleyebilir, kenar çubuğu geçmişini tutabilir veya atlayabilir, ses çalıştırabilir ya da sonraki hookları durdurabilir.",
-      "hooksJsonTitle": "cmux.json",
+      "hooksIntro": "<config>amux.json</config>, her bildirim politikasını stdin üzerinden JSON olarak alan bildirim hookları tanımlayabilir. Her hook stdout üzerinden JSON döndürür. Hooklar varsayılan olarak kapalıdır; amux bunları yalnızca <hooksMode>notifications.hooks</hooksMode> içinde en az bir etkin hook olduğunda çalıştırır. amux dönen bildirim metnini ve etkileri uygular; böylece hooklar bannerları filtreleyebilir, kenar çubuğu geçmişini tutabilir veya atlayabilir, ses çalıştırabilir ya da sonraki hookları durdurabilir.",
+      "hooksJsonTitle": "amux.json",
       "hooksIOTitle": "Hook girişi ve çıkışı",
-      "hooksDetails": "Hooklar global <globalConfig>~/.config/cmux/cmux.json</globalConfig> dosyasından ve üst dizinlerden geçerli workspace’e kadar olan proje <projectConfig>.cmux/cmux.json</projectConfig> dosyalarından miras alınır. Proje hookları, çalışmadan önce diğer proje <config>cmux.json</config> komutlarıyla aynı güven istemini kullanır. Feed onay bannerları da bu hooklardan geçer; <desktop>desktop</desktop> devre dışı bırakılırsa yerel banner bastırılır ve Feed öğesi amux içinde kullanılabilir kalır. Miras alınan hookları yok saymak için proje yapılandırmasında <hooksMode>notifications.hooksMode</hooksMode> değerini <replace>replace</replace> yapın. Bir hook başarısız olursa, zaman aşımına uğrarsa veya geçersiz JSON döndürürse amux varsayılan bildirim davranışını kullanır ve hook hatası uyarısı gösterir."
+      "hooksDetails": "Hooklar global <globalConfig>~/.config/amux/amux.json</globalConfig> dosyasından ve üst dizinlerden geçerli workspace’e kadar olan proje <projectConfig>.amux/amux.json</projectConfig> dosyalarından miras alınır. Proje hookları, çalışmadan önce diğer proje <config>amux.json</config> komutlarıyla aynı güven istemini kullanır. Feed onay bannerları da bu hooklardan geçer; <desktop>desktop</desktop> devre dışı bırakılırsa yerel banner bastırılır ve Feed öğesi amux içinde kullanılabilir kalır. Miras alınan hookları yok saymak için proje yapılandırmasında <hooksMode>notifications.hooksMode</hooksMode> değerini <replace>replace</replace> yapın. Bir hook başarısız olursa, zaman aşımına uğrarsa veya geçersiz JSON döndürürse amux varsayılan bildirim davranışını kullanır ve hook hatası uyarısı gösterir."
     },
     "browserAutomation": {
       "title": "Tarayıcı Otomasyonu",
@@ -1389,7 +1389,7 @@
       "precedenceCallout": "Hem proje hem de global yapılandırma varsa proje yapılandırması geçerli olur. İç içe proje yapılandırmaları kendi dizin ağacına uygulanır. Proje yapılandırması yoksa Dock global yapılandırmayı kullanır. Hiçbir dosya yoksa Dock boş açılır.",
       "trustCallout": "Proje Dock yapılandırmaları komut başlatabilir. amux, kontrolleri başlatmadan önce proje yapılandırmasına güvenmenizi ister.",
       "exampleTitle": "dock.json örneği",
-      "exampleIntro": "Dock dosyası controls dizisi içeren bir JSON nesnesidir. Takım arkadaşlarının aynı Dock’u paylaşmasını istediğinde proje kontrollerini .cmux/dock.json içine ekleyip commit et. Örnek komutları repoda gerçekten bulunan araçlarla değiştir.",
+      "exampleIntro": "Dock dosyası controls dizisi içeren bir JSON nesnesidir. Takım arkadaşlarının aynı Dock’u paylaşmasını istediğinde proje kontrollerini .amux/dock.json içine ekleyip commit et. Örnek komutları repoda gerçekten bulunan araçlarla değiştir.",
       "fieldsTitle": "Alanlar",
       "fieldHeader": "Alan",
       "descriptionHeader": "Açıklama",
@@ -1401,13 +1401,13 @@
       "fieldEnv": "Yalnızca o kontrole geçirilen isteğe bağlı ortam değişkenleri.",
       "sharingTitle": "Ekiple paylaşma",
       "sharingIntro": "Dock, komutlar repoya ait olduğunda source control ile paylaşılmak üzere tasarlanmıştır.",
-      "sharingProject": "Repo'ya özel kontrolleri .cmux/dock.json içine koyun ve dosyayı commit edin.",
-      "sharingGlobal": "Kişisel kontrolleri özellikle repo dışında ~/.config/cmux/dock.json içine koy ve bu dosyayı paylaşılan source control dışında tut.",
+      "sharingProject": "Repo'ya özel kontrolleri .amux/dock.json içine koyun ve dosyayı commit edin.",
+      "sharingGlobal": "Kişisel kontrolleri özellikle repo dışında ~/.config/amux/dock.json içine koy ve bu dosyayı paylaşılan source control dışında tut.",
       "sharingSecrets": "dock.json içine secret koymayın. Secret değerleri shell'den, yerel bir env dosyasından veya mevcut geliştirme araçlarınızdan okuyun.",
       "agentPromptTitle": "Bir agent'tan kurmasını isteyin",
       "agentPromptIntro": "Bir coding agent’ın Dock kontrolleri oluşturmasını istediğinde bu promptu kullan. Agent’a `amux docs dock` çalıştırmasını, projeyi incelemesini ve tahmin etmeden önce sormasını söyler.",
       "agentPromptCodeTitle": "Agent prompt",
-      "agentPrompt": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.cmux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/cmux/dock.json`.\n- If both exist, project `.cmux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
+      "agentPrompt": "Set up amux Dock controls for the current context.\n\nFirst, learn the feature before editing:\n1. Run `amux docs dock` if the amux CLI is available. If it is not, read https://github.com/Open330/amux.\n2. Inspect the repository or current directory to understand the project type, scripts, package manager, dev servers, logs, task runners, test commands, and any existing TUI tools.\n3. If the desired Dock is ambiguous, ask the user what they want monitored or controlled before writing files.\n\nDock is amux's right-sidebar terminal control area. A Dock config is JSON with a top-level `controls` array. Each control runs a command in its own Ghostty-backed terminal section using the user's login shell. Controls are useful for project dashboards, git/status views, dev server or build status, test watchers, log tails, queues, local services, or a custom TUI such as `amux feed tui --opentui` when that feed is useful.\n\nChoose where to write the config:\n- In a repository or project directory, create or edit `.amux/dock.json` so teammates can share it.\n- For a personal default outside a repo, create or edit `~/.config/amux/dock.json`.\n- If both exist, project `.amux/dock.json` is more specific for that project. Nested project configs apply to that directory tree; use the nearest relevant project config instead of writing unrelated controls globally.\n- If there is no repo and no clear project root, use the global config only after confirming the user wants a personal Dock.\n\nSchema:\n{\n  \"controls\": [\n    {\n      \"id\": \"short-stable-id\",\n      \"title\": \"Human label\",\n      \"command\": \"safe command to run\",\n      \"cwd\": \"optional/path\",\n      \"height\": 220,\n      \"env\": { \"NAME\": \"value\" }\n    }\n  ]\n}\n\nRules:\n- Keep ids stable, lowercase, and unique.\n- Use `cwd` for subdirectories; relative paths resolve from the config base.\n- Use `height` only when a control needs a fixed amount of vertical space.\n- Use `env` only for non-secret values needed by one control.\n- Do not put secrets, tokens, or machine-specific private paths in a shared project config.\n- Prefer commands that are safe to start repeatedly and make sense in a terminal.\n- Do not invent unavailable scripts. Read package files, Makefiles, Procfiles, README docs, config files, and existing tooling first.\n- Keep shared project Docks portable for teammates. Put personal or machine-specific controls in the global Dock.\n\nDeliverable:\n- Create or update the appropriate dock.json.\n- Preserve existing useful controls unless the user asked to replace them.\n- Validate that the JSON parses.\n- Summarize what each control does and any commands the user should review before trusting the Dock config."
     },
     "sessionRestore": {
       "title": "Oturum geri yükleme",
@@ -1450,7 +1450,7 @@
       "underHoodItemScrollback": "Terminal scrollback sınırlı metin olarak saklanır ve geri yüklemede geçici dosya üzerinden replay edilir. Terminal app'leri ekranı yeniden çizebildiği veya temizleyebildiği için bu best effort'tur.",
       "underHoodItemHooks": "Agent hooks ~/.cmuxterm/<agent>-hook-sessions.json dosyasına agent session ID, amux workspace ID, surface ID, cwd, varsa process ID ve sanitize edilmiş launch command yazar.",
       "underHoodItemResume": "Geri yüklemede amux önce pencereleri ve panelleri yeniden kurar. Otomatik agent resume açıksa, kaydedilen session ID ile agent'ın native resume komutunu çalıştıran tek seferlik shell komutu başlatır.",
-      "underHoodMore": "Normal <configLink>configuration docs</configLink> cmux.json'u kapsar. Session restore app layout'unu Ghostty terminal rendering ayarlarından ayrı tutar.",
+      "underHoodMore": "Normal <configLink>configuration docs</configLink> amux.json'u kapsar. Session restore app layout'unu Ghostty terminal rendering ayarlarından ayrı tutar.",
       "feedPrePostToolUse": "PreToolUse, PostToolUse",
       "feedHermes": "pre_tool_call, post_tool_call, pre_approval_request, post_approval_response"
     },
@@ -1508,7 +1508,7 @@
       "daemonRelayHow": "Uzak işlemlerin amux komutlarını yerel olarak çağırabilmesi için HMAC-SHA256 kimlik doğrulamasıyla TCP tünelini tersine çevirin",
       "daemonSession": "Oturum yönetimi",
       "daemonSessionHow": "Yeniden bağlantılarda oturumları sürdürür, birden fazla ekte PTY'nin yeniden boyutlandırılmasını koordine eder",
-      "daemonPath": "Arka plan programı ikili dosyası, uzak ana bilgisayarda ~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote konumunda depolanır ve uygulamaya katıştırılmış bir SHA-256 bildirimine göre doğrulanır."
+      "daemonPath": "Arka plan programı ikili dosyası, uzak ana bilgisayarda ~/.amux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote konumunda depolanır ve uygulamaya katıştırılmış bir SHA-256 bildirimine göre doğrulanır."
     },
     "textBox": {
       "title": "TextBox (Beta)",
@@ -1521,8 +1521,8 @@
       "showSetting": "Show TextBox on New Terminals yeni çalışma alanlarını, terminal sekmelerini ve terminal bölmelerini TextBox görünür halde açar ve odağı terminalde tutar.",
       "focusSetting": "Focus TextBox on New Terminals klavye odağını TextBox'a taşır. Odaklamak TextBox'ı da gösterir.",
       "maxLinesSetting": "TextBox Max Lines, içerik kaymaya başlamadan önce TextBox yüksekliğini sınırlar.",
-      "configTitle": "cmux.json",
-      "configDesc": "Aynı varsayılanları ~/.config/cmux/cmux.json içinde terminal altında ayarlayın:",
+      "configTitle": "amux.json",
+      "configDesc": "Aynı varsayılanları ~/.config/amux/amux.json içinde terminal altında ayarlayın:",
       "focusNote": "Geri yüklenen oturumlar kayıtlı TextBox görünürlüğünü ve odak durumunu korur. Bu varsayılanlar yalnızca yeni oluşturulan terminal yüzeylerine uygulanır."
     },
     "ohMyOpenCode": {

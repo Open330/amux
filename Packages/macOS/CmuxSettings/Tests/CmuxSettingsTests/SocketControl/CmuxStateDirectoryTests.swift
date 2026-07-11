@@ -12,7 +12,7 @@ import Testing
         let home = URL(fileURLWithPath: "/Users/test-user", isDirectory: true)
         let url = CmuxStateDirectory.url(homeDirectory: home)
 
-        #expect(url.path == "/Users/test-user/.local/state/cmux")
+        #expect(url.path == "/Users/test-user/.local/state/amux")
         // The whole point of the fix: never under a TCC-protected app-data root.
         #expect(!url.path.contains("/Library/Application Support"))
         #expect(!url.path.contains("/Library/Containers"))
@@ -27,7 +27,7 @@ import Testing
             isDirectory: true
         )
         let socket = CmuxStateDirectory.url(homeDirectory: home)
-            .appendingPathComponent("cmux.sock", isDirectory: false)
+            .appendingPathComponent("amux.sock", isDirectory: false)
         #expect(socket.path.utf8.count < 104)
     }
 

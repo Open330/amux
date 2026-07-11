@@ -7,7 +7,7 @@ nonisolated private let terminalUploadCommandRuleLogger = Logger(
 )
 
 /// A single host-scoped upload-command rule stored under `terminal.uploadCommands`
-/// in `cmux.json`. When the terminal uploads a dropped/pasted file to a remote
+/// in `amux.json`. When the terminal uploads a dropped/pasted file to a remote
 /// target, cmux runs the first rule whose `hostPattern` matches the ssh
 /// destination **instead of** the built-in `scp`, then inserts the command's
 /// stdout (or the remote path it chose, if the command prints nothing). A rule

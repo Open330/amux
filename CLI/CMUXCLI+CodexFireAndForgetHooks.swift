@@ -36,7 +36,7 @@ extension CMUXCLI {
         // bare executable file path runs correctly whether the runtime execs it
         // directly or through a shell, and normal codex (which runs it via shell)
         // is unaffected. The scripts are env-driven and identical across
-        // invocations, so they are written once into an amux-owned dir (~/.cmux/
+        // invocations, so they are written once into an amux-owned dir (~/.amux/
         // hooks), not the user's ~/.codex. Any write failure falls back to the
         // inline snippet so the working path can never regress.
         let hooksDir = Self.codexHookScriptsDirectory()
@@ -78,12 +78,12 @@ extension CMUXCLI {
     }
 
     /// The amux-owned directory holding the generated codex hook scripts.
-    /// `~/.cmux/hooks` (NOT the user's `~/.codex`), created on demand. Returns
+    /// `~/.amux/hooks` (NOT the user's `~/.codex`), created on demand. Returns
     /// nil if it cannot be created, so the caller falls back to inline commands.
     static func codexHookScriptsDirectory() -> URL? {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let dir = home
-            .appendingPathComponent(".cmux", isDirectory: true)
+            .appendingPathComponent(".amux", isDirectory: true)
             .appendingPathComponent("hooks", isDirectory: true)
         do {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -103,7 +103,7 @@ extension CMUXCLI {
         let safeName = subcommand.replacingOccurrences(
             of: "[^A-Za-z0-9_-]", with: "-", options: .regularExpression
         )
-        let url = dir.appendingPathComponent("cmux-codex-hook-\(safeName).sh", isDirectory: false)
+        let url = dir.appendingPathComponent("amux-codex-hook-\(safeName).sh", isDirectory: false)
         let contents = "#!/bin/sh\n\(body)\n"
         let fileManager = FileManager.default
         if let existing = try? String(contentsOf: url, encoding: .utf8), existing == contents {
@@ -132,9 +132,9 @@ extension CMUXCLI {
         let runner = "payload=\"$1\"; shift; \"$@\" <\"$payload\" >/dev/null 2>&1 & child=\"$!\"; ( sleep 30; kill \"$child\" 2>/dev/null || true ) & watchdog=\"$!\"; wait \"$child\" 2>/dev/null || true; kill \"$watchdog\" 2>/dev/null || true; rm -f \"$payload\""
         return [
             "cmux_cli=\"${CMUX_BUNDLED_CLI_PATH:-}\"",
-            "if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)\"; fi",
+            "if [ -z \"$cmux_cli\" ] || [ ! -x \"$cmux_cli\" ]; then cmux_cli=\"$(command -v amux 2>/dev/null || true)\"; fi",
             "agent_pid=\"${CMUX_CODEX_PID:-${PPID:-}}\"",
-            "if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then payload=\"$(mktemp \"${TMPDIR:-/tmp}/cmux-codex-hook.XXXXXX\" 2>/dev/null || mktemp -t cmux-codex-hook 2>/dev/null)\" || { echo '{}'; exit 0; }; cat >\"$payload\" || true; if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then CMUX_CODEX_PID=\"$agent_pid\" nohup sh -c '\(runner)' cmux-codex-hook \"$payload\" \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments) >/dev/null 2>&1 & else CMUX_CODEX_PID=\"$agent_pid\" nohup sh -c '\(runner)' cmux-codex-hook \"$payload\" \"$cmux_cli\" \(routedArguments) >/dev/null 2>&1 & fi; echo '{}'; else echo '{}'; fi",
+            "if [ -n \"$CMUX_SURFACE_ID\" ] && [ \"$\(def.disableEnvVar)\" != \"1\" ] && [ -n \"$cmux_cli\" ]; then payload=\"$(mktemp \"${TMPDIR:-/tmp}/amux-codex-hook.XXXXXX\" 2>/dev/null || mktemp -t amux-codex-hook 2>/dev/null)\" || { echo '{}'; exit 0; }; cat >\"$payload\" || true; if [ -n \"${CMUX_SOCKET_PATH:-}\" ]; then CMUX_CODEX_PID=\"$agent_pid\" nohup sh -c '\(runner)' amux-codex-hook \"$payload\" \"$cmux_cli\" --socket \"$CMUX_SOCKET_PATH\" \(routedArguments) >/dev/null 2>&1 & else CMUX_CODEX_PID=\"$agent_pid\" nohup sh -c '\(runner)' amux-codex-hook \"$payload\" \"$cmux_cli\" \(routedArguments) >/dev/null 2>&1 & fi; echo '{}'; else echo '{}'; fi",
         ].joined(separator: "; ")
     }
 }

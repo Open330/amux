@@ -5,14 +5,14 @@ description: "Guide and apply cmux keyboard shortcut customization. Use when the
 
 # cmux-keyboard-shortcuts
 
-Use this skill to turn a user's workflow preferences into cmux shortcut bindings in `~/.config/cmux/cmux.json`. It should guide the user, propose compact templates, apply selected changes, and confirm the config parses with recognized keys.
+Use this skill to turn a user's workflow preferences into cmux shortcut bindings in `~/.config/amux/amux.json`. It should guide the user, propose compact templates, apply selected changes, and confirm the config parses with recognized keys.
 
 ## Prerequisites
 
 - Work from a cmux checkout or worktree root when possible.
 - Use `skills/cmux-settings/scripts/cmux-settings` for every read/write. It reads JSONC, writes atomically, and validates JSON plus recognized settings keys.
 - For action IDs, read `skills/cmux-settings/references/shortcut-actions.md`.
-- For current defaults, read `web/data/cmux-shortcuts.ts` or `Sources/KeyboardShortcutSettings.swift`.
+- For current defaults, read `web/data/amux-shortcuts.ts` or `Sources/KeyboardShortcutSettings.swift`.
 
 ```bash
 find_cmux_settings() {
@@ -46,9 +46,9 @@ fi
 - Unbind: prefer `null` for explicit unbinds. `""`, `"none"`, `"clear"`, `"unbound"`, and `"disabled"` are accepted aliases, but `null` is the clearest JSON value and matches the templates below.
 - `selectSurfaceByNumber` and `selectWorkspaceByNumber` must use a digit from 1 to 9. `cmd+1` means the full `cmd+1` through `cmd+9` family.
 - `showHideAllWindows` and `globalSearch` are system-wide shortcuts. They cannot be chords, require modifiers, and may be rejected by macOS if reserved.
-- `showHideAllWindows` also requires Settings > Global Hotkey > Enable System-Wide Hotkey. The binding can validate in `cmux.json` while the feature is disabled, so warn the user to enable that setting before reporting the shortcut as usable.
-- `unset` deletes a `cmux.json` override. It does not clear shortcut changes saved through the Settings UI/UserDefaults. If the user asks for true built-in defaults, tell them to use Settings > Keyboard Shortcuts > Reset Default Shortcuts after clearing file-managed overrides, then verify in the app. For `showHideAllWindows`, use Settings > Global Hotkey to restore the shortcut to `ctrl+opt+cmd+.` because Keyboard Shortcuts > Reset Default Shortcuts intentionally skips the global hotkey.
-- Saving `cmux.json` live reloads. Do not tell the user to restart cmux.
+- `showHideAllWindows` also requires Settings > Global Hotkey > Enable System-Wide Hotkey. The binding can validate in `amux.json` while the feature is disabled, so warn the user to enable that setting before reporting the shortcut as usable.
+- `unset` deletes a `amux.json` override. It does not clear shortcut changes saved through the Settings UI/UserDefaults. If the user asks for true built-in defaults, tell them to use Settings > Keyboard Shortcuts > Reset Default Shortcuts after clearing file-managed overrides, then verify in the app. For `showHideAllWindows`, use Settings > Global Hotkey to restore the shortcut to `ctrl+opt+cmd+.` because Keyboard Shortcuts > Reset Default Shortcuts intentionally skips the global hotkey.
+- Saving `amux.json` live reloads. Do not tell the user to restart cmux.
 
 ## Workflow
 
@@ -206,7 +206,7 @@ For users who want fewer app-level shortcuts. Prefer unbinding only the actions 
 
 ## Rules
 
-- Do not edit `~/.config/cmux/settings.json` unless the user explicitly asks. It is legacy fallback config.
+- Do not edit legacy cmux config files unless the user explicitly asks. They are import sources, not active fallback config.
 - Do not overwrite all of `shortcuts.bindings` unless the user explicitly wants a full replacement.
 - Do not invent action IDs. Validate against the schema or `shortcut-actions.md`.
 - Do not apply a broad template without showing the changed actions first unless the user explicitly said to apply that named template.

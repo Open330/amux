@@ -11,7 +11,7 @@ dev_origin="${CMUX_DEV_ORIGIN:-http://localhost:${port}}"
 bin="$app/Contents/MacOS/amux DEV"
 cli="$app/Contents/Resources/bin/amux"
 if [[ ! -x "$cli" ]]; then
-  cli="$app/Contents/Resources/bin/cmux"
+  cli="$app/Contents/Resources/bin/amux"
 fi
 tag_bundle_id="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/./g; s/^\.+//; s/\.+$//; s/\.+/./g')"
 if [[ -z "$tag_bundle_id" ]]; then

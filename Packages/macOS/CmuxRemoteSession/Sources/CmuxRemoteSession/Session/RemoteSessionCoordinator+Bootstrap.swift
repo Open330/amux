@@ -110,7 +110,7 @@ extension RemoteSessionCoordinator {
           armv7l|ARMV7L|armv7|ARMV7) cmux_go_arch=arm ;;
           *) exit 71 ;;
         esac
-        cmux_remote_path="$HOME/.cmux/bin/cmuxd-remote/\(scriptVersion)/${cmux_go_os}-${cmux_go_arch}/cmuxd-remote"
+        cmux_remote_path="$HOME/.amux/bin/cmuxd-remote/\(scriptVersion)/${cmux_go_os}-${cmux_go_arch}/cmuxd-remote"
         if [ -x "$cmux_remote_path" ]; then
           printf '%syes\\n' '\(Self.remotePlatformProbeExistsMarker)'
         else
@@ -499,7 +499,7 @@ extension RemoteSessionCoordinator {
     }
 
     static func remoteDaemonPath(version: String, goOS: String, goArch: String) -> String {
-        ".cmux/bin/cmuxd-remote/\(version)/\(goOS)-\(goArch)/cmuxd-remote"
+        ".amux/bin/cmuxd-remote/\(version)/\(goOS)-\(goArch)/cmuxd-remote"
     }
 
     static func remoteDaemonInstallLocation(

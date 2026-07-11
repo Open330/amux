@@ -7,12 +7,12 @@ public import Foundation
 /// secret-handling sibling of ``JSONConfigStore`` and
 /// ``UserDefaultsSettingsStore``, and only accepts ``SecretFileKey``. Unlike
 /// ``JSONConfigStore`` it never serializes the value into the shared
-/// `cmux.json`: each secret is written to its own file with owner-only
+/// `amux.json`: each secret is written to its own file with owner-only
 /// permissions, so the secret never appears in a config users edit, copy,
 /// version, or template.
 ///
 /// Files resolve to `<baseDirectory>/<key.fileName>`. The app constructs the
-/// store with `~/.config/cmux` (the same directory as `cmux.json`); tests pass
+/// store with `~/.config/amux` (the same directory as `amux.json`); tests pass
 /// a temporary directory.
 ///
 /// ```swift
@@ -37,7 +37,7 @@ public actor SecretFileStore {
 
     /// Creates a store rooted at `baseDirectory`.
     /// - Parameter baseDirectory: The directory holding the secret files
-    ///   (created on first write if absent). The app uses `~/.config/cmux`.
+    ///   (created on first write if absent). The app uses `~/.config/amux`.
     public init(baseDirectory: URL) {
         self.baseDirectory = baseDirectory
     }

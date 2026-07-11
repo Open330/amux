@@ -128,7 +128,7 @@ extension TerminalSurface {
                 fi
             fi
             if [[ ! -x "$cmux_wrapper" ]]; then
-                cmux_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
+                cmux_cli="$(command -v amux 2>/dev/null || true)"
                 if [[ -n "$cmux_cli" ]]; then
                     cmux_candidate="$(dirname "$cmux_cli")/cmux-claude-wrapper"
                     if [[ -x "$cmux_candidate" ]]; then
@@ -217,7 +217,7 @@ extension TerminalSurface {
                 fi
             fi
             if [[ ! -x "$cmux_wrapper" ]]; then
-                cmux_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
+                cmux_cli="$(command -v amux 2>/dev/null || true)"
                 if [[ -n "$cmux_cli" ]]; then
                     cmux_candidate="$(dirname "$cmux_cli")/cmux-codex-wrapper"
                     if [[ -x "$cmux_candidate" ]]; then

@@ -1,13 +1,13 @@
 ---
 name: cmux-settings
-description: "View and edit cmux settings in ~/.config/cmux/cmux.json. Use when the user wants to change cmux preferences (appearance, sidebar, notifications, automation, browser, shortcuts), set a value by JSON path, validate the file, open it in an editor, or look up which keys cmux recognizes. Triggers on '/cmux-settings', 'change cmux setting', 'set <something> in cmux', 'cmux config', 'cmux.json', or 'rebind a cmux shortcut'."
+description: "View and edit amux settings in ~/.config/amux/amux.json. Use when the user wants to change cmux preferences (appearance, sidebar, notifications, automation, browser, shortcuts), set a value by JSON path, validate the file, open it in an editor, or look up which keys cmux recognizes. Triggers on '/cmux-settings', 'change cmux setting', 'set <something> in cmux', 'cmux config', 'amux.json', or 'rebind a cmux shortcut'."
 ---
 
 # cmux-settings
 
-cmux reads user settings from `~/.config/cmux/cmux.json` (JSONC). The app installs a file watcher; saving the file applies changes immediately, no restart needed. Legacy `~/.config/cmux/settings.json` is read only as a fallback for keys not present in `cmux.json`.
+amux reads user settings from `~/.config/amux/amux.json` (JSONC). The app installs a file watcher; saving the file applies changes immediately, no restart needed. Legacy cmux files are imported once and are not read as fallback configuration.
 
-Schema: `https://raw.githubusercontent.com/Open330/amux/main/web/data/cmux.schema.json`. The authoritative path list lives in `Sources/CmuxSettingsJSONPathSupport.swift` in the amux checkout, and the installed skill includes a generated copy in `references/all-keys.md`. Top-level sections are `app`, `terminal`, `notifications`, `sidebar`, `sidebarAppearance`, `workspaceColors`, `automation`, `browser`, and `shortcuts`. Non-settings sections (`actions`, `ui`, `commands`, `vault`, `rightSidebar`) coexist in the same file.
+Schema: `https://raw.githubusercontent.com/Open330/amux/main/web/data/amux.schema.json`. The authoritative path list lives in `Sources/CmuxSettingsJSONPathSupport.swift` in the amux checkout, and the installed skill includes a generated copy in `references/all-keys.md`. Top-level sections are `app`, `terminal`, `notifications`, `sidebar`, `sidebarAppearance`, `workspaceColors`, `automation`, `browser`, and `shortcuts`. Non-settings sections (`actions`, `ui`, `commands`, `vault`, `rightSidebar`) coexist in the same file.
 
 ## Helper script
 
@@ -35,9 +35,9 @@ Subcommands:
 | `cmux-settings unset <a.b.c>` | Delete key, reverting to the in-app default. |
 | `cmux-settings list-supported` | List every settings JSON path the app recognizes. |
 | `cmux-settings validate` | Parse the file and flag any unknown settings keys. |
-| `cmux-settings open` | Open `cmux.json` in `$EDITOR`, VS Code, Cursor, or TextEdit. |
+| `cmux-settings open` | Open `amux.json` in `$EDITOR`, VS Code, Cursor, or TextEdit. |
 
-`--file <path>` overrides the target file (useful for `--file ~/.config/cmux/settings.json` when the user keeps things in the legacy file).
+`--file <path>` overrides the target file for inspection or explicit migration work.
 
 ## Workflow
 
@@ -74,7 +74,7 @@ For the full list of settings, defaults, and descriptions, run `cmux-settings li
 
 ## Rules
 
-- Only edit `cmux.json`. Never edit `settings.json` unless the user explicitly asks; it is legacy and only read when the key is absent from `cmux.json`.
+- Only edit `amux.json`. Legacy cmux files are import sources, not active settings.
 - Never tell the user to restart cmux to apply a change. The file watcher reloads on save.
 - Always validate after a bulk edit: `cmux-settings validate`. Unknown keys mean the user pasted a key the app does not consume.
 - Do not blindly overwrite top-level sections (`actions`, `ui`, `commands`, `vault`, `rightSidebar`). They live in the same file and contain non-settings config the user has hand-tuned.

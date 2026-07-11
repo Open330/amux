@@ -218,7 +218,7 @@ cmux_socket_available() {
     self_dir="$(cd "$(dirname "$0")" && pwd)"
     cmux_bin="$self_dir/amux"
     [[ -x "$cmux_bin" ]] || cmux_bin="$self_dir/cmux"
-    [[ -x "$cmux_bin" ]] || cmux_bin="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
+    [[ -x "$cmux_bin" ]] || cmux_bin="$(command -v amux 2>/dev/null || true)"
     [[ -n "$cmux_bin" ]] || return 1
 
     # Keep stale/hung socket checks bounded so claude startup does not block
@@ -248,7 +248,7 @@ resolve_hook_cmux_bin() {
         return 0
     fi
 
-    bundled_cli="$(command -v amux 2>/dev/null || command -v cmux 2>/dev/null || true)"
+    bundled_cli="$(command -v amux 2>/dev/null || true)"
     if [[ -n "$bundled_cli" ]]; then
         printf '%s' "$bundled_cli"
         return 0
