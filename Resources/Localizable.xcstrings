@@ -104158,13 +104158,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inspect PostHog flag state and local overrides for this Mac."
+            "value": "Inspect feature flag state and local overrides for this Mac."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "このMacのPostHogフラグ状態とローカル上書きを確認します。"
+            "value": "このMacのフィーチャーフラグの状態とローカル上書きを確認します。"
           }
         }
       }
@@ -171769,115 +171769,115 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy تطبيق عام تفضيلات سلوك شريط القائمة حالة الشريط الجانبي قياس استخدام تحليلات تعطل تقارير مجهول خصوصية التطبيق"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy تطبيق عام تفضيلات سلوك شريط القائمة حالة الشريط الجانبي قياس استخدام تحليلات تعطل تقارير مجهول خصوصية التطبيق"
           }
         },
         "bs": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy aplikacija opće postavke ponašanje dock traka menija status bočna telemetrija analitika rušenje izvještaji korištenje anonimno privatnost"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy aplikacija opće postavke ponašanje dock traka menija status bočna telemetrija analitika rušenje izvještaji korištenje anonimno privatnost"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy app generelt indstillinger adfærd dock menulinje status sidepanel telemetri analyse nedbrud rapporter brug anonym privatliv"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy app generelt indstillinger adfærd dock menulinje status sidepanel telemetri analyse nedbrud rapporter brug anonym privatliv"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy app allgemein einstellungen verhalten dock menüleiste status seitenleiste telemetrie analyse absturz berichte nutzung anonym datenschutz"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy app allgemein einstellungen verhalten dock menüleiste status seitenleiste telemetrie analyse absturz berichte nutzung anonym datenschutz"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy aplicación general preferencias comportamiento dock barra de menú estado lateral telemetría analíticas fallos informes uso anónimo privacidad App"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy aplicación general preferencias comportamiento dock barra de menú estado lateral telemetría analíticas fallos informes uso anónimo privacidad App"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy application général préférences comportement dock barre de menus état latérale télémétrie analytique plantage rapports utilisation anonyme confidentialité App"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy application général préférences comportement dock barre de menus état latérale télémétrie analytique plantage rapports utilisation anonyme confidentialité App"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy app generale preferenze comportamento dock barra menu stato laterale telemetria analisi rapporti utilizzo anonimo"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy app generale preferenze comportamento dock barra menu stato laterale telemetria analisi rapporti utilizzo anonimo"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy テレメトリ 分析 クラッシュレポート 使用状況 匿名 プライバシー"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy テレメトリ 分析 クラッシュレポート 使用状況 匿名 プライバシー"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy 앱 일반 환경설정 동작 독 메뉴 막대 상태 사이드바 텔레메트리 분석 충돌 보고서 사용량 익명 개인정보"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy 앱 일반 환경설정 동작 독 메뉴 막대 상태 사이드바 텔레메트리 분석 충돌 보고서 사용량 익명 개인정보"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy app generelt innstillinger oppførsel dock menylinje status sidepanel telemetri analyse krasj rapporter bruk anonym personvern"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy app generelt innstillinger oppførsel dock menylinje status sidepanel telemetri analyse krasj rapporter bruk anonym personvern"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy aplikacja ogólne preferencje zachowanie dock pasek menu status boczny telemetria analityka awaria raporty użycie anonimowe prywatność"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy aplikacja ogólne preferencje zachowanie dock pasek menu status boczny telemetria analityka awaria raporty użycie anonimowe prywatność"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy app geral preferências comportamento dock barra de menu status lateral telemetria análises falhas relatórios uso anônimo privacidade"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy app geral preferências comportamento dock barra de menu status lateral telemetria análises falhas relatórios uso anônimo privacidade"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy приложение общие настройки поведение док строка меню статус боковая панель телеметрия аналитика сбой отчеты использование анонимно приватность"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy приложение общие настройки поведение док строка меню статус боковая панель телеметрия аналитика сбой отчеты использование анонимно приватность"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy แอป ทั่วไป ค่ากำหนด พฤติกรรม ด็อก แถบเมนู สถานะ แถบด้านข้าง เทเลเมทรี วิเคราะห์ ขัดข้อง รายงาน การใช้งาน นิรนาม ความเป็นส่วนตัว"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy แอป ทั่วไป ค่ากำหนด พฤติกรรม ด็อก แถบเมนู สถานะ แถบด้านข้าง เทเลเมทรี วิเคราะห์ ขัดข้อง รายงาน การใช้งาน นิรนาม ความเป็นส่วนตัว"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy uygulama genel tercihler davranış dock menü çubuğu durum kenar telemetri analiz çökme raporlar kullanım anonim gizlilik"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy uygulama genel tercihler davranış dock menü çubuğu durum kenar telemetri analiz çökme raporlar kullanım anonim gizlilik"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy програма загальні параметри поведінка док рядок меню статус бічна панель телеметрія аналітика збій звіти використання анонімно приватність"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy програма загальні параметри поведінка док рядок меню статус бічна панель телеметрія аналітика збій звіти використання анонімно приватність"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy 应用 通用 偏好设置 行为 程序坞 菜单栏 状态 侧边栏 遥测 分析 崩溃 报告 使用 匿名 隐私"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy 应用 通用 偏好设置 行为 程序坞 菜单栏 状态 侧边栏 遥测 分析 崩溃 报告 使用 匿名 隐私"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "app.sendAnonymousTelemetry analytics crash reports sentry posthog usage anonymous privacy 應用程式 一般 偏好設定 行為 Dock 選單列 狀態 側邊欄 遙測 分析 當機 報告 使用 匿名 隱私 App"
+            "value": "app.sendAnonymousTelemetry analytics crash reports sentry usage anonymous privacy 應用程式 一般 偏好設定 行為 Dock 選單列 狀態 側邊欄 遙測 分析 當機 報告 使用 匿名 隱私 App"
           }
         }
       }

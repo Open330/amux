@@ -7,7 +7,7 @@ import SwiftUI
 /// controls accessory; visibility in minimal mode and fullscreen is managed
 /// there. The button itself is gated on
 /// ``CmuxFeatureFlags/isMobileConnectButtonEnabled`` inside the SwiftUI
-/// view, so a PostHog toggle applies live without re-attaching accessories.
+/// view, so a flag change applies live without re-attaching accessories.
 final class MobileConnectTitlebarAccessoryViewController: NSTitlebarAccessoryViewController {
     init() {
         super.init(nibName: nil, bundle: nil)

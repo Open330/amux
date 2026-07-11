@@ -1386,11 +1386,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             StartupBreadcrumbLog.append("appDelegate.didFinish.sentry.complete")
         }
 
-        if telemetryEnabled && !isRunningUnderXCTest {
-            StartupBreadcrumbLog.append("appDelegate.didFinish.posthog.begin")
-            PostHogAnalytics.shared.startIfNeeded()
-            StartupBreadcrumbLog.append("appDelegate.didFinish.posthog.complete")
-        }
         if !isRunningUnderXCTest {
             CmuxFeatureFlags.shared.start()
         }
@@ -1804,10 +1799,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         sentryBreadcrumb("app.didBecomeActive", category: "lifecycle", data: [
             "tabCount": tabManager?.tabs.count ?? 0
         ])
-        if TelemetrySettings.enabledForCurrentLaunch && !isRunningUnderXCTestCached {
-            PostHogAnalytics.shared.trackActive(reason: "didBecomeActive")
-        }
-
         guard let notificationStore else { return }
         notificationStore.handleApplicationDidBecomeActive()
         guard let tabManager else { return }
