@@ -134,7 +134,7 @@ extension CMUXCLI {
             lines.append("")
         }
         lines.append(String(localized: "cli.memory.output.appHeader", defaultValue: "APP"))
-        lines.append("  \(appName.isEmpty ? "cmux" : appName) pid=\(appPID)")
+        lines.append("  \(appName.isEmpty ? "amux" : appName) pid=\(appPID)")
         lines.append(String.localizedStringWithFormat(
             String(localized: "cli.memory.output.appFootprint", defaultValue: "  footprint %@"),
             formatBytes(appFootprint)

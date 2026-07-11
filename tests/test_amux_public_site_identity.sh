@@ -18,6 +18,10 @@ if rg -n -i 'cmux\.com|posthog|manaflow-ai/cmux/(pull|issues)' "$SITE_DIR"; then
   fail "inherited hosted identity leaked into the public site"
 fi
 
+if rg -n -i '>[^<]*cmux[^<]*<' "$SITE_DIR"/*.html "$SITE_DIR"/*/index.html; then
+  fail "legacy product name is visible in public website copy"
+fi
+
 if rg -n -i '0\.2\.0 pre-release|secrets remain to be configured' "$ROOT_DIR/README.md"; then
   fail "README still describes the published release as incomplete"
 fi

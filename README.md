@@ -140,9 +140,10 @@ Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.
 
 Download the signed, notarized build from [Releases](https://github.com/Open330/amux/releases/latest).
 
-### Compatibility names
+### Legacy compatibility contract
 
-`amux` is the product and canonical CLI name. Existing `CMUX_*` environment variables,
+`amux` is the product and canonical CLI name. The following inherited names are
+compatibility interfaces, not product branding: existing `CMUX_*` environment variables,
 `cmux.json`, `.cmux/` project directories, `cmux.*` action IDs, and the `cmux` CLI alias
 remain supported so cmux configurations and agent integrations continue to work after migration.
 New user-facing examples and release artifacts use `amux`.
