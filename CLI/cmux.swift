@@ -14950,28 +14950,7 @@ struct CMUXCLI {
             via Settings → Keyboard.
             """
         case "ssh":
-            return String(localized: "cli.help.ssh", defaultValue: """
-            Usage: amux ssh <destination> [flags] [-- <remote-command-args>]
-
-            Create a new workspace, mark it as remote-SSH, and start an SSH session in that workspace.
-            amux will also establish a local SSH proxy endpoint so browser traffic can egress from the remote host.
-
-            Flags:
-              --name <title>          Optional workspace title
-              --port <n>              SSH port
-              --identity <path>       SSH identity file path
-              -A, --forward-agent     Forward the caller's SSH agent; also honors ForwardAgent yes from ssh_config
-              -a, --no-forward-agent  Disable SSH agent forwarding for this workspace
-              --ssh-option <opt>      Extra SSH -o option (repeatable)
-              --window <id|ref|index> Target window for the managed workspace
-              --no-focus              Create workspace without switching to it
-
-            Example:
-              amux ssh dev@my-host
-              amux ssh dev@my-host --name "gpu-box" --port 2222 --identity ~/.ssh/id_ed25519
-              amux ssh dev@my-host --forward-agent
-              amux ssh dev@my-host --ssh-option UserKnownHostsFile=/dev/null --ssh-option StrictHostKeyChecking=no
-            """)
+            return Self.amuxSSHUsage
         case "ssh-tmux":
             return String(localized: "cli.help.ssh-tmux", defaultValue: """
             Usage: amux ssh-tmux <destination> [--port <n>] [--identity <path>] [--no-focus]
@@ -34458,7 +34437,6 @@ export default CMUXSessionRestore;
           move-tab-to-new-workspace [--tab <id|ref|index>] [--surface <id|ref|index>] [--workspace <id|ref|index>] [--window <id|ref|index>] [--title <text>] [--focus <true|false>]
           list-workspaces [--window <id|ref|index>]
           new-workspace [--name <title>] [--description <text>] [--cwd <path>] [--command <text>] [--layout <json>] [--window <id|ref|index>] [--focus <true|false>] [--group <id|ref>] [--group-placement afterCurrent|top|end] [--group-reference <workspace>]
-          ssh <destination> [--name <title>] [--port <n>] [--identity <path>] [-A|--forward-agent] [-a|--no-forward-agent] [--ssh-option <opt>] [--window <id|ref|index>] [--no-focus] [-- <remote-command-args>]
           ssh-tmux <destination> [--port <n>] [--identity <path>] [--no-focus]
           ssh-session-list [--workspace <id|ref|index> | --all-workspaces]
           ssh-session-attach --session-id <id> [--workspace <id|ref|index>] [--pane <id|ref|index> | --split <left|right|up|down>]

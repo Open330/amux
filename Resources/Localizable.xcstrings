@@ -37246,6 +37246,29 @@
         }
       }
     },
+    "cli.help.amuxSshRemoteSetup": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage: amux ssh <host> [--sync|--wire|--inspect|--unsync] [flags]\n\nInspect or configure an amux remote host over SSH. The default --sync action\ndiscovers tmux sessions, verifies muxa and muxad, and synchronizes the host's\ntmux sessions with amux. Use --inspect for a read-only status report.\n\nFlags:\n  --sync               Discover and synchronize remote tmux sessions (default)\n  --wire               Install or refresh supported remote agent hooks\n  --inspect            Report muxa, muxad, hooks, and tmux sessions without changing them\n  --unsync             Stop synchronizing this host's tmux sessions\n  --port <n>           SSH port\n  --identity <path>    SSH identity file path\n  --focus              Activate the synchronized mirror window\n  --no-focus           Do not activate the synchronized mirror window\n\nExamples:\n  amux ssh my-host --inspect\n  amux ssh my-host --sync\n  amux ssh dev@my-host --wire --port 2222 --identity ~/.ssh/id_ed25519\n  amux ssh my-host --unsync"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage: amux ssh <host> [--sync|--wire|--inspect|--unsync] [flags]\n\nSSH 経由で amux のリモートホストを確認または設定します。既定の --sync は\ntmux セッションを検出し、muxa と muxad を確認して、ホストの tmux セッションを\namux と同期します。読み取り専用の状態確認には --inspect を使用します。\n\nFlags:\n  --sync               リモート tmux セッションを検出して同期（既定）\n  --wire               対応するリモートエージェントフックをインストールまたは更新\n  --inspect            muxa、muxad、フック、tmux セッションを変更せずに表示\n  --unsync             このホストの tmux セッション同期を停止\n  --port <n>           SSH ポート\n  --identity <path>    SSH identity ファイルパス\n  --focus              同期したミラーウインドウをアクティブ化\n  --no-focus           同期したミラーウインドウをアクティブ化しない\n\nExamples:\n  amux ssh my-host --inspect\n  amux ssh my-host --sync\n  amux ssh dev@my-host --wire --port 2222 --identity ~/.ssh/id_ed25519\n  amux ssh my-host --unsync"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage: amux ssh <host> [--sync|--wire|--inspect|--unsync] [flags]\n\nSSH를 통해 amux 원격 호스트를 점검하거나 구성합니다. 기본 --sync 동작은\ntmux 세션을 검색하고 muxa와 muxad를 확인한 뒤 호스트의 tmux 세션을\namux와 동기화합니다. 변경 없는 상태 점검에는 --inspect를 사용합니다.\n\nFlags:\n  --sync               원격 tmux 세션 검색 및 동기화(기본값)\n  --wire               지원되는 원격 에이전트 훅 설치 또는 갱신\n  --inspect            muxa, muxad, 훅, tmux 세션을 변경 없이 조회\n  --unsync             이 호스트의 tmux 세션 동기화 중지\n  --port <n>           SSH 포트\n  --identity <path>    SSH identity 파일 경로\n  --focus              동기화된 미러 윈도우 활성화\n  --no-focus           동기화된 미러 윈도우를 활성화하지 않음\n\nExamples:\n  amux ssh my-host --inspect\n  amux ssh my-host --sync\n  amux ssh dev@my-host --wire --port 2222 --identity ~/.ssh/id_ed25519\n  amux ssh my-host --unsync"
+          }
+        }
+      }
+    },
     "cli.help.ssh": {
       "extractionState": "manual",
       "localizations": {

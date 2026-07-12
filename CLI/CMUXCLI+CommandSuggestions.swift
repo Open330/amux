@@ -4,12 +4,12 @@ extension CMUXCLI {
     static let amuxUsage = """
     Usage:
       amux sync tmux [on|off|status] [--json]
-      amux ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus]
+      amux ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus|--no-focus]
 
     Examples:
       amux sync tmux
       amux sync tmux off
-      amux ssh jiun-mini
+      amux ssh jiun-mini --inspect
       amux ssh jiun-mini --wire
     """
 
@@ -20,12 +20,31 @@ extension CMUXCLI {
     Mirror localhost tmux sessions into amux workspaces, or report the current sync state.
     """
 
-    static let amuxSSHUsage = """
-    Usage:
-      amux ssh <host> [--sync|--wire|--inspect|--unsync] [--port <n>] [--identity <path>] [--focus]
+    static var amuxSSHUsage: String {
+        String(localized: "cli.help.amuxSshRemoteSetup", defaultValue: """
+        Usage: amux ssh <host> [--sync|--wire|--inspect|--unsync] [flags]
 
-    Set up a remote host and mirror its tmux sessions. Use --wire to install/wire muxa hooks.
-    """
+        Inspect or configure an amux remote host over SSH. The default --sync action
+        discovers tmux sessions, verifies muxa and muxad, and synchronizes the host's
+        tmux sessions with amux. Use --inspect for a read-only status report.
+
+        Flags:
+          --sync               Discover and synchronize remote tmux sessions (default)
+          --wire               Install or refresh supported remote agent hooks
+          --inspect            Report muxa, muxad, hooks, and tmux sessions without changing them
+          --unsync             Stop synchronizing this host's tmux sessions
+          --port <n>           SSH port
+          --identity <path>    SSH identity file path
+          --focus              Activate the synchronized mirror window
+          --no-focus           Do not activate the synchronized mirror window
+
+        Examples:
+          amux ssh my-host --inspect
+          amux ssh my-host --sync
+          amux ssh dev@my-host --wire --port 2222 --identity ~/.ssh/id_ed25519
+          amux ssh my-host --unsync
+        """)
+    }
 
     func unknownCommandError(_ command: String) -> CLIError {
         var message = "Unknown command '\(command)'."
