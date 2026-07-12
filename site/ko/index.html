@@ -35,13 +35,18 @@
         <p class="eyebrow">agent mux / macOS 14+</p>
         <h1>amux</h1>
         <p class="hero-lede">에이전트의 작업도, 워크스페이스의 상태도 계속 이어집니다.</p>
-        <p class="hero-detail">모든 워크스페이스를 실제 tmux 세션으로 유지하고, muxa로 Claude Code, Codex, Gemini 에이전트 중 어디에 사용자의 판단이 필요한지 보여주는 네이티브 터미널입니다.</p>
+        <p class="hero-detail">모든 워크스페이스를 실제 tmux 세션으로 유지하고, muxa로 어떤 에이전트에 판단이 필요한지 보여주며, Cmd+K로 전체 작업을 하나의 전환기에서 여는 네이티브 터미널입니다.</p>
         <div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">macOS용 다운로드</a><a class="button" href="https://github.com/Open330/amux">GitHub에서 보기</a></div>
         <div class="proof-row" aria-label="릴리스 정보"><span>서명 및 공증 완료</span><span>tmux 3.7b 내장</span><span>GPL-3.0</span></div>
       </div>
     </header>
 
     <main id="product">
+      <section class="shortcut-band" aria-label="amux 핵심 작업 흐름"><div class="shortcut-grid">
+        <div class="shortcut"><kbd>⌘K</kbd><div><strong>에이전트 및 tmux 전환기</strong><span>에이전트, 열린 워크스페이스, 분리된 세션, SSH 호스트를 검색합니다.</span></div></div>
+        <div class="shortcut"><kbd>⌘⇧J</kbd><div><strong>Attend</strong><span>가장 오래 대기 중인 에이전트로 바로 이동합니다.</span></div></div>
+        <div class="shortcut"><kbd>prefix + d</kbd><div><strong>Detach</strong><span>워크스페이스 화면만 닫고 tmux 세션은 계속 실행합니다.</span></div></div>
+      </div></section>
       <section class="band"><div class="section-inner">
         <p class="section-kicker">하나의 영속 모델</p><h2>세션은 tmux가, 경험은 amux가 책임집니다.</h2>
         <p class="section-lede">창을 닫거나 prefix로 detach하고, SSH로 다시 연결하거나 다른 터미널에서 attach해도 셸은 그대로 유지됩니다. amux는 그 세션을 빠른 네이티브 Ghostty surface로 투영합니다.</p>
@@ -53,8 +58,8 @@
         <div class="feature-grid">
           <article class="feature"><p class="feature-code">01 / persist</p><h3>tmux 네이티브 워크스페이스</h3><p>워크스페이스가 전용 tmux 세션에 대응합니다. 패널 구성, 스크롤백과 프로세스가 앱 종료 후에도 유지됩니다.</p></article>
           <article class="feature"><p class="feature-code">02 / observe</p><h3>muxa 에이전트 상태</h3><p>작업 중, 입력 대기, 선택 대기, 오류 상태를 tmux 패널과 연결해 한곳에서 보여줍니다.</p></article>
-          <article class="feature"><p class="feature-code">03 / attend</p><h3>주의가 필요한 곳으로 이동</h3><p>Attend가 가장 오래 막혀 있던 에이전트로 바로 이동해 터미널을 일일이 확인할 필요가 없습니다.</p></article>
-          <article class="feature"><p class="feature-code">04 / connect</p><h3>로컬, tmux, SSH</h3><p>일반 셸, 로컬 tmux 세션, 원격 세션을 명확히 구분해 워크스페이스의 정체를 바로 알 수 있습니다.</p></article>
+          <article class="feature"><p class="feature-code">03 / attend</p><h3>주의가 필요한 곳으로 이동</h3><p>Cmd+Shift+J가 가장 오래 막혀 있던 에이전트로 바로 이동해 터미널을 일일이 확인할 필요가 없습니다.</p></article>
+          <article class="feature"><p class="feature-code">04 / connect</p><h3>로컬, tmux, SSH</h3><p>Cmd+K에서 일반 셸, 로컬 tmux 세션, 원격 세션을 명확히 구분하고 검색합니다.</p></article>
           <article class="feature"><p class="feature-code">05 / automate</p><h3>하나의 CLI와 소켓 API</h3><p>포커스를 빼앗지 않고 분할 생성, 프롬프트 전송, 화면 읽기, 알림 라우팅과 브라우저 제어가 가능합니다.</p></article>
           <article class="feature"><p class="feature-code">06 / render</p><h3>네이티브 Ghostty surface</h3><p>중첩된 tmux UI나 Electron 없이 세션을 macOS 네이티브 인터페이스에 직접 렌더링합니다.</p></article>
         </div>

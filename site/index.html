@@ -41,7 +41,7 @@
         <p class="eyebrow">agent mux / macOS 14+</p>
         <h1>amux</h1>
         <p class="hero-lede">Your agents keep working. Your workspaces keep existing.</p>
-        <p class="hero-detail">A native terminal where every workspace can be a real tmux session and muxa shows which Claude Code, Codex, or Gemini agent needs you.</p>
+        <p class="hero-detail">A native terminal where every workspace can be a real tmux session, muxa shows which agent needs you, and Cmd+K opens the whole run in one switcher.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">Download for macOS</a>
           <a class="button" href="https://github.com/Open330/amux">View on GitHub</a>
@@ -53,6 +53,13 @@
     </header>
 
     <main id="product">
+      <section class="shortcut-band" aria-label="Core amux workflow">
+        <div class="shortcut-grid">
+          <div class="shortcut"><kbd>⌘K</kbd><div><strong>Agent & tmux Switcher</strong><span>Search agents, open workspaces, detached sessions, and SSH hosts.</span></div></div>
+          <div class="shortcut"><kbd>⌘⇧J</kbd><div><strong>Attend</strong><span>Jump to the agent that has been waiting for you the longest.</span></div></div>
+          <div class="shortcut"><kbd>prefix + d</kbd><div><strong>Detach</strong><span>Close the workspace view. Keep the tmux session alive.</span></div></div>
+        </div>
+      </section>
       <section class="band">
         <div class="section-inner">
           <p class="section-kicker">One durable model</p>
@@ -69,8 +76,8 @@
           <div class="feature-grid">
             <article class="feature"><p class="feature-code">01 / persist</p><h3>tmux-native workspaces</h3><p>A workspace maps to a dedicated tmux session. Pane topology, scrollback, and processes survive the app.</p></article>
             <article class="feature"><p class="feature-code">02 / observe</p><h3>muxa agent state</h3><p>Working, waiting, choice, and error states are correlated with tmux panes and surfaced in one place.</p></article>
-            <article class="feature"><p class="feature-code">03 / attend</p><h3>Jump to what needs you</h3><p>Attend moves directly to the longest-blocked agent instead of making you scan every terminal.</p></article>
-            <article class="feature"><p class="feature-code">04 / connect</p><h3>Local, tmux, and SSH</h3><p>Clear workspace identity separates ordinary shells, local tmux sessions, and remote sessions.</p></article>
+            <article class="feature"><p class="feature-code">03 / attend</p><h3>Jump to what needs you</h3><p>Cmd+Shift+J moves directly to the longest-blocked agent instead of making you scan every terminal.</p></article>
+            <article class="feature"><p class="feature-code">04 / connect</p><h3>Local, tmux, and SSH</h3><p>Cmd+K separates and searches ordinary shells, local tmux sessions, and remote sessions.</p></article>
             <article class="feature"><p class="feature-code">05 / automate</p><h3>One CLI and socket API</h3><p>Create splits, send prompts, read screens, route notifications, and drive browsers without stealing focus.</p></article>
             <article class="feature"><p class="feature-code">06 / render</p><h3>Native Ghostty surfaces</h3><p>No nested tmux chrome and no Electron. amux renders the session directly with a native macOS interface.</p></article>
           </div>

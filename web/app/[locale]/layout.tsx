@@ -138,9 +138,9 @@ export default async function LocaleLayout({
     url: PUBLIC_SITE_URL,
     downloadUrl: DOWNLOAD_URL,
     description:
-      "Free and open source native macOS terminal built on Ghostty. Works with Claude Code, Codex, OpenCode, Gemini CLI, Kiro, Aider, and any CLI tool. Vertical tabs, notification rings, split panes, and a socket API.",
+      "The tmux-native agent mux for macOS. Persistent workspaces, muxa agent observability, SSH session switching, native Ghostty rendering, and a programmable socket API.",
     keywords:
-      "terminal, macOS, open source terminal, Claude Code, Codex, OpenCode, Gemini CLI, Kiro, Aider, AI coding agents, Ghostty",
+      "terminal, macOS, tmux, muxa, SSH, Claude Code, Codex, OpenCode, Gemini CLI, AI coding agents, agent orchestration, Ghostty",
     isAccessibleForFree: true,
     license: `${GITHUB_REPOSITORY_URL}/blob/main/LICENSE`,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

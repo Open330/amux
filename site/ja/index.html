@@ -35,13 +35,18 @@
         <p class="eyebrow">agent mux / macOS 14+</p>
         <h1>amux</h1>
         <p class="hero-lede">エージェントの作業も、ワークスペースの状態も継続します。</p>
-        <p class="hero-detail">各ワークスペースを実際のtmuxセッションとして維持し、Claude Code、Codex、Geminiのどのエージェントがあなたを必要としているかをmuxaで示すネイティブターミナルです。</p>
+        <p class="hero-detail">各ワークスペースを実際のtmuxセッションとして維持し、muxaで対応が必要なエージェントを示し、Cmd+Kで実行全体を一つのスイッチャーに開くネイティブターミナルです。</p>
         <div class="actions"><a class="button primary" href="https://github.com/Open330/amux/releases/latest/download/amux-macos.dmg">macOS版をダウンロード</a><a class="button" href="https://github.com/Open330/amux">GitHubで見る</a></div>
         <div class="proof-row" aria-label="リリース情報"><span>署名・公証済み</span><span>tmux 3.7b同梱</span><span>GPL-3.0</span></div>
       </div>
     </header>
 
     <main id="product">
+      <section class="shortcut-band" aria-label="amuxの基本ワークフロー"><div class="shortcut-grid">
+        <div class="shortcut"><kbd>⌘K</kbd><div><strong>エージェント & tmuxスイッチャー</strong><span>エージェント、開いているワークスペース、デタッチされたセッション、SSHホストを検索します。</span></div></div>
+        <div class="shortcut"><kbd>⌘⇧J</kbd><div><strong>Attend</strong><span>最も長く待機しているエージェントへ直接移動します。</span></div></div>
+        <div class="shortcut"><kbd>prefix + d</kbd><div><strong>Detach</strong><span>ワークスペース表示だけを閉じ、tmuxセッションは動かし続けます。</span></div></div>
+      </div></section>
       <section class="band"><div class="section-inner">
         <p class="section-kicker">一つの永続モデル</p><h2>セッションはtmuxが、体験はamuxが担います。</h2>
         <p class="section-lede">ウィンドウを閉じても、prefixでdetachしても、SSHで再接続しても、別のターミナルからattachしてもシェルは残ります。amuxはそのセッションを高速なネイティブGhostty surfaceへ投影します。</p>
@@ -53,8 +58,8 @@
         <div class="feature-grid">
           <article class="feature"><p class="feature-code">01 / persist</p><h3>tmuxネイティブ・ワークスペース</h3><p>ワークスペースは専用tmuxセッションに対応します。ペイン構成、スクロールバック、プロセスはアプリ終了後も残ります。</p></article>
           <article class="feature"><p class="feature-code">02 / observe</p><h3>muxaエージェント状態</h3><p>作業中、入力待ち、選択待ち、エラーをtmuxペインと関連付け、一か所に表示します。</p></article>
-          <article class="feature"><p class="feature-code">03 / attend</p><h3>対応が必要な場所へ移動</h3><p>Attendは最も長く停止しているエージェントへ直接移動し、全ターミナルを探す手間をなくします。</p></article>
-          <article class="feature"><p class="feature-code">04 / connect</p><h3>ローカル、tmux、SSH</h3><p>通常のシェル、ローカルtmuxセッション、リモートセッションを明確に区別します。</p></article>
+          <article class="feature"><p class="feature-code">03 / attend</p><h3>対応が必要な場所へ移動</h3><p>Cmd+Shift+Jは最も長く停止しているエージェントへ直接移動し、全ターミナルを探す手間をなくします。</p></article>
+          <article class="feature"><p class="feature-code">04 / connect</p><h3>ローカル、tmux、SSH</h3><p>Cmd+Kで通常のシェル、ローカルtmuxセッション、リモートセッションを区別して検索します。</p></article>
           <article class="feature"><p class="feature-code">05 / automate</p><h3>一つのCLIとソケットAPI</h3><p>フォーカスを奪わずに分割作成、プロンプト送信、画面読取、通知ルーティング、ブラウザ操作ができます。</p></article>
           <article class="feature"><p class="feature-code">06 / render</p><h3>ネイティブGhostty surface</h3><p>入れ子のtmux UIやElectronを使わず、セッションをmacOSネイティブUIへ直接レンダリングします。</p></article>
         </div>

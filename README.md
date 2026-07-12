@@ -44,6 +44,7 @@ sessions that die with the app, and a multiplexer UI from 2007. amux collapses t
 |---|---|
 | 🪟 **Workspace = tmux session** | Every workspace is a real tmux session on a dedicated server (`tmux -L amux`). Close the app, reopen it — everything is exactly where you left it. |
 | 🔍 **Agents are first-class** | muxa correlates Claude Code / Codex / Gemini CLI hook events with tmux panes. Workspaces show live badges: *2 working · 1 waiting · 1 error*. |
+| ⌘ **One command center** | Press **⌘K** to search open workspaces, detached tmux sessions, SSH hosts, and agents in one native dialog. Agents that need input rise to the top. |
 | 🖥 **Native, not rendered-in-tmux** | tmux control mode (`-CC`) projects windows and panes into native <a href="https://github.com/ghostty-org/ghostty">Ghostty</a> surfaces. No status bar, no copy-mode, no double UI. |
 | 🔄 **CLI and GUI see the same world** | `tmux -L amux attach` from any terminal, or drive the app over its unix socket. Splits made in either place appear in both. |
 | 📎 **Headless prompts** | Send text to a workspace over the socket; it lands in the session's active pane — no attach, no focus steal. |
@@ -71,6 +72,20 @@ flowchart LR
 - **tmux** owns session existence, pane topology, scrollback, and persistence.
 - **muxa (muxad)** owns agent state (`working / waiting_input / waiting_choice / error`), prompt history, and activity analytics.
 - **amux.app** owns rendering, focus, notifications, and UX — a projection of the two sources of truth above, plus everything a native app should be.
+
+## The agent loop
+
+amux turns the usual terminal-scanning loop into a small set of predictable actions:
+
+| Action | Default | Result |
+|---|---:|---|
+| **Open Agent & tmux Switcher** | `⌘K` | Search local and connected hosts. Open workspaces, detached tmux sessions, and agents share one attention-sorted list. |
+| **Attend** | `⌘⇧J` | Jump directly to the agent that has been waiting for you the longest. |
+| **Detach workspace** | `prefix + d` | Close the amux workspace view while leaving its tmux session and processes alive. |
+| **Reconnect a host** | `amux ssh <host>` | Discover and attach to remote tmux sessions without giving up the native workspace UI. |
+| **Observe from a terminal** | `muxa watch` | Use muxa's TUI against the same agent state stream when you want a headless view. |
+
+The switcher distinguishes **open tmux**, **available tmux**, local shell, and SSH-backed workspaces with compact status labels. muxa state is joined to the same rows, so a blocked Claude Code or Codex run is visible before an idle session.
 
 ## Install
 
@@ -124,6 +139,11 @@ CMUX_TAG=dev scripts/cmux-debug-cli.sh rpc remote.tmux.sessions '{"local":true}'
 
 Quit the app, run `tmux -L amux ls` — your sessions are still there. Reopen the app — they're workspaces again.
 
+Then press `⌘K`. The session appears in the Agent & tmux Switcher alongside any
+open workspaces, remote hosts, and muxa-observed agents. The shortcut is editable
+in **Settings → Keyboard Shortcuts** or as `shortcuts.bindings.amuxSessionSwitcher`
+in `~/.config/amux/amux.json`.
+
 ## Status & roadmap
 
 Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.md) (architecture) and
@@ -135,7 +155,7 @@ Detailed plans live in [`.context/plans/R01-fable.md`](.context/plans/R01-fable.
 | **1 — tmux-backed workspaces** | Local one-shot transport, `{"local":true}` socket RPC family, multipane socket I/O routing, launch-time session reconcile | ✅ live-verified |
 | **2 — Agent layer** | `CmuxMuxa` daemon client (hello/snapshot/subscribe), sidebar agent badges, **attend** (jump to longest-blocked agent, ⌘⇧J), prompt composer, `waiting_choice` native sheet | ✅ shipped |
 | **muxa co-evolution** | muxad carries `tmux_socket` + `tmux_session` on the wire so amux joins by session name across servers ([Open330/muxa#60](https://github.com/Open330/muxa/pull/60)) | ✅ merged (upgrade muxad) |
-| **3 — Deep UX** | New/attach/detach/kill lifecycle, detach-by-default, workspace-kind chips, session recovery, and agent attention routing | ✅ shipped in 0.2.0 |
+| **3 — Deep UX** | New/attach/detach/kill lifecycle, detach-by-default, workspace-kind chips, session recovery, agent attention routing, and the **⌘K Agent & tmux Switcher** | ✅ shipped in 0.2.0 |
 | **4 — Product** | amux branding, bundled tmux 3.7b + muxad/muxa, opt-in muxad LaunchAgent, first-run wizard, signed + notarized DMG, Sparkle, and Homebrew cask | ✅ 0.2.0 stable release published |
 
 Download the signed, notarized build from [Releases](https://github.com/Open330/amux/releases/latest).

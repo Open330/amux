@@ -241,6 +241,60 @@ h1 {
   border-bottom: 1px solid var(--line);
 }
 
+.shortcut-band {
+  border-bottom: 1px solid var(--line);
+  background: #101416;
+}
+
+.shortcut-grid {
+  width: min(calc(100% - 40px), var(--max));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.shortcut {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 28px;
+  border-left: 1px solid var(--line);
+}
+
+.shortcut:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.shortcut kbd {
+  min-width: 52px;
+  padding: 6px 8px;
+  border: 1px solid #4b565b;
+  border-radius: 5px;
+  background: #080b0c;
+  color: var(--ink);
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: center;
+}
+
+.shortcut strong,
+.shortcut span {
+  display: block;
+}
+
+.shortcut strong {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.shortcut span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .section-inner {
   padding: 88px 0;
 }
@@ -423,8 +477,19 @@ h2 {
   }
 
   .feature-grid,
-  .install-grid {
+  .install-grid,
+  .shortcut-grid {
     grid-template-columns: 1fr;
+  }
+
+  .shortcut {
+    padding: 22px 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .shortcut:first-child {
+    border-top: 0;
   }
 
   .feature,

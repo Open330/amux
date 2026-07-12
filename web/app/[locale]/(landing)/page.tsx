@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { HeroScreenshot } from "@/app/[locale]/components/hero-screenshot";
 import { DownloadButton } from "@/app/[locale]/components/download-button";
 import { GitHubButton } from "@/app/[locale]/components/github-button";
@@ -45,120 +46,126 @@ function HomeContent() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: faqJsonLdScript }}
       />
-      <SiteHeader hideLogo />
+      <SiteHeader />
 
-      <main className="w-full max-w-2xl mx-auto px-6 py-16 sm:py-24">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-10" data-dev="header">
-          <BrandLogoLink className="shrink-0">
-            <img
-              src="/logo.png"
-              alt="amux icon"
-              width={48}
-              height={48}
-              className="rounded-xl"
-            />
-          </BrandLogoLink>
-          <h1 className="text-2xl font-semibold tracking-tight">amux</h1>
-        </div>
-
-        {/* Tagline */}
-        <p className="text-lg leading-relaxed mb-3 text-foreground">
-          {t("taglineStatic")}
-        </p>
-        <p
-          className="text-base text-muted text-balance lg:-mr-32 xl:-mr-48"
-          data-dev="subtitle"
-          style={{ lineHeight: 1.5 }}
-        >
-          {t.rich("subtitle", {
-            cliLink: (chunks) => (
-              <Link href="/docs/api" className={linkClass}>
-                {chunks}
-              </Link>
-            ),
-          })}
-        </p>
-
-        {/* Download */}
-        <div
-          className="flex flex-wrap items-center gap-3"
-          data-dev="download"
-          style={{ marginTop: 21, marginBottom: 16 }}
-        >
-          <DownloadButton location="hero" />
-          <GitHubButton />
-        </div>
-
-        {/* Features */}
-        <section
-          data-dev="features"
-          style={{ paddingTop: 12, paddingBottom: 15 }}
-        >
-          <h2 className="text-xs font-medium text-muted tracking-tight mb-3">
-            {t("features")}
-          </h2>
-          <ul
-            className="space-y-3 text-[15px]"
-            data-dev="features-ul"
-            style={{ lineHeight: 1.275 }}
-          >
-            {(
-              [
-                ["verticalTabs", "verticalTabsDesc"],
-                ["notificationRings", "notificationRingsDesc"],
-                ["inAppBrowser", "inAppBrowserDesc"],
-                ["splitPanes", "splitPanesDesc"],
-                ["scriptable", "scriptableDesc"],
-                ["gpuAccelerated", "gpuAcceleratedDesc"],
-                ["lightweight", "lightweightDesc"],
-                ["openSource", "openSourceDesc"],
-              ] as const
-            ).map(([title, desc]) => (
-              <li key={title} className="flex gap-3">
-                <span className="text-muted shrink-0">-</span>
-                <span>
-                  <strong className="font-medium">
-                    {t(`feature.${title}`)}
-                  </strong>
-                  <span className="text-muted">{t(`feature.${desc}`)}</span>
-                </span>
-              </li>
-            ))}
-            <li className="flex gap-3">
-              <span className="text-muted shrink-0">-</span>
-              <span>
-                <strong className="font-medium">
-                  {t("feature.keyboardShortcuts")}
-                </strong>
-                <span className="text-muted">
-                  {t.rich("feature.keyboardShortcutsDesc", {
-                    link: (chunks) => (
-                      <Link
-                        href="/docs/keyboard-shortcuts"
-                        className={linkClass}
-                      >
-                        {chunks}
-                      </Link>
-                    ),
-                  })}
-                </span>
-              </span>
-            </li>
-          </ul>
+      <main className="w-full">
+        <section className="relative h-[calc(84svh-3rem)] min-h-[560px] max-h-[820px] overflow-hidden border-y border-border bg-black text-white">
+          <HeroScreenshot alt={t("taglineStatic")} background />
+          <div className="absolute inset-0 bg-black/70" aria-hidden="true" />
+          <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col justify-center px-6 pb-14">
+            <div className="mb-6 flex items-center gap-3">
+              <BrandLogoLink className="shrink-0">
+                <Image src="/logo.png" alt="amux" width={42} height={42} className="rounded-md" />
+              </BrandLogoLink>
+              <span className="font-mono text-xs text-emerald-300">agent mux / macOS 14+</span>
+            </div>
+            <h1 className="text-7xl font-semibold leading-none sm:text-8xl">amux</h1>
+            <p className="mt-7 max-w-3xl text-2xl leading-tight text-balance sm:text-3xl">
+              {t("taglineStatic")}
+            </p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/75">
+              {t.rich("subtitle", {
+                cliLink: (chunks) => (
+                  <Link href="/docs/api" className="underline underline-offset-4">
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <DownloadButton location="hero" />
+              <div className="[&_a]:border-white/50 [&_a]:text-white [&_a:hover]:bg-white/10">
+                <GitHubButton />
+              </div>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-x-7 gap-y-2 font-mono text-xs text-white/70">
+              <span>tmux 3.7b</span>
+              <span>muxa</span>
+              <span>Ghostty</span>
+              <span>GPL-3.0</span>
+            </div>
+          </div>
         </section>
 
-        {/* Screenshot: bleeds wider than the text column but stays bounded to
-            the viewport so it always fits on screen with a left/right gutter.
-            The width tracks the viewport minus a 1.5rem gutter on each side and
-            is capped at 90rem; left-1/2 + -translate-x-1/2 keeps it centered
-            over the narrower text column. */}
-        <div
-          data-dev="screenshot"
-          className="mt-12 mb-12 relative left-1/2 -translate-x-1/2 w-[min(90rem,100vw_-_3rem)]"
-        >
-          <HeroScreenshot />
-        </div>
+        <section className="border-b border-border">
+          <div className="mx-auto grid w-full max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:py-28">
+            <div>
+              <div className="mb-5 flex items-center gap-3">
+                <kbd className="rounded-md border border-border bg-code-bg px-2.5 py-1.5 font-mono text-sm">⌘K</kbd>
+                <span className="text-xs font-medium uppercase text-muted">muxa watch</span>
+              </div>
+              <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+                {t("feature.keyboardShortcuts")}
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-muted">
+                {t.rich("feature.keyboardShortcutsDesc", {
+                  link: (chunks) => (
+                    <Link href="/docs/keyboard-shortcuts" className={linkClass}>
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3 font-mono text-xs text-muted">
+                <span>⌘⇧J</span>
+                <span>prefix + d</span>
+                <span>amux ssh</span>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-md border border-border bg-background shadow-2xl">
+              <div className="flex h-12 items-center justify-between border-b border-border px-4">
+                <span className="text-sm font-medium">{t("feature.keyboardShortcuts")}</span>
+                <kbd className="rounded border border-border bg-code-bg px-2 py-1 font-mono text-xs text-muted">⌘K</kbd>
+              </div>
+              <div className="divide-y divide-border">
+                <div className="flex min-h-16 items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0"><strong className="block truncate text-sm">Claude Code · callabo-native</strong><span className="text-xs text-muted">{t("feature.notificationRings")}</span></div>
+                  <span className="shrink-0 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs text-amber-600 dark:text-amber-300">muxa</span>
+                </div>
+                <div className="flex min-h-16 items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0"><strong className="block truncate text-sm">amux · localhost</strong><span className="text-xs text-muted">{t("feature.verticalTabs")}</span></div>
+                  <span className="shrink-0 rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-700 dark:text-emerald-300">tmux</span>
+                </div>
+                <div className="flex min-h-16 items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0"><strong className="block truncate text-sm">jiun-mini · SSH</strong><span className="text-xs text-muted">{t("faqRemoteQ")}</span></div>
+                  <span className="shrink-0 rounded border border-sky-500/40 bg-sky-500/10 px-2 py-1 text-xs text-sky-700 dark:text-sky-300">SSH</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-border">
+          <div className="mx-auto w-full max-w-6xl px-6 py-20 lg:py-28">
+            <p className="mb-4 text-xs font-medium uppercase text-muted">{t("features")}</p>
+            <h2 className="max-w-3xl text-3xl font-semibold leading-tight sm:text-4xl">{t("taglineStatic")}</h2>
+            <div className="mt-12 grid border-t border-border md:grid-cols-2 lg:grid-cols-3">
+              {(
+                [
+                  ["verticalTabs", "verticalTabsDesc"],
+                  ["notificationRings", "notificationRingsDesc"],
+                  ["splitPanes", "splitPanesDesc"],
+                  ["scriptable", "scriptableDesc"],
+                  ["inAppBrowser", "inAppBrowserDesc"],
+                  ["gpuAccelerated", "gpuAcceleratedDesc"],
+                ] as const
+              ).map(([title, desc]) => (
+                <article key={title} className="min-w-0 border-b border-border py-7 pr-7">
+                  <h3 className="text-sm leading-6">
+                    <strong className="font-medium">{t(`feature.${title}`)}</strong>
+                    <span className="font-normal text-muted">{t(`feature.${desc}`)}</span>
+                  </h3>
+                </article>
+              ))}
+            </div>
+            <div data-dev="screenshot" className="mt-16 overflow-hidden rounded-md border border-border">
+              <HeroScreenshot alt={t("taglineStatic")} />
+            </div>
+          </div>
+        </section>
+
+        <div className="mx-auto w-full max-w-2xl px-6 py-16 sm:py-24">
 
         {/* FAQ */}
         <div data-dev="faq-top-spacer" style={{ height: 32 }} />
@@ -393,6 +400,7 @@ function HomeContent() {
           >
             {tc("viewChangelog")}
           </Link>
+        </div>
         </div>
       </main>
     </div>
