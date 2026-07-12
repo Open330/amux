@@ -149,6 +149,27 @@ def main() -> int:
                     ):
                         failures.append(f"default scan included home-level amux.json: {default_result.stdout}")
 
+        legacy_project_config = workspace.parent / ".cmux" / "cmux.json"
+        legacy_project_config.parent.mkdir(parents=True)
+        legacy_project_config.write_text(
+            '{"schemaVersion": 1, "source": "legacy-project"}\n',
+            encoding="utf-8",
+        )
+        path_result = run_cli(cli_path, ["--json", "config", "path"], home, cwd=workspace)
+        canonical_project_config = workspace.parent / ".amux" / "amux.json"
+        if path_result.returncode != 0:
+            failures.append(f"config path returned {path_result.returncode}: {path_result.stderr}")
+        else:
+            payload = parse_json_output(path_result.stdout, "config path", failures)
+            if payload is not None and payload.get("project") != str(canonical_project_config):
+                failures.append(f"config path did not report the migrated project config: {path_result.stdout}")
+        if not canonical_project_config.is_file():
+            failures.append("config path did not migrate .cmux/cmux.json to .amux/amux.json")
+        elif json.loads(canonical_project_config.read_text(encoding="utf-8")).get("source") != "legacy-project":
+            failures.append("config path changed the migrated project config contents")
+        if not legacy_project_config.is_file():
+            failures.append("config path removed the legacy project config")
+
         config_path.write_text('{"agent": true,,}\n', encoding="utf-8")
         bad_result = run_cli(cli_path, ["--json", "config", "doctor", "--path", str(config_path)], home)
         if bad_result.returncode == 0:
