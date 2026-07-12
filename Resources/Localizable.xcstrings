@@ -235829,6 +235829,29 @@
         }
       }
     },
+    "cli.configPath.projectLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "project"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロジェクト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "프로젝트"
+          }
+        }
+      }
+    },
     "cli.configDoctor.defaultFallback": {
       "extractionState": "manual",
       "localizations": {

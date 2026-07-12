@@ -2701,7 +2701,7 @@ class TerminalController {
         methods.removeAll(where: Self.isInheritedHostedV2Method)
 
         return [
-            "protocol": "cmux-socket",
+            "protocol": "amux-socket",
             "version": 2,
             "socket_path": socketServer.currentSocketPath,
             "access_mode": socketServer.accessMode.rawValue,

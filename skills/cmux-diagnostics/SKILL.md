@@ -1,11 +1,11 @@
 ---
 name: cmux-diagnostics
-description: "Run end-user cmux diagnostics. Use when amux hooks, notifications, session restore, settings, browser automation, socket access, CLI control, or agent resume behavior is not working, or when the user asks for a cmux health check, doctor report, or support-safe debug summary."
+description: "Run end-user amux diagnostics. Use when amux hooks, notifications, session restore, settings, browser automation, socket access, CLI control, or agent resume behavior is not working, or when the user asks for an amux health check, doctor report, or support-safe debug summary."
 ---
 
-# cmux Diagnostics
+# amux Diagnostics
 
-Use this skill to collect and interpret support-safe cmux diagnostics for end users. Default to read-only checks. Do not dump hook config files, session stores, prompt logs, tokens, or environment secrets.
+Use this skill to collect and interpret support-safe amux diagnostics for end users. Default to read-only checks. Do not dump hook config files, session stores, prompt logs, tokens, or environment secrets.
 
 ## Quick Report
 
@@ -63,25 +63,25 @@ skills/cmux-diagnostics/scripts/cmux-diagnostics --include-context
 4. Session restore evidence:
 
    ```bash
-   ls -lh ~/.cmuxterm/*-hook-sessions.json 2>/dev/null
+   ls -lh ~/.amux/*-hook-sessions.json 2>/dev/null
    ```
 
-   Missing session stores usually means the agent has not run inside cmux since hooks were installed, hooks are disabled, or the agent integration does not support resume capture.
+   Missing session stores usually means the agent has not run inside amux since hooks were installed, hooks are disabled, or the agent integration does not support resume capture.
 
 5. Notification path:
 
    ```bash
-   amux notify "cmux diagnostic test"
+   amux notify "amux diagnostic test"
    ```
 
    Use this only when the user is ready for a visible test notification.
 
 ## Interpretation
 
-- `cmux` not found: the CLI is not installed or not on PATH for this shell.
+- `amux` not found: the CLI is not installed or not on PATH for this shell.
 - `amux ping` fails: app is not reachable through the current socket path, the app is closed, or automation access is disabled.
-- No `CMUX_WORKSPACE_ID` or `CMUX_SURFACE_ID`: the command is probably running outside a cmux terminal. Some hooks intentionally no-op outside cmux.
-- Hook config exists but no session store: run one supported agent inside cmux after installing hooks, then re-check.
+- No `CMUX_WORKSPACE_ID` or `CMUX_SURFACE_ID`: the command is probably running outside an amux terminal. Some hooks intentionally no-op outside amux.
+- Hook config exists but no session store: run one supported agent inside amux after installing hooks, then re-check.
 - Session store exists but restore does not launch agents: check `terminal.autoResumeAgentSessions` and whether the saved executable still exists on PATH.
 - Settings validation fails: fix the config first. Invalid config can make later symptoms misleading.
 

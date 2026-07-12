@@ -142,7 +142,8 @@ extension CMUXCLI {
     }
 
     func printSettingsPaths(jsonOutput: Bool) {
-        let payload: [String: Any] = [
+        let projectPath = findProjectConfigPath()
+        var payload: [String: Any] = [
             "primary": Self.primarySettingsDisplayPath,
             "imported_from": [
                 Self.legacySettingsDisplayPath,
@@ -159,6 +160,9 @@ extension CMUXCLI {
             "reload_scope": "Reloads Ghostty config + amux.json and refreshes terminals in place. No app restart needed.",
             "backup": "Back up any existing amux.json file to a timestamped .bak copy before editing so the user can revert.",
         ]
+        if let projectPath {
+            payload["project"] = projectPath
+        }
 
         if jsonOutput {
             print(jsonString(payload))
@@ -167,6 +171,13 @@ extension CMUXCLI {
 
         print("Config files:")
         print("  primary:  \(Self.primarySettingsDisplayPath)")
+        if let projectPath {
+            let projectLabel = String(
+                localized: "cli.configPath.projectLabel",
+                defaultValue: "project"
+            )
+            print("  \(projectLabel):  \(Self.tildePath(projectPath))")
+        }
         print("  imported once from: \(Self.legacySettingsDisplayPath)")
         print("                      \(Self.legacyFallbackSettingsDisplayPath)")
         print("                      \(Self.fallbackSettingsDisplayPath)")

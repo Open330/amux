@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
       cat <<'EOF'
 Usage: cmux-diagnostics [--include-context]
 
-Print a read-only, support-safe cmux diagnostics report. By default this avoids
+Print a read-only, support-safe amux diagnostics report. By default this avoids
 workspace names, cwd paths, hook contents, session JSON, and secrets.
 EOF
       exit 0
@@ -90,25 +90,25 @@ elif [[ ! -x "$settings_helper" && -x "$HOME/.codex/skills/cmux-settings/scripts
   settings_helper="$HOME/.codex/skills/cmux-settings/scripts/cmux-settings"
 fi
 
-section "cmux diagnostics"
+section "amux diagnostics"
 printf 'date: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 printf 'shell: %s\n' "${SHELL:-unknown}"
-printf 'inside_cmux: '
+printf 'inside_amux: '
 if [[ -n "${CMUX_WORKSPACE_ID:-}" || -n "${CMUX_SURFACE_ID:-}" ]]; then
   printf 'yes\n'
 else
   printf 'no\n'
 fi
-printf 'cmux_workspace_id_set: %s\n' "$([[ -n "${CMUX_WORKSPACE_ID:-}" ]] && printf yes || printf no)"
-printf 'cmux_surface_id_set: %s\n' "$([[ -n "${CMUX_SURFACE_ID:-}" ]] && printf yes || printf no)"
+printf 'amux_workspace_id_set: %s\n' "$([[ -n "${CMUX_WORKSPACE_ID:-}" ]] && printf yes || printf no)"
+printf 'amux_surface_id_set: %s\n' "$([[ -n "${CMUX_SURFACE_ID:-}" ]] && printf yes || printf no)"
 if [[ "${CMUX_SOCKET_PATH+x}" == "x" ]]; then
-  printf 'cmux_socket_path: %s (from CMUX_SOCKET_PATH)\n' "$(safe_path "$CMUX_SOCKET_PATH")"
+  printf 'amux_socket_path: %s (from CMUX_SOCKET_PATH)\n' "$(safe_path "$CMUX_SOCKET_PATH")"
 elif [[ "${CMUX_SOCKET+x}" == "x" ]]; then
-  printf 'cmux_socket_path: %s (from CMUX_SOCKET)\n' "$(safe_path "$CMUX_SOCKET")"
+  printf 'amux_socket_path: %s (from CMUX_SOCKET)\n' "$(safe_path "$CMUX_SOCKET")"
 else
-  printf 'cmux_socket_path: unset\n'
+  printf 'amux_socket_path: unset\n'
 fi
-printf 'cmux_socket_password_set: %s\n' "$([[ -n "${CMUX_SOCKET_PASSWORD:-}" ]] && printf yes || printf no)"
+printf 'amux_socket_password_set: %s\n' "$([[ -n "${CMUX_SOCKET_PASSWORD:-}" ]] && printf yes || printf no)"
 
 section "cli"
 if command -v amux >/dev/null 2>&1; then
@@ -129,16 +129,18 @@ else
 fi
 
 section "settings"
-printf 'cmux_json: '
+printf 'amux_json: '
 file_summary "$HOME/.config/amux/amux.json"
+printf 'legacy_cmux_json: '
+file_summary "$HOME/.config/cmux/cmux.json"
 printf 'legacy_settings_json: '
-file_summary "$HOME/.config/amux/settings.json"
+file_summary "$HOME/.config/cmux/settings.json"
 if [[ -x "$settings_helper" ]]; then
-  run_status "cmux_settings_validate" "$settings_helper" validate
+  run_status "amux_settings_validate" "$settings_helper" validate
   printf 'auto_resume_agent_sessions: '
   "$settings_helper" get terminal.autoResumeAgentSessions 2>/dev/null || printf 'default-or-unset\n'
 else
-  printf 'cmux_settings_helper: missing (%s)\n' "$(safe_path "$settings_helper")"
+  printf 'amux_settings_helper: missing (%s)\n' "$(safe_path "$settings_helper")"
 fi
 
 section "hook configs"
@@ -166,7 +168,7 @@ done
 
 section "session stores"
 shopt -s nullglob
-stores=("$HOME"/.cmuxterm/*-hook-sessions.json)
+stores=("$HOME"/.amux/*-hook-sessions.json)
 if [[ "${#stores[@]}" -eq 0 ]]; then
   printf 'session_store_files: none\n'
 else
