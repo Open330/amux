@@ -30,6 +30,7 @@ public enum ShortcutAction: String, CaseIterable, Sendable, Hashable, SettingCod
     case reopenPreviousSession
     case goToWorkspace
     case commandPalette
+    case amuxSessionSwitcher
     case commandPaletteNext
     case commandPalettePrevious
     case sendFeedback
@@ -177,7 +178,7 @@ extension ShortcutAction {
              .newWindow, .closeWindow, .toggleFullScreen, .quit:
             return .app
         case .toggleSidebar, .newTab, .newBrowserWorkspace, .saveLayoutTemplate, .openFolder, .reopenPreviousSession, .goToWorkspace,
-             .commandPalette, .commandPaletteNext, .commandPalettePrevious, .sendFeedback,
+             .commandPalette, .amuxSessionSwitcher, .commandPaletteNext, .commandPalettePrevious, .sendFeedback,
              .showNotifications, .jumpToUnread, .toggleUnread, .markOldestUnreadAndJumpNext,
              .focusRightSidebar, .switchRightSidebarToFiles, .switchRightSidebarToFind,
              .switchRightSidebarToSessions, .switchRightSidebarToFeed,
@@ -347,6 +348,8 @@ extension ShortcutAction {
         case .reopenPreviousSession: return "Restore Previous App Launch"
         case .goToWorkspace: return "Go to Workspace…"
         case .commandPalette: return "Command Palette…"
+        case .amuxSessionSwitcher:
+            return String(localized: "shortcut.amuxSessionSwitcher.label", defaultValue: "Agent & tmux Switcher…")
         case .commandPaletteNext: return "Command Palette: Next"
         case .commandPalettePrevious: return "Command Palette: Previous"
         case .sendFeedback: return "Send Feedback"

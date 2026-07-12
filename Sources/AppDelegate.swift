@@ -5203,6 +5203,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         )
     }
 
+    func requestAmuxSessionSwitcher(preferredWindow: NSWindow? = nil, source: String = "api.amuxSessionSwitcher") {
+        postCommandPaletteRequest(
+            kind: .amuxSessionSwitcher,
+            preferredWindow: preferredWindow,
+            source: source
+        )
+    }
+
     func requestCommandPaletteRenameTab(preferredWindow: NSWindow? = nil, source: String = "api.commandPaletteRenameTab") {
         postCommandPaletteRequest(
             kind: .renameTab,
@@ -12998,6 +13006,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 return true
             }
 
+            if matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher) {
+                let targetWindow = commandPaletteTargetWindow ?? event.window ?? shortcutRoutingActiveWindow
+                requestAmuxSessionSwitcher(preferredWindow: targetWindow, source: "shortcut.amuxSessionSwitcher")
+                return true
+            }
+
             if !hasFocusedAddressBarInShortcutContext,
                matchConfiguredShortcut(event: event, action: .goToWorkspace) {
                 let targetWindow = commandPaletteTargetWindow ?? event.window ?? shortcutRoutingActiveWindow
@@ -13007,6 +13021,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
             if activeConfiguredShortcutChordPrefixForCurrentEvent == nil,
                armConfiguredShortcutChordIfNeeded(event: event, actions: [.commandPalette]) {
+                return true
+            }
+
+            if activeConfiguredShortcutChordPrefixForCurrentEvent == nil,
+               armConfiguredShortcutChordIfNeeded(event: event, actions: [.amuxSessionSwitcher]) {
                 return true
             }
 
@@ -13219,6 +13238,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         if matchConfiguredShortcut(event: event, action: .commandPalette) {
             let targetWindow = commandPaletteTargetWindow ?? event.window ?? shortcutRoutingActiveWindow
             requestCommandPaletteCommands(preferredWindow: targetWindow, source: "shortcut.commandPalette")
+            return true
+        }
+
+        if matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher) {
+            let targetWindow = commandPaletteTargetWindow ?? event.window ?? shortcutRoutingActiveWindow
+            requestAmuxSessionSwitcher(preferredWindow: targetWindow, source: "shortcut.amuxSessionSwitcher")
             return true
         }
 

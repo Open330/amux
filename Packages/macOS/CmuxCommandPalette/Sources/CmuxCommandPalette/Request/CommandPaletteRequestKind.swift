@@ -1,7 +1,7 @@
 /// The window-agnostic policy for a command-palette open request.
 ///
 /// Each case names one way the palette can be requested (open the command list,
-/// the workspace switcher, or one of the rename/edit prompts). The app target
+/// a switcher, or one of the rename/edit prompts). The app target
 /// resolves the target `NSWindow`, clears browser focus mode, and posts the
 /// notification; the per-kind policy that decides *which* notification to post
 /// and whether the request marks a pending-open lives here so it stays pure and
@@ -11,6 +11,8 @@ public enum CommandPaletteRequestKind: String, Sendable, CaseIterable {
     case commands
     /// Opens the workspace switcher palette.
     case switcher
+    /// Opens amux's agent and tmux session switcher palette.
+    case amuxSessionSwitcher
     /// Opens the rename-tab prompt.
     case renameTab
     /// Opens the rename-workspace prompt.
@@ -29,6 +31,8 @@ public enum CommandPaletteRequestKind: String, Sendable, CaseIterable {
             return "cmux.commandPaletteRequested"
         case .switcher:
             return "cmux.commandPaletteSwitcherRequested"
+        case .amuxSessionSwitcher:
+            return "amux.commandPaletteSessionSwitcherRequested"
         case .renameTab:
             return "cmux.commandPaletteRenameTabRequested"
         case .renameWorkspace:
@@ -45,7 +49,7 @@ public enum CommandPaletteRequestKind: String, Sendable, CaseIterable {
     /// change rather than a call-site edit.
     public var marksPending: Bool {
         switch self {
-        case .commands, .switcher, .renameTab, .renameWorkspace, .editWorkspaceDescription:
+        case .commands, .switcher, .amuxSessionSwitcher, .renameTab, .renameWorkspace, .editWorkspaceDescription:
             return true
         }
     }

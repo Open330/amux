@@ -7,6 +7,10 @@ import Testing
     @Test func notificationNamesMatchLegacyLiterals() {
         #expect(CommandPaletteRequestKind.commands.notificationName == "cmux.commandPaletteRequested")
         #expect(CommandPaletteRequestKind.switcher.notificationName == "cmux.commandPaletteSwitcherRequested")
+        #expect(
+            CommandPaletteRequestKind.amuxSessionSwitcher.notificationName
+                == "amux.commandPaletteSessionSwitcherRequested"
+        )
         #expect(CommandPaletteRequestKind.renameTab.notificationName == "cmux.commandPaletteRenameTabRequested")
         #expect(CommandPaletteRequestKind.renameWorkspace.notificationName == "cmux.commandPaletteRenameWorkspaceRequested")
         #expect(

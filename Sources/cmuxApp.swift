@@ -780,6 +780,13 @@ struct cmuxApp: App {
                     NotificationCenter.default.post(name: .commandPaletteSwitcherRequested, object: targetWindow)
                 }
 
+                splitCommandButton(title: String(localized: "shortcut.amuxSessionSwitcher.label", defaultValue: "Agent & tmux Switcher…"), shortcut: menuShortcut(for: .amuxSessionSwitcher)) {
+                    AppDelegate.shared?.requestAmuxSessionSwitcher(
+                        preferredWindow: NSApp.keyWindow ?? NSApp.mainWindow,
+                        source: "menu.amuxSessionSwitcher"
+                    )
+                }
+
                 splitCommandButton(title: String(localized: "menu.file.commandPalette", defaultValue: "Command Palette…"), shortcut: menuShortcut(for: .commandPalette)) {
                     let targetWindow = NSApp.keyWindow ?? NSApp.mainWindow
                     NotificationCenter.default.post(name: .commandPaletteRequested, object: targetWindow)

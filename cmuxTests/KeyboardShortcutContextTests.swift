@@ -264,6 +264,26 @@ final class KeyboardShortcutContextTests: XCTestCase {
         XCTAssertEqual(settingsAction.displayName, KeyboardShortcutSettings.Action.newBrowserWorkspace.label)
     }
 
+    func testAmuxSessionSwitcherShortcutStaysAligned() {
+        let action = KeyboardShortcutSettings.Action.amuxSessionSwitcher
+        guard let settingsAction = ShortcutAction(rawValue: action.rawValue) else {
+            XCTFail("Expected CmuxSettings.ShortcutAction for amuxSessionSwitcher")
+            return
+        }
+        XCTAssertEqual(
+            action.defaultShortcut,
+            StoredShortcut(key: "k", command: true, shift: false, option: false, control: false)
+        )
+        XCTAssertEqual(
+            action.normalizedRecordedShortcutResult(action.defaultShortcut),
+            .accepted(action.defaultShortcut),
+            "The default Cmd+K binding must remain conflict-free"
+        )
+        XCTAssertEqual(settingsAction.defaultStroke, ShortcutStroke(key: "k", command: true))
+        XCTAssertEqual(settingsAction.displayName, action.label)
+        XCTAssertTrue(KeyboardShortcutSettings.settingsVisibleActions.contains(action))
+    }
+
     func testSettingsPackageDefaultWhenClausesMatchRuntimeShortcutContexts() {
         for action in KeyboardShortcutSettings.Action.allCases {
             guard let settingsAction = ShortcutAction(rawValue: action.rawValue) else {

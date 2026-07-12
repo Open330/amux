@@ -3551,6 +3551,48 @@ final class AppDelegateShortcutRoutingTests: XCTestCase {
         wait(for: [switcherExpectation], timeout: 0.15)
     }
 
+    func testCmdKTriggersAmuxSessionSwitcher() {
+        guard let appDelegate = AppDelegate.shared else {
+            XCTFail("Expected AppDelegate.shared")
+            return
+        }
+
+        let windowId = appDelegate.createMainWindow()
+        defer { closeWindow(withId: windowId) }
+
+        guard let window = window(withId: windowId),
+              let event = makeKeyDownEvent(
+                  key: "k",
+                  modifiers: [.command],
+                  keyCode: 40,
+                  windowNumber: window.windowNumber
+              ) else {
+            XCTFail("Expected main window and Cmd+K event")
+            return
+        }
+
+        let expectation = expectation(description: "Cmd+K should request the amux session switcher")
+        var requestedWindow: NSWindow?
+        let token = NotificationCenter.default.addObserver(
+            forName: .commandPaletteAmuxSessionSwitcherRequested,
+            object: nil,
+            queue: nil
+        ) { notification in
+            requestedWindow = notification.object as? NSWindow
+            expectation.fulfill()
+        }
+        defer { NotificationCenter.default.removeObserver(token) }
+
+#if DEBUG
+        XCTAssertTrue(appDelegate.debugHandleCustomShortcut(event: event))
+#else
+        XCTFail("debugHandleCustomShortcut is only available in DEBUG")
+#endif
+
+        wait(for: [expectation], timeout: 0.15)
+        XCTAssertTrue(requestedWindow === window)
+    }
+
     func testCmdPFallsBackToANSIKeyCodeWhenCharactersAndLayoutTranslationAreUnavailable() {
         guard let appDelegate = AppDelegate.shared else {
             XCTFail("Expected AppDelegate.shared")
@@ -5558,6 +5600,15 @@ final class AppDelegateShortcutRoutingTests: XCTestCase {
             appDelegate.requestCommandPaletteSwitcher(
                 preferredWindow: window,
                 source: "test.cmdP"
+            )
+        }
+    }
+
+    func testEscapeKeyUpIsConsumedAfterAmuxSessionSwitcherDismiss() {
+        assertEscapeKeyUpIsConsumedAfterCommandPaletteOpenRequest { appDelegate, window in
+            appDelegate.requestAmuxSessionSwitcher(
+                preferredWindow: window,
+                source: "test.cmdK"
             )
         }
     }

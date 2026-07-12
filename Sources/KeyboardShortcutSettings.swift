@@ -81,6 +81,7 @@ enum KeyboardShortcutSettings {
         case reopenPreviousSession
         case goToWorkspace
         case commandPalette
+        case amuxSessionSwitcher
         case commandPaletteNext
         case commandPalettePrevious
         case amuxAttend
@@ -206,6 +207,7 @@ enum KeyboardShortcutSettings {
             case .reopenPreviousSession: return String(localized: "shortcut.reopenPreviousSession.label", defaultValue: "Restore Previous App Launch")
             case .goToWorkspace: return String(localized: "menu.file.goToWorkspace", defaultValue: "Go to Workspace…")
             case .commandPalette: return String(localized: "menu.file.commandPalette", defaultValue: "Command Palette…")
+            case .amuxSessionSwitcher: return String(localized: "shortcut.amuxSessionSwitcher.label", defaultValue: "Agent & tmux Switcher…")
             case .commandPaletteNext: return String(localized: "shortcut.commandPaletteNext.label", defaultValue: "Command Palette: Next")
             case .commandPalettePrevious: return String(localized: "shortcut.commandPalettePrevious.label", defaultValue: "Command Palette: Previous")
             case .amuxAttend: return String(localized: "shortcut.amuxAttend.label", defaultValue: "Attend Longest-Blocked Agent")
@@ -363,6 +365,8 @@ enum KeyboardShortcutSettings {
                 return StoredShortcut(key: "p", command: true, shift: false, option: false, control: false)
             case .commandPalette:
                 return StoredShortcut(key: "p", command: true, shift: true, option: false, control: false)
+            case .amuxSessionSwitcher:
+                return StoredShortcut(key: "k", command: true, shift: false, option: false, control: false)
             case .commandPaletteNext:
                 return StoredShortcut(key: "n", command: false, shift: false, option: false, control: true)
             case .commandPalettePrevious:

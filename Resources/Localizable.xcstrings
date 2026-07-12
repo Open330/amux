@@ -187170,6 +187170,29 @@
         }
       }
     },
+    "shortcut.amuxSessionSwitcher.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agent & tmux Switcher…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エージェントと tmux のスイッチャー…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "에이전트 및 tmux 전환기…"
+          }
+        }
+      }
+    },
     "shortcut.attachTextBoxFile.label": {
       "extractionState": "manual",
       "localizations": {
@@ -235022,19 +235045,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open tmux Session…"
+            "value": "Open Agent or tmux Session…"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "tmux セッションを開く…"
+            "value": "エージェントまたは tmux セッションを開く…"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "tmux 세션 열기…"
+            "value": "에이전트 또는 tmux 세션 열기…"
           }
         }
       }

@@ -46,6 +46,20 @@ export const shortcutCategories: ShortcutCategory[] = [
       },
       { id: "commandPalette", combos: [["⌘", "⇧", "P"]], description: { en: "Command palette", ja: "コマンドパレット" } },
       {
+        id: "amuxSessionSwitcher",
+        combos: [["⌘", "K"]],
+        description: {
+          en: "Agent and tmux session switcher",
+          ja: "エージェントと tmux セッションのスイッチャー",
+          ko: "에이전트 및 tmux 세션 전환기",
+        },
+        note: {
+          en: "searches local and connected hosts, with agents needing attention first",
+          ja: "ローカルおよび接続先ホストを検索し、対応が必要なエージェントを優先表示します",
+          ko: "로컬 및 연결된 호스트를 검색하고 확인이 필요한 에이전트를 먼저 표시합니다",
+        },
+      },
+      {
         id: "commandPaletteNext",
         combos: [["⌃", "N"]],
         description: { en: "Command palette next result", ja: "コマンドパレットの次の結果" },

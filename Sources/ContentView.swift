@@ -2859,6 +2859,17 @@ struct ContentView: View {
             openCommandPaletteSwitcher()
         })
 
+        view = AnyView(view.onReceive(NotificationCenter.default.publisher(for: .commandPaletteAmuxSessionSwitcherRequested)) { notification in
+            let requestedWindow = notification.object as? NSWindow
+            guard Self.shouldHandleCommandPaletteRequest(
+                observedWindow: observedWindow,
+                requestedWindow: requestedWindow,
+                keyWindow: NSApp.keyWindow,
+                mainWindow: NSApp.mainWindow
+            ) else { return }
+            beginAmuxSessionSwitcher()
+        })
+
         view = AnyView(view.onReceive(NotificationCenter.default.publisher(for: .defaultTerminalRegistrationDidChange)) { _ in
             refreshCachedDefaultTerminalStatus()
         })
@@ -7109,9 +7120,9 @@ struct ContentView: View {
         contributions.append(
             CommandPaletteCommandContribution(
                 commandId: "palette.amuxAttachDetached",
-                title: constant(String(localized: "command.amuxSessionSwitcher.title", defaultValue: "Open tmux Session…")),
+                title: constant(String(localized: "command.amuxSessionSwitcher.title", defaultValue: "Open Agent or tmux Session…")),
                 subtitle: constant(String(localized: "command.amuxSendPrompt.subtitle", defaultValue: "amux")),
-                keywords: ["amux", "tmux", "detached", "attach", "session", "reattach"],
+                keywords: ["amux", "agent", "muxa", "watch", "tmux", "detached", "attach", "session", "reattach"],
                 dismissOnRun: false,
                 when: { _ in true }
             )
