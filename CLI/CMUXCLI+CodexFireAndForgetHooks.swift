@@ -74,7 +74,11 @@ extension CMUXCLI {
             out.append(Data(arg.utf8))
             out.append(0)
         }
-        FileHandle.standardOutput.write(out)
+        // Route through the broken-pipe-safe writer: writing raw to the
+        // standard-output handle raises SIGPIPE (crashing the CLI) when the
+        // reader closes the pipe early, whereas `cliWriteStdout` exits
+        // cleanly. This was the sole raw stdout write left in `CLI/`.
+        cliWriteStdout(out)
     }
 
     /// The amux-owned directory holding the generated codex hook scripts.
