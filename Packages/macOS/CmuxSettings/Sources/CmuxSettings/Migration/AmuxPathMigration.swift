@@ -178,7 +178,8 @@ public enum AmuxPathMigration {
     /// by a per-project stamp and cross-process lock, and every copy is atomic.
     public static func migrateProjectData(
         at projectDirectory: URL,
-        fileManager: FileManager
+        fileManager: FileManager,
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
     ) throws {
         let legacyDirectory = projectDirectory.appending(path: ".cmux")
         let legacyRootConfig = projectDirectory.appending(path: "cmux.json")
@@ -186,18 +187,27 @@ public enum AmuxPathMigration {
             || fileManager.fileExists(atPath: legacyRootConfig.path)
         guard hasLegacyData else { return }
 
-        let destinationDirectory = projectDirectory.appending(path: ".amux")
-        let stampFile = destinationDirectory.appending(path: stampFileName)
+        // The stamp and lock live under the private home state directory, keyed
+        // by the project's path — NOT inside the project's `.amux/`, which is a
+        // repo directory the user commits (a `.migration.lock`/stamp landing in
+        // a tracked tree is noise at best, an accidentally-committed lockfile at
+        // worst). Only migrated *data* lands in `.amux/`.
+        let projectMigrationsDirectory = homeDirectory
+            .appending(path: ".local/state/amux/project-migrations")
+        let projectKey = stableHash(projectDirectory.standardizedFileURL.path)
+        let stampFile = projectMigrationsDirectory.appending(path: "\(projectKey).migration-state-v1")
         if isMigrationCurrent(stampFile: stampFile, fileManager: fileManager) { return }
 
+        try makePrivateDirectory(projectMigrationsDirectory, restrictExisting: true, fileManager: fileManager)
         // The project `.amux` directory is a repo directory, not a secret store,
         // so it is created with default permissions (unlike the private home
         // directories), matching the pre-migration behavior.
-        try fileManager.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
+        let destinationDirectory = projectDirectory.appending(path: ".amux")
 
-        let lockFile = destinationDirectory.appending(path: lockFileName)
+        let lockFile = projectMigrationsDirectory.appending(path: "\(projectKey).migration.lock")
         try withMigrationLock(at: lockFile, fileManager: fileManager) {
             if isMigrationCurrent(stampFile: stampFile, fileManager: fileManager) { return }
+            try fileManager.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
             try performProjectDataMigration(
                 projectDirectory: projectDirectory,
                 legacyDirectory: legacyDirectory,
@@ -266,6 +276,18 @@ public enum AmuxPathMigration {
                 "Failed to write migration stamp at \(url.path, privacy: .public): \(String(describing: error), privacy: .public)"
             )
         }
+    }
+
+    /// Stable, seed-independent hash of a path, so a project's migration-marker
+    /// filename is deterministic across processes and launches (Swift's `Hasher`
+    /// is per-run randomized and unusable for a persisted name). FNV-1a.
+    private static func stableHash(_ string: String) -> String {
+        var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+        for byte in string.utf8 {
+            hash ^= UInt64(byte)
+            hash = hash &* 0x0000_0100_0000_01b3
+        }
+        return String(hash, radix: 16)
     }
 
     /// Runs `body` while holding an exclusive advisory lock on `lockURL` so that

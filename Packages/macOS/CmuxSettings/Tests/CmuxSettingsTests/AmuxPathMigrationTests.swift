@@ -35,16 +35,24 @@ import Testing
     @Test func importsProjectConfigAndLeavesCanonicalFilesAuthoritative() throws {
         let project = FileManager.default.temporaryDirectory
             .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        let home = FileManager.default.temporaryDirectory
+            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
         defer { try? FileManager.default.removeItem(at: project) }
+        defer { try? FileManager.default.removeItem(at: home) }
 
         try write("legacy config", to: project.appending(path: ".cmux/cmux.json"))
         try write("legacy dock", to: project.appending(path: ".cmux/dock.json"))
         try write("new dock", to: project.appending(path: ".amux/dock.json"))
 
-        try AmuxPathMigration.migrateProjectData(at: project, fileManager: .default)
+        try AmuxPathMigration.migrateProjectData(at: project, fileManager: .default, homeDirectory: home)
 
         #expect(try String(contentsOf: project.appending(path: ".amux/amux.json")) == "legacy config")
         #expect(try String(contentsOf: project.appending(path: ".amux/dock.json")) == "new dock")
+        // The stamp and lock live under the private home state directory, never
+        // in the committed project `.amux/` tree.
+        #expect(!FileManager.default.fileExists(atPath: project.appending(path: ".amux/.migration-state-v1").path))
+        #expect(!FileManager.default.fileExists(atPath: project.appending(path: ".amux/.migration.lock").path))
+        #expect(FileManager.default.fileExists(atPath: home.appending(path: ".local/state/amux/project-migrations").path))
     }
 
     @Test func skipsMigrationOnSecondRunWhenStampIsPresent() throws {
