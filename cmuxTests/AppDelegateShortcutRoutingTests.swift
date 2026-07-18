@@ -3593,6 +3593,339 @@ final class AppDelegateShortcutRoutingTests: XCTestCase {
         XCTAssertTrue(requestedWindow === window)
     }
 
+    func testCommandPaletteSelectionNavigationDoesNotInterceptMarkedTextComposition() {
+        guard let appDelegate = AppDelegate.shared else {
+            XCTFail("Expected AppDelegate.shared")
+            return
+        }
+
+        let windowId = appDelegate.createMainWindow()
+        defer { closeWindow(withId: windowId) }
+
+        guard let window = window(withId: windowId),
+              let contentView = window.contentView else {
+            XCTFail("Expected test window")
+            return
+        }
+        window.makeKeyAndOrderFront(nil)
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.05))
+
+        let overlayHost = contentView.superview ?? contentView
+        let overlayContainer = NSView(frame: overlayHost.bounds)
+        overlayContainer.identifier = commandPaletteOverlayContainerIdentifier
+        overlayContainer.alphaValue = 1
+        overlayContainer.isHidden = false
+        overlayHost.addSubview(overlayContainer)
+
+        let fieldEditor = CommandPaletteMarkedTextFieldEditor(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
+        fieldEditor.isFieldEditor = true
+        fieldEditor.hasMarkedTextForTesting = true
+        overlayContainer.addSubview(fieldEditor)
+        XCTAssertTrue(window.makeFirstResponder(fieldEditor))
+        appDelegate.setCommandPaletteVisible(false, for: window)
+        defer {
+            overlayContainer.removeFromSuperview()
+            fieldEditor.removeFromSuperview()
+        }
+
+        window.displayIfNeeded()
+        XCTAssertTrue(
+            window.makeFirstResponder(fieldEditor),
+            "Expected command palette field editor to own first responder"
+        )
+
+        var observedDeltas: [Int] = []
+        let moveToken = NotificationCenter.default.addObserver(
+            forName: .commandPaletteMoveSelection,
+            object: nil,
+            queue: nil
+        ) { notification in
+            guard (notification.object as? NSWindow)?.windowNumber == window.windowNumber else { return }
+            if let delta = notification.userInfo?["delta"] as? Int {
+                observedDeltas.append(delta)
+            }
+        }
+        defer { NotificationCenter.default.removeObserver(moveToken) }
+
+        // Down (125), Up (126), Ctrl-N (45), Ctrl-P (35) — the palette
+        // selection-navigation keys, in delta order [1, -1, 1, -1].
+        let selectionNavigationEvents: [(key: String, modifiers: NSEvent.ModifierFlags, keyCode: UInt16)] = [
+            (String(UnicodeScalar(NSDownArrowFunctionKey)!), [], 125),
+            (String(UnicodeScalar(NSUpArrowFunctionKey)!), [], 126),
+            ("n", [.control], 45),
+            ("p", [.control], 35),
+        ]
+
+        // While the field editor is composing marked text, none of these keys
+        // may be consumed — they belong to the IME candidate list.
+        for entry in selectionNavigationEvents {
+            guard let event = makeKeyDownEvent(
+                key: entry.key,
+                modifiers: entry.modifiers,
+                keyCode: entry.keyCode,
+                windowNumber: window.windowNumber
+            ) else {
+                XCTFail("Failed to construct selection-navigation event keyCode=\(entry.keyCode)")
+                return
+            }
+#if DEBUG
+            XCTAssertFalse(
+                appDelegate.debugHandleCustomShortcut(event: event),
+                "Selection navigation keyCode=\(entry.keyCode) must not be consumed during IME composition"
+            )
+#else
+            XCTFail("debugHandleCustomShortcut is only available in DEBUG")
+#endif
+        }
+        XCTAssertEqual(observedDeltas, [], "IME composition must not move the palette selection")
+
+        // Once composition ends, the same keys move the palette selection again.
+        fieldEditor.hasMarkedTextForTesting = false
+        for entry in selectionNavigationEvents {
+            guard let event = makeKeyDownEvent(
+                key: entry.key,
+                modifiers: entry.modifiers,
+                keyCode: entry.keyCode,
+                windowNumber: window.windowNumber
+            ) else {
+                XCTFail("Failed to construct selection-navigation event keyCode=\(entry.keyCode)")
+                return
+            }
+#if DEBUG
+            XCTAssertTrue(
+                appDelegate.debugHandleCustomShortcut(event: event),
+                "Selection navigation keyCode=\(entry.keyCode) must move the selection when not composing"
+            )
+#else
+            XCTFail("debugHandleCustomShortcut is only available in DEBUG")
+#endif
+        }
+        XCTAssertEqual(
+            observedDeltas,
+            [1, -1, 1, -1],
+            "Selection navigation should resume moving the palette selection after composition ends"
+        )
+    }
+
+    func testCmdKYieldsToFocusedBrowserWebContent() {
+        guard let appDelegate = AppDelegate.shared else {
+            XCTFail("Expected AppDelegate.shared")
+            return
+        }
+        guard let harness = makeBrowserFocusModeHarness() else { return }
+        defer { closeWindow(withId: harness.windowId) }
+
+        guard let event = makeKeyDownEvent(
+            key: "k",
+            modifiers: [.command],
+            keyCode: 40,
+            windowNumber: harness.window.windowNumber
+        ) else {
+            XCTFail("Failed to construct Cmd+K event")
+            return
+        }
+
+        let switcherExpectation = expectation(
+            description: "Cmd+K should reach focused web content instead of opening the amux switcher"
+        )
+        switcherExpectation.isInverted = true
+        let token = NotificationCenter.default.addObserver(
+            forName: .commandPaletteAmuxSessionSwitcherRequested,
+            object: nil,
+            queue: nil
+        ) { _ in switcherExpectation.fulfill() }
+        defer { NotificationCenter.default.removeObserver(token) }
+
+        XCTAssertTrue(
+            appDelegate.shortcutEventFirstResponderOwnsBrowserWebView(event),
+            "Expected the browser web view to own first responder"
+        )
+#if DEBUG
+        XCTAssertFalse(
+            appDelegate.debugHandleCustomShortcut(event: event),
+            "Cmd+K must yield to focused web content (Slack/Linear/Notion/GitHub palettes)"
+        )
+#else
+        XCTFail("debugHandleCustomShortcut is only available in DEBUG")
+#endif
+        wait(for: [switcherExpectation], timeout: 0.2)
+    }
+
+    func testCmdKYieldsToFocusedBrowserAddressBar() {
+        guard let appDelegate = AppDelegate.shared else {
+            XCTFail("Expected AppDelegate.shared")
+            return
+        }
+
+        let windowId = appDelegate.createMainWindow()
+        defer { closeWindow(withId: windowId) }
+
+        guard let window = window(withId: windowId),
+              let manager = appDelegate.tabManagerFor(windowId: windowId),
+              let workspace = manager.selectedWorkspace,
+              let browserPanelId = manager.openBrowser(inWorkspace: workspace.id) else {
+            XCTFail("Expected focused browser panel")
+            return
+        }
+
+        let field = OmnibarNativeTextField(frame: NSRect(x: 8, y: 8, width: 240, height: 24))
+        field.identifier = browserOmnibarTextFieldIdentifier
+        field.panelId = browserPanelId
+        field.stringValue = "example.com"
+        attachTestResponder(field, to: window)
+        BrowserOmnibarNativeFieldRegistry.shared.register(field, panelId: browserPanelId)
+        defer {
+            BrowserOmnibarNativeFieldRegistry.shared.unregister(field, panelId: browserPanelId)
+            field.removeFromSuperview()
+        }
+
+        XCTAssertTrue(window.makeFirstResponder(field))
+        NotificationCenter.default.post(name: .browserDidFocusAddressBar, object: browserPanelId)
+
+        guard let event = makeKeyDownEvent(
+            key: "k",
+            modifiers: [.command],
+            keyCode: 40,
+            windowNumber: window.windowNumber
+        ) else {
+            XCTFail("Failed to construct Cmd+K event")
+            return
+        }
+
+        let switcherExpectation = expectation(
+            description: "Cmd+K should yield to the focused browser address bar, like Cmd+P"
+        )
+        switcherExpectation.isInverted = true
+        let token = NotificationCenter.default.addObserver(
+            forName: .commandPaletteAmuxSessionSwitcherRequested,
+            object: nil,
+            queue: nil
+        ) { _ in switcherExpectation.fulfill() }
+        defer { NotificationCenter.default.removeObserver(token) }
+
+        XCTAssertEqual(
+            appDelegate.focusedBrowserAddressBarPanelIdForShortcutEvent(event),
+            browserPanelId,
+            "Expected the browser address bar to be the focused shortcut context"
+        )
+#if DEBUG
+        XCTAssertFalse(
+            appDelegate.debugHandleCustomShortcut(event: event),
+            "Cmd+K must not open the amux switcher while the browser omnibox is focused"
+        )
+#else
+        XCTFail("debugHandleCustomShortcut is only available in DEBUG")
+#endif
+        wait(for: [switcherExpectation], timeout: 0.2)
+    }
+
+    func testAmuxSessionSwitcherTogglesClosedOnlyWhenAlreadyPresentedAsSwitcher() {
+        // A second Cmd+K while the switcher is up closes it.
+        XCTAssertTrue(
+            ContentView.amuxSessionSwitcherShouldToggleClose(
+                isPresented: true,
+                isAmuxSessionSwitcherActive: true
+            )
+        )
+        // First Cmd+K (palette closed) opens the switcher rather than toggling.
+        XCTAssertFalse(
+            ContentView.amuxSessionSwitcherShouldToggleClose(
+                isPresented: false,
+                isAmuxSessionSwitcherActive: false
+            )
+        )
+        // Cmd+K while a non-switcher palette (e.g. commands list) is up switches
+        // into the session switcher rather than closing.
+        XCTAssertFalse(
+            ContentView.amuxSessionSwitcherShouldToggleClose(
+                isPresented: true,
+                isAmuxSessionSwitcherActive: false
+            )
+        )
+    }
+
+    func testSwitcherSelectionFollowsTopBeforeInteractionAndResetsWhenAnchorVanishes() {
+        let resultIDs = ["switcher.waitingInput", "switcher.working", "switcher.idle"]
+
+        // F3: before the user moves the selection, follow the top attention item
+        // even though a lower row is anchored (a late high-priority session
+        // re-sorted to the top should become the default Enter target).
+        XCTAssertEqual(
+            ContentView.commandPaletteSwitcherResolvedSelectionIndex(
+                userAdjustedSelection: false,
+                preferredCommandID: "switcher.working",
+                resultIDs: resultIDs
+            ),
+            0
+        )
+
+        // After interaction, keep the selection on the anchored session.
+        XCTAssertEqual(
+            ContentView.commandPaletteSwitcherResolvedSelectionIndex(
+                userAdjustedSelection: true,
+                preferredCommandID: "switcher.idle",
+                resultIDs: resultIDs
+            ),
+            2
+        )
+
+        // F4: after interaction, a vanished anchor resets to the top instead of
+        // falling back to a raw positional index that would open a neighbor.
+        XCTAssertEqual(
+            ContentView.commandPaletteSwitcherResolvedSelectionIndex(
+                userAdjustedSelection: true,
+                preferredCommandID: "switcher.closedSession",
+                resultIDs: resultIDs
+            ),
+            0
+        )
+
+        // Empty results always resolve to the top sentinel.
+        XCTAssertEqual(
+            ContentView.commandPaletteSwitcherResolvedSelectionIndex(
+                userAdjustedSelection: true,
+                preferredCommandID: "switcher.idle",
+                resultIDs: []
+            ),
+            0
+        )
+    }
+
+    func testSwitcherQueuesActivationOnlyWhileLoadingWithoutResolvedResults() {
+        XCTAssertTrue(
+            ContentView.commandPaletteSwitcherShouldQueueActivationWhileLoading(
+                switcherActive: true,
+                switcherLoading: true,
+                hasResolvedResults: false
+            ),
+            "Enter while the switcher is still loading with no results should queue"
+        )
+        XCTAssertFalse(
+            ContentView.commandPaletteSwitcherShouldQueueActivationWhileLoading(
+                switcherActive: true,
+                switcherLoading: true,
+                hasResolvedResults: true
+            ),
+            "Enter should run immediately once some sessions have resolved"
+        )
+        XCTAssertFalse(
+            ContentView.commandPaletteSwitcherShouldQueueActivationWhileLoading(
+                switcherActive: true,
+                switcherLoading: false,
+                hasResolvedResults: false
+            ),
+            "A settled empty switcher should not queue (it beeps deterministically)"
+        )
+        XCTAssertFalse(
+            ContentView.commandPaletteSwitcherShouldQueueActivationWhileLoading(
+                switcherActive: false,
+                switcherLoading: true,
+                hasResolvedResults: false
+            ),
+            "Non-switcher palette modes never use switcher activation queuing"
+        )
+    }
+
     func testCmdPFallsBackToANSIKeyCodeWhenCharactersAndLayoutTranslationAreUnavailable() {
         guard let appDelegate = AppDelegate.shared else {
             XCTFail("Expected AppDelegate.shared")
