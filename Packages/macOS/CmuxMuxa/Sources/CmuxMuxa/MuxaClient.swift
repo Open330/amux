@@ -140,7 +140,14 @@ public actor MuxaClient {
                 }
                 try Self.checkEnvelope(ackLine)
                 while let line = try await connection.receiveLine() {
-                    continuation.yield(try Self.decodeLine(MuxaTransition.self, from: line))
+                    // Tolerate a single undecodable transition (e.g. a shape a
+                    // newer daemon serves) instead of tearing the whole stream
+                    // down: a dropped line reconciles on the next snapshot,
+                    // whereas ending the stream blanks every agent badge for the
+                    // reconnect window. Mirrors the lenient snapshot decode.
+                    if let transition = try? Self.decodeLine(MuxaTransition.self, from: line) {
+                        continuation.yield(transition)
+                    }
                 }
                 continuation.finish()
             } catch {

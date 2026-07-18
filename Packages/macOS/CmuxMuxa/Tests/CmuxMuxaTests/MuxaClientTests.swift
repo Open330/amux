@@ -170,6 +170,36 @@ struct MuxaClientTests {
         #expect(received[1].to == .working)
     }
 
+    @Test("transitions skips an undecodable line instead of ending the stream")
+    func transitionsSkipsUndecodableLine() async throws {
+        let (sawSubscribe, sawSubscribeContinuation) = AsyncStream<Void>.makeStream()
+        let daemon = try FakeMuxaDaemon { line in
+            if line.contains("\"subscribe\"") { sawSubscribeContinuation.yield() }
+            return Self.standardRespond(line)
+        }
+        defer { daemon.shutdown() }
+        let client = MuxaClient(address: MuxaSocketAddress(path: daemon.path))
+        let stream = try await client.transitions()
+        var subscribeSeen = sawSubscribe.makeAsyncIterator()
+        _ = await subscribeSeen.next()
+
+        // A line this client can't decode (missing the required `agent`) must be
+        // skipped, not terminate the subscription — the good transition after it
+        // still arrives.
+        daemon.push(line: #"{"from":"working","to":"waiting_input"}"#)
+        daemon.push(line: """
+        {"from":"working","to":"waiting_input","agent":{"kind":"claude_code","session_id":"s1","pane":"%1","state":"waiting_input"}}
+        """.replacingOccurrences(of: "\n", with: ""))
+
+        var received: [MuxaTransition] = []
+        for try await transition in stream {
+            received.append(transition)
+            if received.count == 1 { break }
+        }
+        #expect(received.count == 1)
+        #expect(received[0].agent.sessionId == "s1")
+    }
+
     @Test("transitions stream ends cleanly when the daemon drops the client")
     func transitionsEndOnDrop() async throws {
         // Wait for the subscribe round trip before dropping: a drop issued
