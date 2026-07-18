@@ -20,6 +20,12 @@ final class FakeMuxaDaemon: @unchecked Sendable {
     private let respond: @Sendable (String) -> [String]
     /// Connected client fds and their read sources / partial buffers; queue-confined.
     private var clients: [Int32: (source: any DispatchSourceRead, pending: Data)] = [:]
+    /// Total connections accepted over this daemon's lifetime; queue-confined.
+    private var acceptedCount = 0
+
+    /// How many connections have been accepted so far (lets a test assert that
+    /// concurrent client calls coalesced onto a single connection).
+    var totalAccepted: Int { queue.sync { acceptedCount } }
 
     /// Binds a fresh socket in a temporary directory.
     ///
@@ -89,6 +95,7 @@ final class FakeMuxaDaemon: @unchecked Sendable {
     private func acceptPending() {
         let fd = accept(listenFd, nil, nil)
         guard fd >= 0 else { return }
+        acceptedCount += 1
         let source = DispatchSource.makeReadSource(fileDescriptor: fd, queue: queue)
         clients[fd] = (source, Data())
         source.setEventHandler { [weak self] in

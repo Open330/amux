@@ -72,6 +72,57 @@ struct MuxaClientTests {
         }
     }
 
+    @Test("snapshot skips an undecodable agent row instead of failing wholesale")
+    func snapshotSkipsUndecodableRow() async throws {
+        // A newer daemon serves one row this client can't decode (missing the
+        // required `session_id`); the good rows must still come through.
+        let daemon = try FakeMuxaDaemon { line in
+            line.contains("\"hello\"")
+                ? [Self.helloResponse]
+                : ["""
+                {"ok":true,"protocol":2,"agents":[
+                 {"kind":"claude_code","session_id":"s1","pane":"%1","state":"working"},
+                 {"kind":"codex","pane":"%2","state":"waiting_input"},
+                 {"kind":"gemini_cli","session_id":"s3","pane":"%3","state":"idle"}]}
+                """.replacingOccurrences(of: "\n", with: "")]
+        }
+        defer { daemon.shutdown() }
+        let client = MuxaClient(address: MuxaSocketAddress(path: daemon.path))
+        let agents = try await client.snapshot()
+        #expect(agents.map(\.sessionId) == ["s1", "s3"])
+        await client.disconnect()
+    }
+
+    @Test("concurrent first-use calls coalesce onto a single connection")
+    func concurrentFirstUseCoalesces() async throws {
+        // Eight racing hello() calls must serialize through the client's round-
+        // trip lock so only ONE connection is opened (not one per caller).
+        let daemon = try FakeMuxaDaemon(respond: Self.standardRespond)
+        defer { daemon.shutdown() }
+        let client = MuxaClient(address: MuxaSocketAddress(path: daemon.path))
+        await withTaskGroup(of: Bool.self) { group in
+            for _ in 0..<8 {
+                group.addTask { (try? await client.hello()) != nil }
+            }
+            var successes = 0
+            for await ok in group where ok { successes += 1 }
+            #expect(successes == 8)
+        }
+        #expect(daemon.totalAccepted == 1)
+        await client.disconnect()
+    }
+
+    @Test("isReachable returns false when the daemon accepts but never replies")
+    func isReachableTimesOutOnWedgedDaemon() async throws {
+        // Accept the connection, read the hello, answer nothing — the wedged
+        // half-open case. Without the timeout this call would never return.
+        let daemon = try FakeMuxaDaemon { _ in [] }
+        defer { daemon.shutdown() }
+        let client = MuxaClient(address: MuxaSocketAddress(path: daemon.path))
+        let reachable = await client.isReachable(timeout: .milliseconds(300))
+        #expect(reachable == false)
+    }
+
     @Test("missing socket throws socketUnavailable with the attempted path")
     func missingSocket() async throws {
         let path = FileManager.default.temporaryDirectory

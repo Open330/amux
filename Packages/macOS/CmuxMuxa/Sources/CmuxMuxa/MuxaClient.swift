@@ -32,6 +32,35 @@ public actor MuxaClient {
     /// The last hello result for the live shared connection.
     private var cachedHello: MuxaHello?
 
+    // MARK: Round-trip serialization
+    //
+    // Actor isolation does not hold across `await`, so without a mutex two
+    // concurrent first-use calls would each pass the `shared == nil` check and
+    // open a duplicate connection, and once a second request *kind* exists two
+    // in-flight round-trips would pipeline `send`/`receiveLine` on one
+    // connection and could be cross-delivered each other's response. This tiny
+    // FIFO async lock makes every shared-connection round trip (handshake or
+    // request) mutually exclusive. `transitions()` uses a dedicated connection
+    // and is intentionally not gated here.
+    private var lockHeld = false
+    private var lockWaiters: [CheckedContinuation<Void, Never>] = []
+
+    private func acquireLock() async {
+        if !lockHeld {
+            lockHeld = true
+            return
+        }
+        await withCheckedContinuation { lockWaiters.append($0) }
+    }
+
+    private func releaseLock() {
+        if lockWaiters.isEmpty {
+            lockHeld = false
+        } else {
+            lockWaiters.removeFirst().resume()
+        }
+    }
+
     /// Creates a client for the daemon at `address` (defaults to the path a
     /// default-configured muxad binds on this machine).
     public init(address: MuxaSocketAddress = .standard) {
@@ -42,24 +71,44 @@ public actor MuxaClient {
     /// (re)connecting if needed.
     @discardableResult
     public func hello() async throws -> MuxaHello {
-        try await ensureShared()
+        await acquireLock()
+        defer { releaseLock() }
+        return try await ensureShared()
     }
 
     /// Whether a muxad is answering on the socket right now (a `hello`
-    /// round trip succeeds). Used to decide whether amux should manage its
-    /// own daemon or defer to an already-running one. Never throws — a
-    /// missing daemon / any failure is simply `false`.
-    public func isReachable() async -> Bool {
+    /// round trip succeeds within `timeout`). Used to decide whether amux
+    /// should manage its own daemon or defer to an already-running one. Never
+    /// throws — a missing daemon / any failure / a timeout is simply `false`.
+    ///
+    /// The timeout matters: a daemon that accepts the connection but never
+    /// answers (crashed mid-accept, wedged, or a stale forwarded socket)
+    /// would otherwise suspend this call — and the startup path that awaits
+    /// it — forever.
+    public func isReachable(timeout: Duration = .seconds(3)) async -> Bool {
         do {
-            _ = try await hello()
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask { [self] in _ = try await hello() }
+                group.addTask {
+                    try await Task.sleep(for: timeout)
+                    throw MuxaClientError.connectionClosed
+                }
+                defer { group.cancelAll() }
+                try await group.next()
+            }
             return true
         } catch {
+            // Timed out or failed: drop any half-open connection so a later
+            // call starts clean, and report the daemon as absent.
+            disconnect()
             return false
         }
     }
 
     /// All currently tracked agents.
     public func snapshot() async throws -> [MuxaAgent] {
+        await acquireLock()
+        defer { releaseLock() }
         let payload = try await request(kind: "snapshot")
         return try decodeResponse(MuxaSnapshotResponse.self, from: payload).agents
     }
@@ -74,7 +123,12 @@ public actor MuxaClient {
     /// documented recovery for a lagged subscriber.
     public func transitions() throws -> AsyncThrowingStream<MuxaTransition, any Error> {
         let connection = try MuxaLineConnection(path: address.path)
-        let (stream, continuation) = AsyncThrowingStream<MuxaTransition, any Error>.makeStream()
+        // Bounded buffer: a slow consumer drops the oldest transitions rather
+        // than letting `yield` buffer without limit — a lagged subscriber is
+        // expected to re-`snapshot()` and resubscribe to reconcile anyway.
+        let (stream, continuation) = AsyncThrowingStream<MuxaTransition, any Error>.makeStream(
+            bufferingPolicy: .bufferingNewest(256)
+        )
         // Detached: the pump shares nothing with the actor beyond the
         // Sendable connection and continuation.
         let pump = Task.detached {
@@ -192,6 +246,37 @@ private struct MuxaResponseEnvelope: Decodable {
 }
 
 /// Payload shape of a `snapshot` response.
+///
+/// The `agents` array is decoded leniently: a single row a newer daemon
+/// serves in a shape this client can't decode (a missing/renamed required
+/// field) is skipped rather than failing the whole snapshot — the same
+/// forward-compatibility contract the enum `.unknown` cases provide.
 private struct MuxaSnapshotResponse: Decodable {
     let agents: [MuxaAgent]
+
+    enum CodingKeys: String, CodingKey { case agents }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        var unkeyed = try container.nestedUnkeyedContainer(forKey: .agents)
+        var decoded: [MuxaAgent] = []
+        if let count = unkeyed.count { decoded.reserveCapacity(count) }
+        while !unkeyed.isAtEnd {
+            // Decoding the always-succeeding wrapper consumes exactly one
+            // element, so a bad row advances the index instead of wedging.
+            let element = try unkeyed.decode(LenientElement<MuxaAgent>.self)
+            if let agent = element.value { decoded.append(agent) }
+        }
+        self.agents = decoded
+    }
+}
+
+/// Decodes `Wrapped` if possible, otherwise yields `nil` while still
+/// consuming its slot — so an unkeyed container can skip undecodable rows.
+private struct LenientElement<Wrapped: Decodable>: Decodable {
+    let value: Wrapped?
+
+    init(from decoder: any Decoder) throws {
+        value = try? Wrapped(from: decoder)
+    }
 }
