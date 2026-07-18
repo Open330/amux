@@ -350,8 +350,10 @@ public enum AmuxPathMigration {
     /// a temp file in the destination directory and then published with a single
     /// `rename(2)`, so a crash strands only the temp file and the destination is
     /// never observed half-written. A leftover temp from an interrupted run is
-    /// removed first so the copy is not blocked. Never overwrites an existing
-    /// destination.
+    /// removed first so the copy is not blocked. Skips the copy when the
+    /// destination already exists — the check is best-effort against a concurrent
+    /// writer: a destination that appears between the check and the `rename(2)`
+    /// is overwritten, but only ever with identical bytes from the same source.
     @discardableResult
     private static func atomicCopyFile(
         from source: URL,
