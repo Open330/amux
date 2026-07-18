@@ -14,6 +14,16 @@ struct AmuxSessionSwitcherItem: Identifiable, Equatable, Sendable {
     }
 
     var mostRecentActivityDate: Date? {
+        Self.mostRecentActivityDate(session: session, agents: agents)
+    }
+
+    /// The most recent activity date for a session/agent pair without allocating
+    /// an `AmuxSessionSwitcherItem`, so per-render callers (e.g. subtitle
+    /// formatting) can read it directly.
+    static func mostRecentActivityDate(
+        session: RemoteTmuxSession,
+        agents: [MuxaAgent]
+    ) -> Date? {
         agents.compactMap { $0.lastActivityDate ?? $0.startedDate }.max()
             ?? session.createdUnix.map { Date(timeIntervalSince1970: TimeInterval($0)) }
     }

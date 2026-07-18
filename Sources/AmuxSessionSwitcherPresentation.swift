@@ -31,7 +31,7 @@ struct AmuxSessionSwitcherPresentation {
         }
     }
 
-    func kindLabel(isOpen: Bool, agents _: [MuxaAgent]) -> String {
+    func kindLabel(isOpen: Bool) -> String {
         isOpen
             ? String(localized: "amux.sessionSwitcher.kind.open", defaultValue: "Open tmux")
             : String(localized: "amux.sessionSwitcher.kind.available", defaultValue: "Available tmux")
@@ -66,8 +66,14 @@ struct AmuxSessionSwitcherPresentation {
         var parts: [String] = []
         if let agent = AmuxSessionSwitcherItem.orderedAgents(agents).first {
             parts.append(
-                "\(AmuxAgentAlarmPolicy.displayName(for: agent.kind)) · "
-                    + agentStateLabel(agent.state)
+                String(
+                    format: String(
+                        localized: "amux.sessionSwitcher.subtitle.agentSeparator",
+                        defaultValue: "%1$@ · %2$@"
+                    ),
+                    AmuxAgentAlarmPolicy.displayName(for: agent.kind),
+                    agentStateLabel(agent.state)
+                )
             )
         }
         if let session, session.windowCount > 0 {
@@ -76,12 +82,18 @@ struct AmuxSessionSwitcherPresentation {
                 ? String(localized: "amux.sessionSwitcher.windowCount.one", defaultValue: "%lld window")
                 : String(localized: "amux.sessionSwitcher.windowCount.other", defaultValue: "%lld windows")
             parts.append(String(format: format, Int64(windowCount)))
-            let item = AmuxSessionSwitcherItem(host: host, session: session, agents: agents)
-            if let activityDate = item.mostRecentActivityDate {
+            if let activityDate = AmuxSessionSwitcherItem.mostRecentActivityDate(
+                session: session,
+                agents: agents
+            ) {
                 parts.append(activityDate.formatted(.relative(presentation: .named)))
             }
         }
-        return (parts.isEmpty ? [hostLabel(host)] : parts).joined(separator: " • ")
+        let partSeparator = String(
+            localized: "amux.sessionSwitcher.subtitle.partSeparator",
+            defaultValue: " • "
+        )
+        return (parts.isEmpty ? [hostLabel(host)] : parts).joined(separator: partSeparator)
     }
 
     func statusText(
