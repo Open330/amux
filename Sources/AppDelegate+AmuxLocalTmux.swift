@@ -559,10 +559,21 @@ extension AppDelegate {
             alert.informativeText = workspace.customTitle ?? ""
             // One button per option (AppKit stacks them right-to-left, so add
             // in order and map the response back by index), then Cancel.
+            var optionButtons: [NSButton] = []
             for choice in choices {
-                alert.addButton(withTitle: "\(choice.number). \(choice.label)")
+                optionButtons.append(alert.addButton(withTitle: "\(choice.number). \(choice.label)"))
             }
             alert.addButton(withTitle: String(localized: "amux.choice.cancel", defaultValue: "Cancel"))
+            // If the TUI highlighted an option with its selection caret, make
+            // that button the default so pressing Return matches what the
+            // terminal showed. Otherwise AppKit's default (the first option)
+            // stands. Changing the key equivalent doesn't affect the response
+            // mapping below, which stays keyed to add order.
+            if let defaultIndex = choices.firstIndex(where: \.isDefault),
+               defaultIndex != 0, defaultIndex < optionButtons.count {
+                optionButtons[0].keyEquivalent = ""
+                optionButtons[defaultIndex].keyEquivalent = "\r"
+            }
             let response = alert.runModal()
             let index = response.rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
             guard index >= 0, index < choices.count else { return }
@@ -897,7 +908,17 @@ extension AppDelegate {
     func amuxAttend() -> Bool {
         guard let target = amuxAgentObservation.attendTarget() else { return false }
         guard let (manager, _) = amuxWorkspace(withId: target.workspace.id) else { return false }
-        manager.selectWorkspace(target.workspace)
+        // Attend is explicit focus-intent: select the workspace AND bring its
+        // owning window forward, or attending an agent in a background /
+        // dedicated mirror window (common for remote hosts) looks like a no-op.
+        // Route through the shared attach-focus seam so the raise matches
+        // amuxAttachSession and stays scoped to the target window.
+        Self.focusWorkspaceAfterSessionAttach(
+            ifRequested: true,
+            workspace: target.workspace,
+            owner: manager,
+            bringForward: { $0.window?.makeKeyAndOrderFront(nil) }
+        )
         if let pane = target.tmuxPane {
             remoteTmuxController.focusMirrorPane(workspaceId: target.workspace.id, tmuxPane: pane)
         }
