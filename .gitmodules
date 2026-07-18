@@ -1,6 +1,6 @@
 [submodule "ghostty"]
 	path = ghostty
-	url = https://github.com/manaflow-ai/ghostty.git
+	url = https://github.com/Open330/ghostty.git
 	branch = main
 [submodule "vendor/bonsplit"]
 	path = vendor/bonsplit
