@@ -160,11 +160,16 @@ extension AppDelegate {
     func amuxInstallMuxadAgent() {
         Task { @MainActor in
             let running = await MuxaClient().isReachable()
-            let agent = AmuxMuxadLaunchAgent()
-            let result = agent.install(
-                muxadPath: RemoteTmuxHost.bundledMuxadPath(),
-                daemonAlreadyRunning: running
-            )
+            let muxadPath = RemoteTmuxHost.bundledMuxadPath()
+            // launchctl bootout+bootstrap blocks on waitUntilExit; run it off
+            // the main actor so this palette command can't freeze the UI
+            // (parity with the onboarding install path).
+            let result = await Task.detached {
+                AmuxMuxadLaunchAgent().install(
+                    muxadPath: muxadPath,
+                    daemonAlreadyRunning: running
+                )
+            }.value
             let alert = NSAlert()
             alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
             switch result {
@@ -195,14 +200,18 @@ extension AppDelegate {
 
     /// Removes the muxad LaunchAgent (does not touch a manually-run muxad).
     func amuxUninstallMuxadAgent() {
-        AmuxMuxadLaunchAgent().uninstall()
-        let alert = NSAlert()
-        alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
-        alert.informativeText = String(
-            localized: "amux.daemon.uninstalled",
-            defaultValue: "Removed amux's background daemon. A muxad you started yourself is left running."
-        )
-        alert.runModal()
+        Task { @MainActor in
+            // uninstall() runs launchctl bootout (blocking waitUntilExit) off
+            // the main actor so the palette command can't freeze the UI.
+            await Task.detached { AmuxMuxadLaunchAgent().uninstall() }.value
+            let alert = NSAlert()
+            alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
+            alert.informativeText = String(
+                localized: "amux.daemon.uninstalled",
+                defaultValue: "Removed amux's background daemon. A muxad you started yourself is left running."
+            )
+            alert.runModal()
+        }
     }
 
     /// Whether ⌘N (the new-terminal-workspace action) creates an amux
