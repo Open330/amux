@@ -100,7 +100,11 @@ enum AmuxChoiceParser {
     /// a capturing caret group fails the Swift regex-literal lexer.
     private static func lineHasSelectionCaret<S: StringProtocol>(_ line: S) -> Bool {
         for scalar in line.unicodeScalars {
-            if scalar == " " || scalar == "\t" { continue }
+            // Skip the same leading run `linePattern` consumes: any Unicode
+            // whitespace (its `\s*`, e.g. a stray NBSP) plus the box border.
+            // Matching `\s` here (not just space/tab) keeps a caret preceded by
+            // non-ASCII whitespace from being missed.
+            if scalar.properties.isWhitespace { continue }
             if scalar == "│" || scalar == "┃" || scalar == "|" { continue }
             return caretScalars.contains(scalar)
         }

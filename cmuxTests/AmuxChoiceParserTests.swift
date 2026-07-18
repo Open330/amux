@@ -108,4 +108,14 @@ final class AmuxChoiceParserTests: XCTestCase {
         let choices = AmuxChoiceParser.parse(text)
         XCTAssertFalse(choices.contains(where: \.isDefault))
     }
+
+    func testCaretPrecededByNonAsciiWhitespaceIsDetected() {
+        // A stray non-ASCII whitespace (NBSP, U+00A0) before the caret still
+        // matches linePattern's `\s*`; the caret scan must skip the same
+        // whitespace class so the highlight isn't missed.
+        let text = "1. A\n\u{00A0}❯ 2. B"
+        let choices = AmuxChoiceParser.parse(text)
+        XCTAssertEqual(choices.map(\.number), [1, 2])
+        XCTAssertEqual(choices.filter(\.isDefault).map(\.number), [2])
+    }
 }
