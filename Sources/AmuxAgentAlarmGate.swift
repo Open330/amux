@@ -16,8 +16,20 @@ import Foundation
 /// transition dropped for lack of a join must not consume the episode.
 @MainActor
 final class AmuxAgentAlarmGate {
-    /// The attention state last delivered per agent session id.
-    private var alarmedStateBySessionId: [String: MuxaAgentState] = [:]
+    /// One attention episode, the dedupe unit. Keyed on both the state and
+    /// *when* the agent entered it: an agent that leaves and re-enters an
+    /// attention state — possibly entirely while the app was disconnected —
+    /// advances ``MuxaAgent/stateEnteredAt``, so a genuinely-new episode
+    /// alarms again instead of being swallowed by memory that survived the
+    /// reconnect. A `nil` `enteredAt` (daemon didn't report one) degrades to
+    /// bare-state dedupe.
+    private struct Episode: Equatable {
+        let state: MuxaAgentState
+        let enteredAt: String?
+    }
+
+    /// The attention episode last delivered per agent session id.
+    private var alarmedEpisodeBySessionId: [String: Episode] = [:]
 
     /// The alarm to surface for `transition`, or `nil` when quiet (not an
     /// alarming transition, this attention episode was already delivered, or
@@ -33,15 +45,26 @@ final class AmuxAgentAlarmGate {
             // Quiet state: leaving attention re-arms the agent so its next
             // episode alarms again (also drops memory for stopped agents).
             if !agent.state.needsAttention {
-                alarmedStateBySessionId[agent.sessionId] = nil
+                alarmedEpisodeBySessionId[agent.sessionId] = nil
             }
             return nil
         }
         if agent.state.needsAttention {
-            guard alarmedStateBySessionId[agent.sessionId] != agent.state else { return nil }
-            alarmedStateBySessionId[agent.sessionId] = agent.state
+            let episode = Episode(state: agent.state, enteredAt: agent.stateEnteredAt)
+            guard alarmedEpisodeBySessionId[agent.sessionId] != episode else { return nil }
+            alarmedEpisodeBySessionId[agent.sessionId] = episode
         }
         return alarm
+    }
+
+    /// Drops episode memory for any session not in `liveSessionIds` — called
+    /// after a fresh snapshot so an agent that vanished while blocked (no
+    /// `stopped` transition) can't pin its entry forever. Bounds the otherwise
+    /// unbounded growth of the dedupe table across the app's lifetime.
+    func prune(keeping liveSessionIds: Set<String>) {
+        alarmedEpisodeBySessionId = alarmedEpisodeBySessionId.filter {
+            liveSessionIds.contains($0.key)
+        }
     }
 }
 

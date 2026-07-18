@@ -54,7 +54,11 @@ extension AppDelegate {
             workspaceForPane: { [weak self] paneId in
                 self?.remoteTmuxController.localMirrorWorkspace(containingPane: paneId)
             },
-            onTransition: onTransition
+            onTransition: onTransition,
+            // Drop gate episode memory for sessions absent from the latest
+            // snapshot so a killed agent's key can't linger (finding: gate
+            // dictionary pruning).
+            onSnapshot: { alarmGate.prune(keeping: $0) }
         )
         return AmuxAgentObservationHub(
             localService: localService,
@@ -73,7 +77,8 @@ extension AppDelegate {
                         self?.remoteTmuxController.mirrorWorkspace(hostId: hostId, containingPane: paneId)
                     },
                     prepareConnection: { try await forwarder.ensureForward() },
-                    onTransition: onTransition
+                    onTransition: onTransition,
+                    onSnapshot: { alarmGate.prune(keeping: $0) }
                 )
                 return AmuxAgentObservationHub.RemoteObserver(forwarder: forwarder, service: service)
             }

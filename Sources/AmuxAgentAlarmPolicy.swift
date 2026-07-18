@@ -81,15 +81,11 @@ struct AmuxAgentAlarmPolicy {
         )
     }
 
-    /// Human-readable product name for an agent kind (an unknown kind shows
-    /// its raw wire string — never localized, it's a product name).
+    /// Human-readable product name for an agent kind. Routes through
+    /// ``AmuxAgentCatalog/displayName(for:)`` so the alarm/notification copy
+    /// shares one spelling with the launch surfaces (an unknown kind shows its
+    /// raw wire string — never localized, it's a product name).
     static func displayName(for kind: MuxaAgentKind) -> String {
-        switch kind {
-        case .claudeCode: "Claude Code"
-        case .codex: "Codex"
-        case .geminiCli: "Gemini CLI"
-        case .opencode: "opencode"
-        case .unknown(let raw): raw
-        }
+        AmuxAgentCatalog.displayName(for: kind)
     }
 }
