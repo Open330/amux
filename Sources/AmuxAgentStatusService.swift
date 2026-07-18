@@ -30,16 +30,23 @@ final class AmuxAgentStatusService {
     /// resolved to (`nil` when the agent isn't in a mirrored session) — the
     /// alarm/notification seam. Snapshot rows never fire this.
     private let onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)?
-    /// Receives the set of live agent session ids after every successful
-    /// snapshot — the seam the composition root uses to prune per-session
-    /// memory that outlives its agent (e.g. ``AmuxAgentAlarmGate/prune(keeping:)``
-    /// for agents that vanished while blocked, with no `stopped` transition).
-    /// The service's own ``agentsBySessionId`` is already pruned by the
-    /// wholesale snapshot replacement below, so this is purely for shared
-    /// state the service doesn't own.
-    private let onSnapshot: (@MainActor (Set<String>) -> Void)?
+    /// Receives the session ids that VANISHED between the previous successful
+    /// snapshot and the latest one — the seam the composition root uses to
+    /// forget per-session memory that outlives its agent (e.g.
+    /// ``AmuxAgentAlarmGate/forget(sessionIds:)`` for agents that went away
+    /// while blocked, with no `stopped` transition). It passes only this
+    /// daemon's departed delta — never this daemon's live set — because the
+    /// shared alarm gate must not evict another daemon's still-live episodes.
+    /// The service's own ``agentsBySessionId`` is pruned by the wholesale
+    /// snapshot replacement below; this is purely for shared state it doesn't own.
+    private let onSessionsVanished: (@MainActor (Set<String>) -> Void)?
     /// Live agent rows by muxad session id (agent-CLI session, not tmux).
     private var agentsBySessionId: [String: MuxaAgent] = [:]
+    /// Session ids from the previous successful snapshot, so the next snapshot
+    /// can report the vanished delta to ``onSessionsVanished``. Persists across
+    /// a stream drop/reconnect (a disconnect is not a vanish), so a still-blocked
+    /// agent's gate episode survives and its reconnect tick isn't re-alarmed.
+    private var lastSnapshotSessionIds: Set<String> = []
     /// Weakly holds a workspace we wrote a row into.
     private struct WeakWorkspace {
         weak var value: Workspace?
@@ -56,14 +63,14 @@ final class AmuxAgentStatusService {
         workspaceForPane: @escaping @MainActor (Int) -> Workspace?,
         prepareConnection: (@Sendable () async throws -> Void)? = nil,
         onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)? = nil,
-        onSnapshot: (@MainActor (Set<String>) -> Void)? = nil
+        onSessionsVanished: (@MainActor (Set<String>) -> Void)? = nil
     ) {
         self.client = client
         self.workspaceForSession = workspaceForSession
         self.workspaceForPane = workspaceForPane
         self.prepareConnection = prepareConnection
         self.onTransition = onTransition
-        self.onSnapshot = onSnapshot
+        self.onSessionsVanished = onSessionsVanished
     }
 
     /// Starts the snapshot+subscribe loop (idempotent).
@@ -103,9 +110,16 @@ final class AmuxAgentStatusService {
                     agents.map { ($0.sessionId, $0) },
                     uniquingKeysWith: { _, newer in newer }
                 )
-                // Let shared per-session state (e.g. the alarm gate) forget
-                // sessions absent from this fresh snapshot before we project.
-                onSnapshot?(Set(agentsBySessionId.keys))
+                // Let shared per-session state (e.g. the alarm gate) forget the
+                // sessions that vanished from THIS daemon since the previous
+                // snapshot — only the delta, so a shared gate never evicts
+                // another daemon's live episodes.
+                let currentSessionIds = Set(agentsBySessionId.keys)
+                let vanished = lastSnapshotSessionIds.subtracting(currentSessionIds)
+                lastSnapshotSessionIds = currentSessionIds
+                if !vanished.isEmpty {
+                    onSessionsVanished?(vanished)
+                }
                 applyToWorkspaces()
                 for try await transition in try await client.transitions() {
                     upsert(transition.agent)

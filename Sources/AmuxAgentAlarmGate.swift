@@ -57,13 +57,21 @@ final class AmuxAgentAlarmGate {
         return alarm
     }
 
-    /// Drops episode memory for any session not in `liveSessionIds` — called
-    /// after a fresh snapshot so an agent that vanished while blocked (no
-    /// `stopped` transition) can't pin its entry forever. Bounds the otherwise
-    /// unbounded growth of the dedupe table across the app's lifetime.
-    func prune(keeping liveSessionIds: Set<String>) {
-        alarmedEpisodeBySessionId = alarmedEpisodeBySessionId.filter {
-            liveSessionIds.contains($0.key)
+    /// Drops episode memory for exactly `sessionIds` — the sessions a caller
+    /// saw vanish from its own fresh snapshot (an agent that went away while
+    /// blocked, with no `stopped` transition). Bounds the otherwise unbounded
+    /// growth of the dedupe table across the app's lifetime.
+    ///
+    /// The caller must pass only the sessions that vanished from *its own*
+    /// daemon, never "every session except my live set": this gate is shared
+    /// across the local service and every remote observer (session ids are
+    /// globally unique per daemon), so a keep-only-my-live-set prune would
+    /// evict other daemons' still-live episodes and make their next same-state
+    /// reconciler tick re-alarm — a duplicate notification. Forgetting only the
+    /// vanished delta can never touch another daemon's live episode.
+    func forget(sessionIds: Set<String>) {
+        for id in sessionIds {
+            alarmedEpisodeBySessionId[id] = nil
         }
     }
 }

@@ -55,10 +55,12 @@ extension AppDelegate {
                 self?.remoteTmuxController.localMirrorWorkspace(containingPane: paneId)
             },
             onTransition: onTransition,
-            // Drop gate episode memory for sessions absent from the latest
-            // snapshot so a killed agent's key can't linger (finding: gate
-            // dictionary pruning).
-            onSnapshot: { alarmGate.prune(keeping: $0) }
+            // Forget gate episode memory for sessions that vanished from this
+            // daemon's snapshot (a killed agent's key can't linger). The gate
+            // is shared with the remote observers, so we pass only the vanished
+            // delta — never "everything except my live set", which would evict
+            // their live episodes and re-alarm them.
+            onSessionsVanished: { alarmGate.forget(sessionIds: $0) }
         )
         return AmuxAgentObservationHub(
             localService: localService,
@@ -78,7 +80,7 @@ extension AppDelegate {
                     },
                     prepareConnection: { try await forwarder.ensureForward() },
                     onTransition: onTransition,
-                    onSnapshot: { alarmGate.prune(keeping: $0) }
+                    onSessionsVanished: { alarmGate.forget(sessionIds: $0) }
                 )
                 return AmuxAgentObservationHub.RemoteObserver(forwarder: forwarder, service: service)
             }

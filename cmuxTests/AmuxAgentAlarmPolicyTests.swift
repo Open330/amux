@@ -172,7 +172,7 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
     }
 
     @MainActor
-    func testGatePruneForgetsVanishedSessions() async {
+    func testGateForgetsOnlyTheVanishedSessions() async {
         let gate = AmuxAgentAlarmGate()
         func waiting(session: String) -> CmuxMuxa.MuxaTransition {
             .init(
@@ -184,10 +184,39 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
         XCTAssertNotNil(gate.alarm(for: waiting(session: "keep"), joined: true))
         XCTAssertNotNil(gate.alarm(for: waiting(session: "gone"), joined: true))
         XCTAssertNil(gate.alarm(for: waiting(session: "keep"), joined: true), "same episode is deduped")
-        // A fresh snapshot no longer lists "gone"; pruning forgets it so its
-        // entry can't linger unbounded, while "keep" stays deduped.
-        gate.prune(keeping: ["keep"])
+        // Only "gone" vanished from its daemon's snapshot; forgetting exactly
+        // that delta drops its entry (bounding growth) while "keep" stays deduped.
+        gate.forget(sessionIds: ["gone"])
         XCTAssertNil(gate.alarm(for: waiting(session: "keep"), joined: true))
         XCTAssertNotNil(gate.alarm(for: waiting(session: "gone"), joined: true))
+    }
+
+    @MainActor
+    func testSharedGateForgetDoesNotReArmAPeerDaemonsLiveEpisode() async {
+        // The gate is shared by the local service and every remote observer.
+        // When one daemon reports its own vanished delta, another daemon's
+        // still-live episode must survive — otherwise that peer's next
+        // reconciler-tick same-state pass re-alarms (a duplicate notification).
+        // Regression guard for the shared-gate cross-eviction bug: a per-daemon
+        // "keep only my live set" prune would have evicted "remote" here.
+        let gate = AmuxAgentAlarmGate()
+        func waiting(session: String) -> CmuxMuxa.MuxaTransition {
+            .init(
+                from: .working,
+                to: .waitingInput,
+                agent: agent(state: .waitingInput, sessionId: session)
+            )
+        }
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "remote"), joined: true))
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "local"), joined: true))
+        // The local daemon snapshots: "local" is still live, so its vanished
+        // delta is empty — it forgets nothing.
+        gate.forget(sessionIds: [])
+        // The remote daemon's reconciler tick re-emits "remote" as the same
+        // episode: it must stay deduped, not re-alarm.
+        XCTAssertNil(
+            gate.alarm(for: waiting(session: "remote"), joined: true),
+            "a peer daemon's forget must not re-arm this live episode"
+        )
     }
 }
