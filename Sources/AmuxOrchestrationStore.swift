@@ -27,8 +27,16 @@ actor AmuxOrchestrationStore {
         .appendingPathComponent(".local/state/amux/orchestration.ndjson")
 
     private let storageURL: URL
-    // Cap on messages retained in memory. `checkMessages` long-poll is served from
-    // this recent tail, so the store no longer holds every message ever sent.
+    // Bounded-durability contract for the message log: only the most recent
+    // `maxInMemoryMessages` messages are retained — in memory AND on disk (older
+    // ones are dropped on trim/compaction). `checkMessages` long-poll is served
+    // from this recent tail; this is a live coordination channel, not a durable
+    // event store. A consumer that resumes from a sequence older than the retained
+    // floor receives the recent tail (not the full backlog) and can detect the
+    // gap via a discontinuity in the returned messages' sequence numbers. The
+    // default (500) comfortably exceeds the per-poll `limit`, so a caught-up
+    // consumer never observes a gap; raise it via `init` if a use case needs a
+    // deeper replay window.
     private let maxInMemoryMessages: Int
     // Rewrite the append-only log as a compact snapshot once it grows past this many
     // records, so on-disk size and init replay cost stay bounded across the app's life.
