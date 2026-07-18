@@ -43,6 +43,7 @@ extension ShortcutAction {
         case .amuxSessionSwitcher: return ShortcutStroke(key: "k", command: true)
         case .commandPaletteNext: return ShortcutStroke(key: "n", control: true)
         case .commandPalettePrevious: return ShortcutStroke(key: "p", control: true)
+        case .amuxAttend: return ShortcutStroke(key: "j", command: true, shift: true)
         case .sendFeedback: return nil
         case .showNotifications: return ShortcutStroke(key: "i", command: true)
         case .jumpToUnread: return ShortcutStroke(key: "u", command: true, shift: true)

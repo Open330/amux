@@ -33,6 +33,7 @@ public enum ShortcutAction: String, CaseIterable, Sendable, Hashable, SettingCod
     case amuxSessionSwitcher
     case commandPaletteNext
     case commandPalettePrevious
+    case amuxAttend
     case sendFeedback
     case showNotifications
     case jumpToUnread
@@ -178,7 +179,7 @@ extension ShortcutAction {
              .newWindow, .closeWindow, .toggleFullScreen, .quit:
             return .app
         case .toggleSidebar, .newTab, .newBrowserWorkspace, .saveLayoutTemplate, .openFolder, .reopenPreviousSession, .goToWorkspace,
-             .commandPalette, .amuxSessionSwitcher, .commandPaletteNext, .commandPalettePrevious, .sendFeedback,
+             .commandPalette, .amuxSessionSwitcher, .commandPaletteNext, .commandPalettePrevious, .amuxAttend, .sendFeedback,
              .showNotifications, .jumpToUnread, .toggleUnread, .markOldestUnreadAndJumpNext,
              .focusRightSidebar, .switchRightSidebarToFiles, .switchRightSidebarToFind,
              .switchRightSidebarToSessions, .switchRightSidebarToFeed,
@@ -352,6 +353,8 @@ extension ShortcutAction {
             return String(localized: "shortcut.amuxSessionSwitcher.label", defaultValue: "Agent & tmux Switcher…")
         case .commandPaletteNext: return "Command Palette: Next"
         case .commandPalettePrevious: return "Command Palette: Previous"
+        case .amuxAttend:
+            return String(localized: "shortcut.amuxAttend.label", defaultValue: "Attend Longest-Blocked Agent")
         case .sendFeedback: return "Send Feedback"
         case .showNotifications: return "Show Notifications"
         case .jumpToUnread: return "Jump to Latest Unread"

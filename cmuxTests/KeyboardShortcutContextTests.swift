@@ -284,9 +284,92 @@ final class KeyboardShortcutContextTests: XCTestCase {
         XCTAssertTrue(KeyboardShortcutSettings.settingsVisibleActions.contains(action))
     }
 
+    func testAmuxAttendShortcutStaysAligned() {
+        let action = KeyboardShortcutSettings.Action.amuxAttend
+        guard let settingsAction = ShortcutAction(rawValue: action.rawValue) else {
+            XCTFail("Expected CmuxSettings.ShortcutAction for amuxAttend")
+            return
+        }
+        XCTAssertEqual(
+            action.defaultShortcut,
+            StoredShortcut(key: "j", command: true, shift: true, option: false, control: false)
+        )
+        XCTAssertEqual(
+            action.normalizedRecordedShortcutResult(action.defaultShortcut),
+            .accepted(action.defaultShortcut),
+            "The default Cmd+Shift+J binding must remain conflict-free"
+        )
+        XCTAssertEqual(settingsAction.defaultStroke, ShortcutStroke(key: "j", command: true, shift: true))
+        XCTAssertEqual(settingsAction.displayName, action.label)
+        // Shortcut policy: amuxAttend must be visible/editable in the app Settings list…
+        XCTAssertTrue(KeyboardShortcutSettings.settingsVisibleActions.contains(action))
+        // …and, crucially, in the package's own settings-visible list (the source of
+        // truth the Settings UI renders). This is the parity that was missing.
+        XCTAssertTrue(ShortcutAction.settingsVisibleActions.contains(settingsAction))
+    }
+
+    func testAmuxAttendIsAValidShortcutActionInAmuxJsonSchema() throws {
+        let schemaURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // cmuxTests/
+            .deletingLastPathComponent() // repo root
+            .appendingPathComponent("web")
+            .appendingPathComponent("data")
+            .appendingPathComponent("amux.schema.json")
+
+        let data = try Data(contentsOf: schemaURL)
+        let json = try JSONSerialization.jsonObject(with: data)
+
+        guard let actionEnum = Self.shortcutActionEnum(in: json) else {
+            XCTFail("Could not locate the shortcut-action enum (the one listing 'amuxSessionSwitcher') in \(schemaURL.path)")
+            return
+        }
+
+        // Sanity: the correctly-wired sibling must be present so we know we found
+        // the right enum and are comparing against a live source of truth.
+        XCTAssertTrue(
+            actionEnum.contains("amuxSessionSwitcher"),
+            "Expected the sibling action 'amuxSessionSwitcher' in the amux.schema.json shortcut-action enum"
+        )
+        XCTAssertTrue(
+            actionEnum.contains("amuxAttend"),
+            "amuxAttend must be a valid shortcut action in web/data/amux.schema.json so amux.json validators accept its binding"
+        )
+        XCTAssertTrue(
+            actionEnum.contains(KeyboardShortcutSettings.Action.amuxAttend.rawValue),
+            "The schema enum must use the same raw value as the app-target amuxAttend Action"
+        )
+    }
+
+    /// Recursively locates the schema's shortcut-action string enum, identified as
+    /// the `enum` array that lists the known `amuxSessionSwitcher` action.
+    private static func shortcutActionEnum(in json: Any) -> [String]? {
+        if let dict = json as? [String: Any] {
+            if let values = dict["enum"] as? [String], values.contains("amuxSessionSwitcher") {
+                return values
+            }
+            for value in dict.values {
+                if let found = shortcutActionEnum(in: value) { return found }
+            }
+        } else if let array = json as? [Any] {
+            for value in array {
+                if let found = shortcutActionEnum(in: value) { return found }
+            }
+        }
+        return nil
+    }
+
     func testSettingsPackageDefaultWhenClausesMatchRuntimeShortcutContexts() {
         for action in KeyboardShortcutSettings.Action.allCases {
             guard let settingsAction = ShortcutAction(rawValue: action.rawValue) else {
+                // Shortcut policy: every cmux-owned app-target Action must have a
+                // matching CmuxSettings.ShortcutAction so it is visible/editable in
+                // Settings and accepted by the amux.json schema. A missing package
+                // counterpart (as `amuxAttend` was) must fail here, not silently skip.
+                XCTFail(
+                    "App-target Action '\(action.rawValue)' has no CmuxSettings.ShortcutAction counterpart; "
+                        + "add the case to the package ShortcutAction enum (and amux.schema.json) so it is "
+                        + "Settings-visible and valid in ~/.config/amux/amux.json"
+                )
                 continue
             }
             XCTAssertEqual(
