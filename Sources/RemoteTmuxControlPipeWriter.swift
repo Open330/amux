@@ -49,6 +49,15 @@ final class RemoteTmuxControlPipeWriter {
         return true
     }
 
+    /// Whether `byteCount` bytes fit in the pending budget right now. A sync
+    /// pre-check so a caller can take a zero-latency synchronous ``enqueue``
+    /// fast path for the common case (normal typing) and fall back to the
+    /// async ``waitForCapacity`` pacing only when actually backpressured. Safe
+    /// as a check-then-enqueue because both run in the same main-actor turn.
+    func hasCapacity(_ byteCount: Int) -> Bool {
+        !closed && byteCount <= maxPendingBytes - pendingBytes
+    }
+
     /// Suspends until `byteCount` bytes fit in the pending budget (or returns
     /// immediately when they already do). Returns `false` once the writer is
     /// closed. Lets a bulk sender (chunked paste) pace itself to the pipe's

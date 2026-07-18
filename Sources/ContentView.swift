@@ -917,6 +917,11 @@ struct ContentView: View {
     @State private var commandPaletteWorkspaceDescriptionHeight: CGFloat = CommandPaletteMultilineTextEditorRepresentable.defaultMinimumHeight
     @State private var commandPaletteSelectedResultIndex: Int = 0
     @State private var commandPaletteSelectionAnchorCommandID: String?
+    // Tracks whether the user has moved the selection since the current palette
+    // session/query began. The amux session switcher uses this to follow the top
+    // attention item until the user takes over (see
+    // `commandPaletteSwitcherResolvedSelectionIndex`).
+    @State private var commandPaletteSelectionUserAdjusted: Bool = false
     @State private var commandPaletteScrollTargetIndex: Int?
     @State private var commandPaletteScrollTargetAnchor: UnitPoint?
     @State private var commandPaletteRestoreFocusTarget: CommandPaletteRestoreFocusTarget?
@@ -3528,6 +3533,7 @@ struct ContentView: View {
         .onChange(of: commandPaletteQuery) { oldValue, newValue in
             commandPaletteSelectedResultIndex = 0
             commandPaletteSelectionAnchorCommandID = nil
+            commandPaletteSelectionUserAdjusted = false
             commandPaletteScrollTargetIndex = nil
             commandPaletteScrollTargetAnchor = nil
             if !commandPaletteAmuxSessionSwitcherActive,
@@ -3553,7 +3559,11 @@ struct ContentView: View {
                 await Task.yield()
                 scheduleCommandPaletteResultsRefresh(
                     query: commandPaletteQuery,
-                    forceSearchCorpusRefresh: true
+                    forceSearchCorpusRefresh: true,
+                    // Keep a queued Enter alive across the switcher's progressive
+                    // reloads so it opens the first resolved session (F5). Other
+                    // palette modes keep clearing it on refresh.
+                    preservePendingActivation: commandPaletteAmuxSessionSwitcherActive
                 )
                 updateCommandPaletteScrollTarget(resultCount: commandPaletteVisibleResults.count, animated: false)
                 syncCommandPaletteDebugStateForObservedWindow()
@@ -3561,11 +3571,19 @@ struct ContentView: View {
         }
         .onChange(of: commandPaletteResultsRevision) { _ in
             let resultIDs = cachedCommandPaletteResults.map(\.id)
-            commandPaletteSelectedResultIndex = Self.commandPaletteResolvedSelectionIndex(
-                preferredCommandID: commandPaletteSelectionAnchorCommandID,
-                fallbackSelectedIndex: commandPaletteSelectedResultIndex,
-                resultIDs: resultIDs
-            )
+            if commandPaletteAmuxSessionSwitcherActive {
+                commandPaletteSelectedResultIndex = Self.commandPaletteSwitcherResolvedSelectionIndex(
+                    userAdjustedSelection: commandPaletteSelectionUserAdjusted,
+                    preferredCommandID: commandPaletteSelectionAnchorCommandID,
+                    resultIDs: resultIDs
+                )
+            } else {
+                commandPaletteSelectedResultIndex = Self.commandPaletteResolvedSelectionIndex(
+                    preferredCommandID: commandPaletteSelectionAnchorCommandID,
+                    fallbackSelectedIndex: commandPaletteSelectedResultIndex,
+                    resultIDs: resultIDs
+                )
+            }
             syncCommandPaletteSelectionAnchorFromCurrentResults()
             let visibleResultCount = commandPaletteVisibleResults.count
             updateCommandPaletteScrollTarget(resultCount: visibleResultCount, animated: false)
@@ -8692,6 +8710,44 @@ struct ContentView: View {
         return min(max(fallbackSelectedIndex, 0), resultIDs.count - 1)
     }
 
+    /// Selection resolution for the amux session switcher as its rows re-sort.
+    ///
+    /// - Before the user has moved the selection, follow the top attention item
+    ///   (index 0) so a late higher-priority session (e.g. one that transitions
+    ///   to `waitingInput` and re-sorts to the top) becomes the default Enter
+    ///   target, instead of anchoring to whichever row happened to load first
+    ///   (F3).
+    /// - After the user takes over, keep the selection on the anchored session.
+    ///   If that session vanished (closed or re-sorted out), reset to the top
+    ///   rather than falling back to a raw positional index — which would
+    ///   silently select, and on Enter open, an unrelated neighbor (F4).
+    static func commandPaletteSwitcherResolvedSelectionIndex(
+        userAdjustedSelection: Bool,
+        preferredCommandID: String?,
+        resultIDs: [String]
+    ) -> Int {
+        guard !resultIDs.isEmpty else { return 0 }
+        guard userAdjustedSelection else { return 0 }
+        guard let preferredCommandID,
+              let anchoredIndex = resultIDs.firstIndex(of: preferredCommandID) else {
+            return 0
+        }
+        return anchoredIndex
+    }
+
+    /// Whether an Enter on the amux session switcher should be queued rather than
+    /// run immediately. While the switcher is still loading remote sessions and
+    /// no result has resolved yet, queuing lets the first resolved session open
+    /// deterministically once loading settles instead of dropping the keystroke
+    /// (F5).
+    static func commandPaletteSwitcherShouldQueueActivationWhileLoading(
+        switcherActive: Bool,
+        switcherLoading: Bool,
+        hasResolvedResults: Bool
+    ) -> Bool {
+        switcherActive && switcherLoading && !hasResolvedResults
+    }
+
     static func commandPaletteSelectionAnchorCommandID(
         selectedIndex: Int,
         resultIDs: [String]
@@ -8827,6 +8883,7 @@ struct ContentView: View {
         }
         let current = commandPaletteSelectedIndex(resultCount: count)
         commandPaletteSelectedResultIndex = min(max(current + delta, 0), count - 1)
+        commandPaletteSelectionUserAdjusted = true
         if commandPaletteHasCurrentResolvedResults {
             syncCommandPaletteSelectionAnchorFromCurrentResults()
         } else {
@@ -8940,6 +8997,26 @@ struct ContentView: View {
     }
 
     private func runSelectedCommandPaletteResult() {
+        // The amux session switcher loads remote sessions asynchronously. If the
+        // user presses Enter before any session resolves, queue the activation so
+        // the first resolved session opens once loading settles instead of being
+        // dropped with only a beep (F5). The queue survives the switcher's
+        // progressive reloads because its fingerprint refresh preserves pending
+        // activation while the switcher is active.
+        if isCommandPalettePresented,
+           Self.commandPaletteSwitcherShouldQueueActivationWhileLoading(
+               switcherActive: commandPaletteAmuxSessionSwitcherActive,
+               switcherLoading: commandPaletteAmuxSessionSwitcher.isLoading,
+               hasResolvedResults: !cachedCommandPaletteResults.isEmpty
+           ) {
+            commandPalettePendingActivation = .selected(
+                requestID: commandPaletteSearchRequestID,
+                fallbackSelectedIndex: commandPaletteSelectedResultIndex,
+                preferredCommandID: commandPaletteSelectionAnchorCommandID
+            )
+            return
+        }
+
         guard commandPaletteHasCurrentResolvedResults else {
             if isCommandPalettePresented {
                 commandPalettePendingActivation = .selected(
@@ -9034,7 +9111,25 @@ struct ContentView: View {
         handleCommandPaletteListRequest(scope: .switcher)
     }
 
+    static func amuxSessionSwitcherShouldToggleClose(
+        isPresented: Bool,
+        isAmuxSessionSwitcherActive: Bool
+    ) -> Bool {
+        isPresented && isAmuxSessionSwitcherActive
+    }
+
     private func beginAmuxSessionSwitcher() {
+        // A second Cmd+K toggles the switcher closed instead of wiping the
+        // in-flight query/selection and restarting a full reload, mirroring how
+        // Cmd+P / Cmd+Shift+P toggle via `handleCommandPaletteListRequest`.
+        if Self.amuxSessionSwitcherShouldToggleClose(
+            isPresented: isCommandPalettePresented,
+            isAmuxSessionSwitcherActive: commandPaletteAmuxSessionSwitcherActive
+        ) {
+            dismissCommandPalette()
+            return
+        }
+
         commandPaletteAmuxSessionSwitcher.cancel()
 
         if isCommandPalettePresented {
@@ -9245,6 +9340,7 @@ struct ContentView: View {
         commandPaletteWorkspaceDescriptionHeight = CommandPaletteMultilineTextEditorRepresentable.defaultMinimumHeight
         commandPaletteSelectedResultIndex = 0
         commandPaletteSelectionAnchorCommandID = nil
+        commandPaletteSelectionUserAdjusted = false
         commandPaletteScrollTargetIndex = nil
         commandPaletteScrollTargetAnchor = nil
         commandPaletteShouldFocusWorkspaceDescriptionEditor = false
@@ -9292,6 +9388,7 @@ struct ContentView: View {
         commandPaletteWorkspaceDescriptionHeight = CommandPaletteMultilineTextEditorRepresentable.defaultMinimumHeight
         commandPaletteSelectedResultIndex = 0
         commandPaletteSelectionAnchorCommandID = nil
+        commandPaletteSelectionUserAdjusted = false
         commandPaletteScrollTargetIndex = nil
         commandPaletteScrollTargetAnchor = nil
         commandPaletteShouldFocusWorkspaceDescriptionEditor = false

@@ -61,4 +61,51 @@ final class AmuxChoiceParserTests: XCTestCase {
     func testEmptyOnPlainText() {
         XCTAssertTrue(AmuxChoiceParser.parse("no menu here\njust output\n").isEmpty)
     }
+
+    // D-F1: a boxed TUI menu's right border/padding must not bleed into labels.
+    func testStripsBoxRightBorderAndPaddingFromLabels() {
+        let text = """
+        ┌────────────────────────────┐
+        │ ❯ 1. Yes                    │
+        │   2. No                     │
+        └────────────────────────────┘
+        """
+        let choices = AmuxChoiceParser.parse(text)
+        XCTAssertEqual(choices.map(\.number), [1, 2])
+        XCTAssertEqual(choices.map(\.label), ["Yes", "No"])
+    }
+
+    // D-F2: a 0-numbered option (commonly Cancel/Quit/Back) must survive and be
+    // surfaced when the menu is a clean 0..n run.
+    func testIncludesZeroNumberedOption() {
+        let text = """
+        0. Cancel
+        1. Keep going
+        2. Undo
+        """
+        let choices = AmuxChoiceParser.parse(text)
+        XCTAssertEqual(choices.map(\.number), [0, 1, 2])
+        XCTAssertEqual(choices.first?.label, "Cancel")
+    }
+
+    // D-F3: the caret-highlighted option is recorded as the default so the
+    // sheet's default button matches what the TUI highlighted.
+    func testCaretHighlightedOptionIsDefault() {
+        let text = """
+        1. A
+        ❯ 2. B
+        """
+        let choices = AmuxChoiceParser.parse(text)
+        XCTAssertEqual(choices.map(\.number), [1, 2])
+        XCTAssertEqual(choices.filter(\.isDefault).map(\.number), [2])
+    }
+
+    func testNoCaretLeavesNoDefault() {
+        let text = """
+        1. A
+        2. B
+        """
+        let choices = AmuxChoiceParser.parse(text)
+        XCTAssertFalse(choices.contains(where: \.isDefault))
+    }
 }

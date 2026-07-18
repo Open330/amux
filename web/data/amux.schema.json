@@ -1406,6 +1406,7 @@
               "amuxSessionSwitcher",
               "commandPaletteNext",
               "commandPalettePrevious",
+              "amuxAttend",
               "sendFeedback",
               "showNotifications",
               "jumpToUnread",

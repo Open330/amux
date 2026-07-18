@@ -906,7 +906,25 @@ final class RemoteTmuxControlConnection {
         case .ended:
             return false
         case .connected:
-            return sendKeysRoutingTmuxPrefix(paneId: paneId, data: data)
+            let commands = tmuxKeyCommands(paneId: paneId, data: data)
+            guard !commands.isEmpty else { return true }
+            // Fast path for normal typing: when no paced work is queued and the
+            // writer has room, send synchronously in this main-actor turn — the
+            // keystroke pays ZERO async overhead (identical to the pre-pacing
+            // path), which keeps typing latency off the async scheduler. Fall
+            // back to the paced chain only when a paste is in flight
+            // (outboundFlushTask != nil, preserving order — B-F2) or the writer
+            // is backpressured (so the keystroke is paced, not dropped — B-F5).
+            if outboundFlushTask == nil, let writer = stdinWriter {
+                let byteCount = commands.reduce(0) { $0 + $1.command.utf8.count + 1 }
+                if writer.hasCapacity(byteCount) {
+                    for entry in commands {
+                        guard sendInternal(entry.command, kind: entry.kind) else { return false }
+                    }
+                    return true
+                }
+            }
+            return enqueueOutbound(commands, bounded: true)
         }
     }
 
@@ -924,23 +942,30 @@ final class RemoteTmuxControlConnection {
         let pending = pendingInputByPane
         pendingInputByPane.removeAll()
         for (paneId, data) in pending.sorted(by: { $0.key < $1.key }) {
-            _ = sendKeysRoutingTmuxPrefix(paneId: paneId, data: data)
+            _ = enqueueOutbound(tmuxKeyCommands(paneId: paneId, data: data), bounded: true)
         }
     }
 
-    private func sendKeysRoutingTmuxPrefix(paneId: Int, data: Data) -> Bool {
-        // Prefix interception follows the server's ACTUAL prefix (queried via
-        // `show-options -gv prefix` on attach). `nil` means the prefix is unbound
-        // or a key this byte-level router can't represent — deliver everything
-        // literally rather than stealing bytes the user meant for the app.
+    /// Builds the ordered control commands that deliver `data` (typed keys) to
+    /// `%paneId`, mutating the prefix-wait and detach-intent state synchronously.
+    /// The command COMPUTATION stays on the main actor (so the stateful prefix
+    /// interception happens in call order), but the WRITES are paced separately
+    /// through the shared outbound chain (``enqueueOutbound(_:bounded:)``): a
+    /// stalled stdin pipe DEFERS input on an off-main-actor await instead of
+    /// dropping a keystroke and forcing a reconnect (the prior `sendInternal`
+    /// reject-on-full behavior). Prefix interception follows the server's ACTUAL
+    /// prefix (`show-options -gv prefix`); a `nil` prefix byte (unbound, or a key
+    /// this byte-level router can't represent) delivers everything literally
+    /// rather than stealing bytes the user meant for the app.
+    private func tmuxKeyCommands(paneId: Int, data: Data) -> [(command: String, kind: CommandKind)] {
         guard let prefixByte = tmuxPrefixByte else {
-            return sendLiteralKeys(paneId: paneId, data: data[data.startIndex...])
+            return literalKeyCommands(paneId: paneId, data: data[data.startIndex...])
         }
+        var commands: [(command: String, kind: CommandKind)] = []
         var index = data.startIndex
-        var ok = true
 
         if panesWaitingForTmuxPrefixKey.contains(paneId) {
-            ok = sendTmuxPrefixChordOrLiteral(paneId: paneId, data: data, index: &index) && ok
+            appendPrefixChordOrLiteral(paneId: paneId, data: data, index: &index, into: &commands)
         }
 
         while index < data.endIndex {
@@ -949,33 +974,36 @@ final class RemoteTmuxControlConnection {
                 repeat {
                     index = data.index(after: index)
                 } while index < data.endIndex && data[index] != prefixByte
-                ok = sendLiteralKeys(paneId: paneId, data: data[start..<index]) && ok
+                commands.append(contentsOf: literalKeyCommands(paneId: paneId, data: data[start..<index]))
                 continue
             }
 
             let next = data.index(after: index)
             if next == data.endIndex {
                 panesWaitingForTmuxPrefixKey.insert(paneId)
-                return ok
+                return commands
             }
             index = next
-            ok = sendTmuxPrefixChordOrLiteral(paneId: paneId, data: data, index: &index) && ok
+            appendPrefixChordOrLiteral(paneId: paneId, data: data, index: &index, into: &commands)
         }
 
-        return ok
+        return commands
     }
 
-    private func sendTmuxPrefixChordOrLiteral(paneId: Int, data: Data, index: inout Data.Index) -> Bool {
+    private func appendPrefixChordOrLiteral(
+        paneId: Int, data: Data, index: inout Data.Index,
+        into commands: inout [(command: String, kind: CommandKind)]
+    ) {
         panesWaitingForTmuxPrefixKey.remove(paneId)
         guard let key = Self.tmuxClientKeyToken(in: data, at: index) else {
             var literal = Data([tmuxPrefixByte ?? Self.defaultTmuxPrefixByte])
             literal.append(data[index..<data.endIndex])
             index = data.endIndex
-            return sendLiteralKeys(paneId: paneId, data: literal)
+            commands.append(contentsOf: literalKeyCommands(paneId: paneId, data: literal[literal.startIndex...]))
+            return
         }
-
         index = key.nextIndex
-        return sendTmuxClientPrefixKey(paneId: paneId, key: key.key)
+        commands.append(contentsOf: prefixChordCommands(paneId: paneId, key: key.key))
     }
 
     /// Max literal bytes per `send-keys -H` command line. Hex encoding triples
@@ -984,37 +1012,36 @@ final class RemoteTmuxControlConnection {
     /// instead of building one oversized line against the writer budget.
     private static let maxLiteralKeyBytesPerCommand = 2048
 
-    private func sendLiteralKeys(paneId: Int, data: Data.SubSequence) -> Bool {
-        guard !data.isEmpty else { return true }
-        var ok = true
+    private func literalKeyCommands(paneId: Int, data: Data.SubSequence) -> [(command: String, kind: CommandKind)] {
+        guard !data.isEmpty else { return [] }
+        var commands: [(command: String, kind: CommandKind)] = []
         var start = data.startIndex
         while start < data.endIndex {
             let end = data.index(start, offsetBy: Self.maxLiteralKeyBytesPerCommand, limitedBy: data.endIndex)
                 ?? data.endIndex
             let hex = Self.hexByteArguments(data[start..<end])
-            ok = sendInternal("send-keys -t %\(paneId) -H \(hex)", kind: .other) && ok
+            commands.append((command: "send-keys -t %\(paneId) -H \(hex)", kind: .other))
             start = end
         }
-        return ok
+        return commands
     }
 
-    @discardableResult
-    private func sendTmuxClientPrefixKey(paneId: Int, key: String) -> Bool {
-        let activePaneId = windowId(containingPane: paneId).flatMap { activePaneByWindow[$0] }
+    /// The commands for one tmux prefix chord (`prefix` + `key`) targeted at
+    /// `%paneId`, recording the `prefix+d` detach intent synchronously so the
+    /// deferred send carries the right result kind.
+    private func prefixChordCommands(paneId: Int, key: String) -> [(command: String, kind: CommandKind)] {
+        let windowId = windowId(containingPane: paneId)
+        let activePaneId = windowId.flatMap { activePaneByWindow[$0] }
         let isClientDetach = key == "d"
         if isClientDetach { clientDetachRequested = true }
-        for command in Self.tmuxClientPrefixCommands(
+        let kind: CommandKind = isClientDetach ? .clientDetach : .other
+        return Self.tmuxClientPrefixCommands(
             paneId: paneId,
             key: key,
             activePaneId: activePaneId,
+            windowId: windowId,
             prefixKeyName: tmuxPrefixKeyName ?? "C-b"
-        ) {
-            guard sendInternal(command, kind: isClientDetach ? .clientDetach : .other) else {
-                if isClientDetach { clientDetachRequested = false }
-                return false
-            }
-        }
-        return true
+        ).map { (command: $0, kind: kind) }
     }
 
     nonisolated static let defaultTmuxPrefixByte: UInt8 = 0x02
@@ -1051,6 +1078,7 @@ final class RemoteTmuxControlConnection {
         paneId: Int,
         key: String,
         activePaneId: Int?,
+        windowId: Int? = nil,
         prefixKeyName: String = "C-b"
     ) -> [String] {
         // `tmux -CC` reports prefix+d as a reason-less `%exit`. Issue the
@@ -1058,6 +1086,17 @@ final class RemoteTmuxControlConnection {
         // explicit detach and remove the mirror workspace.
         if key == "d" { return ["detach-client"] }
         var commands: [String] = []
+        // `send-keys -K` is looked up in the CONTROL CLIENT's key table against
+        // the client's CURRENT window — verified against the tmux manual: with
+        // `-K` the keys go to the target client, NOT the `-t` pane. With several
+        // windows on one connection the client's current window may be a
+        // different tab, so a bare `select-pane` (which only changes the active
+        // pane WITHIN a window) would let the chord act on the wrong window's
+        // active pane. Make the pane's window the client's current window first,
+        // so a prefix binding acts on the focused tab's pane.
+        if let windowId {
+            commands.append("select-window -t @\(windowId)")
+        }
         if activePaneId != paneId {
             commands.append("select-pane -t %\(paneId)")
         }
@@ -1154,37 +1193,141 @@ final class RemoteTmuxControlConnection {
     /// so a large paste can't trip the bounded-writer rejection that the
     /// connection treats as a transport failure (which used to drop the paste AND
     /// force a reconnect). Uses a dedicated, immediately-deleted (`-d`) per-pane
-    /// buffer so there's no buffer-name collision; concurrent pastes serialize on
-    /// ``pasteFlushTask``.
+    /// buffer so there's no buffer-name collision; chunks (and any typed keys)
+    /// serialize on the shared ``outboundFlushTask`` so they reach tmux in order.
+    /// While the transport is down the whole paste is held and replayed as one
+    /// bracketed unit on reconnect (never line-by-line CRs); see the body.
     @discardableResult
     func pastePane(paneId: Int, text: String, pressEnterAfter: Bool = false) -> Bool {
-        guard connectionState == .connected else { return false }
-        guard var commands = Self.pastePaneCommands(paneId: paneId, text: text) else { return false }
-        // Enter must be queued INSIDE the serialized flush, after the
-        // paste-buffer command — a caller-side send-keys would race ahead of
-        // the (async, capacity-paced) chunk delivery and submit before the
-        // pasted text exists.
-        if pressEnterAfter {
-            commands.append("send-keys -t %\(paneId) -H 0d")
+        switch connectionState {
+        case .ended, .connecting:
+            // `.ended` will never accept it; a fresh `.connecting` stream has no
+            // established session/pane to buffer into. Reject (the initial-connect
+            // window is brief and not the transient-drop case B-F3 fixes).
+            return false
+        case .reconnecting:
+            // A session that WAS connected and dropped transiently: hold the WHOLE
+            // paste as ONE pending bracketed unit and flush it intact on reconnect.
+            // The caller must NOT fall back to a local, line-oriented paste (which
+            // replays a multi-line shell snippet line by line), so report success
+            // even when the paste is too large to hold — then it is dropped cleanly
+            // rather than run line by line.
+            return bufferPendingPaste(paneId: paneId, text: text, pressEnterAfter: pressEnterAfter)
+        case .connected:
+            guard var commands = Self.pastePaneCommands(paneId: paneId, text: text) else { return false }
+            // Enter must be queued INSIDE the serialized flush, after the
+            // paste-buffer command — a caller-side send-keys would race ahead of
+            // the (async, capacity-paced) chunk delivery and submit before the
+            // pasted text exists.
+            if pressEnterAfter {
+                commands.append("send-keys -t %\(paneId) -H 0d")
+            }
+            return enqueueOutbound(commands.map { (command: $0, kind: .other) }, bounded: false)
         }
-        let previous = pasteFlushTask
-        pasteFlushTask = Task { @MainActor [weak self] in
+    }
+
+    /// Serial async chain that paces BOTH typed keystrokes and chunked paste
+    /// through the stdin writer's capacity. Sharing ONE chain guarantees typed
+    /// sends and paste chunks reach tmux in strict enqueue order — a keystroke can
+    /// never overtake a multi-chunk bracketed paste — and pacing each line via
+    /// ``RemoteTmuxControlPipeWriter/waitForCapacity(_:)`` means a full stdin
+    /// budget DEFERS bytes on this await instead of dropping them and reconnecting.
+    private var outboundFlushTask: Task<Void, Never>?
+    /// Monotonic id of the current outbound-chain tail. A completing chain task
+    /// clears ``outboundFlushTask`` only when it is STILL the tail (its id still
+    /// matches), which re-enables the synchronous typing fast path once the
+    /// queue drains — without a stale task clobbering a newer one that was
+    /// enqueued during its `await`.
+    private var outboundGeneration: UInt64 = 0
+    /// Outstanding bytes queued on ``outboundFlushTask`` that count against the
+    /// typed-input cap (paste is user-finite and excluded). Bounds memory when
+    /// typed input (key auto-repeat, automation) outruns the pipe's drain rate.
+    private var pendingTypedOutboundBytes = 0
+    private static let maxPendingTypedOutboundBytes = 256 * 1024
+
+    /// Appends `commands` to the serial outbound chain, pacing each line to the
+    /// stdin writer's capacity. `bounded` charges the bytes against the typed-input
+    /// cap and rejects (returns `false`) if that would overflow, so a runaway typed
+    /// flood can't grow memory without limit; paste passes `false` (finite,
+    /// user-initiated). Returns `false` when the connection isn't live, or when the
+    /// bounded cap is hit. Ordering + FIFO correlation are preserved because each
+    /// command's ``sendInternal`` (which records its pending-command slot then
+    /// enqueues, atomically on the main actor) still runs in append order.
+    @discardableResult
+    private func enqueueOutbound(
+        _ commands: [(command: String, kind: CommandKind)],
+        bounded: Bool
+    ) -> Bool {
+        guard connectionState == .connected, stdinWriter != nil else { return false }
+        let payload = commands.filter { !$0.command.isEmpty }
+        guard !payload.isEmpty else { return true }
+        let byteCount = payload.reduce(0) { $0 + $1.command.utf8.count + 1 }
+        if bounded {
+            guard pendingTypedOutboundBytes + byteCount <= Self.maxPendingTypedOutboundBytes else { return false }
+            pendingTypedOutboundBytes += byteCount
+        }
+        let previous = outboundFlushTask
+        outboundGeneration &+= 1
+        let generation = outboundGeneration
+        outboundFlushTask = Task { @MainActor [weak self] in
             await previous?.value
-            for command in commands {
-                guard !Task.isCancelled,
-                      let self, self.connectionState == .connected,
+            guard let self else { return }
+            defer {
+                if bounded {
+                    self.pendingTypedOutboundBytes = max(0, self.pendingTypedOutboundBytes - byteCount)
+                }
+                // Re-enable the sync fast path once the chain drains: clear the
+                // tail only if no newer send superseded us during our await. Our
+                // last sendInternal has already enqueued to the serial writer, so
+                // a following fast-path send still lands after it on the wire.
+                if self.outboundGeneration == generation {
+                    self.outboundFlushTask = nil
+                }
+            }
+            for entry in payload {
+                guard !Task.isCancelled, self.connectionState == .connected,
                       let writer = self.stdinWriter else { return }
-                guard await writer.waitForCapacity(command.utf8.count + 1) else { return }
+                guard await writer.waitForCapacity(entry.command.utf8.count + 1) else { return }
                 guard !Task.isCancelled, self.connectionState == .connected else { return }
-                guard self.sendInternal(command, kind: .other) else { return }
+                guard self.sendInternal(entry.command, kind: entry.kind) else { return }
             }
         }
         return true
     }
 
-    /// Serializes chunked pastes so two overlapping pastes to the same pane can't
-    /// interleave their `set-buffer` chunks.
-    private var pasteFlushTask: Task<Void, Never>?
+    /// Paste text held while the transport is down, flushed as intact bracketed
+    /// units on reconnect (see ``pastePane(paneId:text:pressEnterAfter:)``).
+    /// Bounded by ``pendingPasteBytes`` so a blip can't accumulate unbounded memory.
+    private var pendingPasteByPane: [Int: [(text: String, pressEnterAfter: Bool)]] = [:]
+    private var pendingPasteBytes = 0
+    private static let maxPendingPasteBytes = 256 * 1024
+
+    private func bufferPendingPaste(paneId: Int, text: String, pressEnterAfter: Bool) -> Bool {
+        guard !text.isEmpty else { return false }
+        let cost = text.utf8.count
+        // Too large to hold: reject cleanly (still report success) so the caller
+        // doesn't paste it locally line by line; dropping a single oversized paste
+        // typed during a transient blip is acceptable.
+        guard pendingPasteBytes + cost <= Self.maxPendingPasteBytes else { return true }
+        pendingPasteBytes += cost
+        pendingPasteByPane[paneId, default: []].append((text: text, pressEnterAfter: pressEnterAfter))
+        return true
+    }
+
+    /// Replays paste buffered during a transport outage as intact bracketed units
+    /// once the stream is back in control mode (called from the `.enter` handler
+    /// after `flushPendingInput`, so typed keys from the same blip land first).
+    private func flushPendingPaste() {
+        guard !pendingPasteByPane.isEmpty else { return }
+        let pending = pendingPasteByPane
+        pendingPasteByPane.removeAll()
+        pendingPasteBytes = 0
+        for (paneId, pastes) in pending.sorted(by: { $0.key < $1.key }) {
+            for paste in pastes {
+                _ = pastePane(paneId: paneId, text: paste.text, pressEnterAfter: paste.pressEnterAfter)
+            }
+        }
+    }
 
     /// Max escaped bytes per `set-buffer` chunk. Keeps each control-stream line
     /// comfortably bounded; worst-case escape expansion is 4× (every byte `\ooo`).
@@ -1284,9 +1427,17 @@ final class RemoteTmuxControlConnection {
         clientSizeDebounceTask = nil
         attachRedrawKickTask?.cancel()
         attachRedrawKickTask = nil
-        pasteFlushTask?.cancel()
-        pasteFlushTask = nil
+        outboundFlushTask?.cancel()
+        outboundFlushTask = nil
+        pendingTypedOutboundBytes = 0
         pendingInputByPane.removeAll()
+        pendingPasteByPane.removeAll()
+        pendingPasteBytes = 0
+        // Drop any dangling prefix-wait so a half-typed `prefix` can't consume the
+        // next unrelated key/socket send after teardown. (`clientDetachRequested`
+        // is intentionally left alone: the `%exit` path reads it right after this
+        // to classify a `prefix+d` detach.)
+        panesWaitingForTmuxPrefixKey.removeAll()
         pendingAttachRedrawKick = false
         pendingPostAttachAction = nil
     }
@@ -1406,6 +1557,15 @@ final class RemoteTmuxControlConnection {
         // The stream is dead: a close decision awaiting an activity query must
         // not hang for the whole backoff window — fail it onto the cache now.
         failPendingActivityQueries()
+        // Abandon in-flight paced sends and dangling key state: the pipe is gone,
+        // so a half-typed `prefix` or an unsent `prefix+d` detach intent must not
+        // leak into the resumed session (typed/paste from the outage are held in
+        // pendingInputByPane / pendingPasteByPane and replayed on `%enter`).
+        outboundFlushTask?.cancel()
+        outboundFlushTask = nil
+        pendingTypedOutboundBytes = 0
+        panesWaitingForTmuxPrefixKey.removeAll()
+        clientDetachRequested = false
         teardownProcessHandles()
         reconnectAttemptCount = 0
         connectionState = .reconnecting
@@ -1504,8 +1664,12 @@ final class RemoteTmuxControlConnection {
                 // Input typed during the outage, though, replays immediately: its
                 // replies correlate positionally like any queued command, and the
                 // sooner it reaches the pty the closer we match a real ssh
-                // session's behavior across a blip.
+                // session's behavior across a blip. Paste held during the outage
+                // flushes AFTER typed input so a type-then-paste from the same blip
+                // keeps its order, and replays as ONE bracketed unit (never the
+                // line-by-line CR replay that would run a shell snippet line by line).
                 flushPendingInput()
+                flushPendingPaste()
             }
         case let .exit(reason):
             record("exit\(reason.map { " " + $0 } ?? "")")

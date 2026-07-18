@@ -12911,6 +12911,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
 
         let paletteSelectionDelta = commandPaletteSelectionDeltaForKeyboardNavigation(flags: event.modifierFlags, chars: chars, keyCode: event.keyCode, nextShortcut: KeyboardShortcutSettings.shortcutIfBound(for: .commandPaletteNext), previousShortcut: KeyboardShortcutSettings.shortcutIfBound(for: .commandPalettePrevious))
 
+        // IME composition guard for the command palette / amux session-switcher
+        // search field. While the field editor is composing marked text (Korean,
+        // Japanese, Chinese, …), Up/Down and Ctrl-N/Ctrl-P belong to the input
+        // method's candidate list, not the palette's selection — do not consume
+        // them here, let them reach the field editor and IME. This mirrors the
+        // browser omnibar's `browserOmnibarShouldBypassShortcutRoutingForMarkedText`
+        // bypass and the palette's own field-level `hasMarkedText` guards
+        // (Escape and Return below). Command-modified selection bindings stay
+        // live because Command is never part of an IME input sequence.
+        if paletteSelectionDelta != nil,
+           !normalizedFlags.contains(.command),
+           let paletteWindow = commandPaletteShortcutWindow,
+           commandPaletteInteractiveInTargetWindow,
+           commandPaletteFieldEditorHasMarkedText(in: paletteWindow) {
+#if DEBUG
+            cmuxDebugLog(
+                "shortcut.palette.selectionNav imeMarkedTextBypass consumed=0 " +
+                "target={\(debugWindowToken(paletteWindow))}"
+            )
+#endif
+            return false
+        }
+
         if shouldRouteCommandPaletteSelectionNavigation(
             delta: paletteSelectionDelta,
             isInteractive: commandPaletteInteractiveInTargetWindow,
@@ -13006,7 +13029,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 return true
             }
 
-            if matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher) {
+            if !hasFocusedAddressBarInShortcutContext,
+               matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher) {
                 let targetWindow = commandPaletteTargetWindow ?? event.window ?? shortcutRoutingActiveWindow
                 requestAmuxSessionSwitcher(preferredWindow: targetWindow, source: "shortcut.amuxSessionSwitcher")
                 return true
@@ -13241,7 +13265,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             return true
         }
 
-        if matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher) {
+        // A focused browser page owns Cmd+K (Slack / Linear / Notion / GitHub
+        // in-page command palettes). Yield to web content so the page receives
+        // it, consistent with the copy/cut/select-all and inline-VSCode command
+        // palette web-content-first yields above. Gated to the web view actually
+        // owning first responder, so the switcher still opens from terminal or
+        // chrome focus.
+        if matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher),
+           shortcutEventFirstResponderOwnsBrowserWebView(event) {
+            return false
+        }
+
+        // A focused browser address bar / omnibox owns Cmd+K; yield to it just
+        // like the sibling Go to Workspace (Cmd+P) routing below.
+        if !hasFocusedAddressBarInShortcutContext,
+           matchConfiguredShortcut(event: event, action: .amuxSessionSwitcher) {
             let targetWindow = commandPaletteTargetWindow ?? event.window ?? shortcutRoutingActiveWindow
             requestAmuxSessionSwitcher(preferredWindow: targetWindow, source: "shortcut.amuxSessionSwitcher")
             return true

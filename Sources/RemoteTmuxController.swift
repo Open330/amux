@@ -1197,7 +1197,13 @@ final class RemoteTmuxController {
     private func pasteTarget(forSurfaceId surfaceId: UUID)
         -> (connection: RemoteTmuxControlConnection, paneId: Int)?
     {
-        for sessionMirror in sessionMirrors.values where sessionMirror.connection.connectionState == .connected {
+        // Match on `!exited` (not just `.connected`): while the connection is
+        // reconnecting, `pastePane` buffers the paste as one bracketed unit and
+        // replays it on `%enter`. Requiring `.connected` here would return nil, the
+        // caller would fall back to Ghostty's local paste, and a multi-line snippet
+        // would replay line by line on reconnect (B-F3). A genuinely ended
+        // connection still returns nil (nothing to buffer into).
+        for sessionMirror in sessionMirrors.values where !sessionMirror.connection.exited {
             if let paneId = sessionMirror.paneId(forSurfaceId: surfaceId) {
                 return (sessionMirror.connection, paneId)
             }

@@ -196,6 +196,62 @@ import Testing
         )
     }
 
+    @Test func tmuxPrefixCommandsTargetPaneWindowBeforeChord() {
+        // `send-keys -K` is processed against the CONTROL CLIENT's current window
+        // (not the -t pane), so with several windows on one connection the chord
+        // must first make the pane's window current, then select the pane, or the
+        // binding acts on the wrong tab's active pane.
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "%",
+                activePaneId: 8,
+                windowId: 3
+            ) == [
+                "select-window -t @3",
+                "select-pane -t %7",
+                "send-keys -K 'C-b' '%'",
+            ]
+        )
+        // Pane already active in its window → no redundant select-pane, but the
+        // window still becomes the client's current window first.
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "%",
+                activePaneId: 7,
+                windowId: 3
+            ) == [
+                "select-window -t @3",
+                "send-keys -K 'C-b' '%'",
+            ]
+        )
+        // prefix+d always detaches, ignoring any window target.
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 7,
+                key: "d",
+                activePaneId: 7,
+                windowId: 3
+            ) == ["detach-client"]
+        )
+        // A remapped prefix (C-a) is quoted into the -K chord and still targets
+        // the pane's window.
+        #expect(
+            RemoteTmuxControlConnection.tmuxClientPrefixCommands(
+                paneId: 4,
+                key: "\"",
+                activePaneId: nil,
+                windowId: 9,
+                prefixKeyName: "C-a"
+            ) == [
+                "select-window -t @9",
+                "select-pane -t %4",
+                "send-keys -K 'C-a' '\"'",
+            ]
+        )
+    }
+
     @Test func tmuxPrefixClientKeyTokenMapsCommonTmuxBindings() throws {
         let percent = Data([0x25])
         let quote = Data([0x22])

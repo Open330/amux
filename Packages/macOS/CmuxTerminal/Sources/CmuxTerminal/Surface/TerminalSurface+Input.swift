@@ -168,7 +168,18 @@ extension TerminalSurface {
             case .rawBytes(let data):
                 writeInputTextData(data, to: surface)
             case .terminalBytes(let data):
-                writeProcessOutputData(data, to: surface)
+                // A manual-I/O surface (remote tmux mirror) has no local program to
+                // apply a control sequence to — its screen is owned by tmux
+                // `%output`. Painting the sequence locally only desyncs that
+                // mirrored screen and the remote app never sees it, so forward it as
+                // input (→ the surface's write callback → tmux) like every other
+                // byte, matching `amux.pane_send`. A real-PTY surface keeps applying
+                // the sequence to its own terminal state.
+                if manualIO {
+                    writeInputTextData(data, to: surface)
+                } else {
+                    writeProcessOutputData(data, to: surface)
+                }
             case .key(let event):
                 sendKeyEvent(surface: surface, keycode: event.keycode, mods: event.mods)
             }
@@ -182,7 +193,11 @@ extension TerminalSurface {
             case .rawBytes(let data):
                 return data.isEmpty ? nil : .inputText(data)
             case .terminalBytes(let data):
-                return data.isEmpty ? nil : .processOutput(data)
+                // Mirror the live routing above: a manual-I/O (remote tmux mirror)
+                // surface forwards control sequences to the pane as input rather
+                // than painting them onto the tmux-owned local screen.
+                guard !data.isEmpty else { return nil }
+                return manualIO ? .inputText(data) : .processOutput(data)
             case .key(let event):
                 return .key(event)
             }
