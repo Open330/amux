@@ -53,6 +53,23 @@ import Testing
         #expect(!invocation.arguments.contains("-f"))
     }
 
+    /// The `script(1)`-wrapped control surface must resolve tmux to the SAME
+    /// executable token the one-shot command surface uses
+    /// (``RemoteTmuxHost/localTmuxCommand(arguments:)``), so discovery and attach
+    /// can never disagree about which tmux they run on a PATH-only machine. The
+    /// expected token is derived from the shared resolver, so this holds whether
+    /// tmux resolves to an absolute path (bundled/Homebrew) or `/usr/bin/env`
+    /// (bare PATH lookup).
+    @Test(arguments: [RemoteTmuxHost.localDefault(), RemoteTmuxHost.amuxLocal()])
+    func localControlInvocationResolvesTmuxViaSharedResolver(host: RemoteTmuxHost) {
+        let invocation = host.controlProcessInvocation(sessionName: "work", createIfMissing: false)
+        let resolvedExecutable = RemoteTmuxHost.localTmuxCommand(arguments: []).executablePath
+        #expect(invocation.executablePath == "/usr/bin/script")
+        // `script` runs `-q /dev/null <tmux executable> …`; element 2 is the tmux
+        // executable token the shared resolver picked.
+        #expect(Array(invocation.arguments.prefix(3)) == ["-q", "/dev/null", resolvedExecutable])
+    }
+
     @Test func socketParamsAddressLocalDefaultSeparatelyFromAmuxLocal() {
         #expect(TerminalController.remoteTmuxHost(from: ["local_default": true])?.kind == .localDefault)
         #expect(TerminalController.remoteTmuxHost(from: ["local": true])?.kind == .localAmux)

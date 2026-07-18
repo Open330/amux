@@ -27,6 +27,18 @@ public struct MuxaHello: Sendable, Equatable, Codable {
         capabilities.contains(capability)
     }
 
+    /// Only `protocol` (the negotiated version) is required; a future daemon
+    /// that drops or renames `min_protocol`/`max_protocol`/`capabilities`
+    /// still handshakes, matching the forward-compatibility contract.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let negotiated = try container.decode(Int.self, forKey: .negotiatedProtocol)
+        self.negotiatedProtocol = negotiated
+        self.minProtocol = try container.decodeIfPresent(Int.self, forKey: .minProtocol) ?? negotiated
+        self.maxProtocol = try container.decodeIfPresent(Int.self, forKey: .maxProtocol) ?? negotiated
+        self.capabilities = try container.decodeIfPresent(Set<String>.self, forKey: .capabilities) ?? []
+    }
+
     public init(negotiatedProtocol: Int, minProtocol: Int, maxProtocol: Int, capabilities: Set<String>) {
         self.negotiatedProtocol = negotiatedProtocol
         self.minProtocol = minProtocol

@@ -44,8 +44,12 @@ actor AmuxRemoteHostSetup {
             "else printf 'MUXA_VERSION=\\n'; fi; " +
             "SOCK=\"${XDG_RUNTIME_DIR:-}/muxa.sock\"; [ -S \"$SOCK\" ] || SOCK=\"/tmp/muxa-$(id -u).sock\"; " +
             "if [ -S \"$SOCK\" ]; then printf 'MUXAD=running\\n'; else printf 'MUXAD=absent\\n'; fi; " +
-            "if grep -qs muxa \"$HOME/.claude/settings.json\"; then printf 'HOOKS_CLAUDE=wired\\n'; else printf 'HOOKS_CLAUDE=absent\\n'; fi; " +
-            "if grep -qs muxa \"$HOME/.codex/config.toml\"; then printf 'HOOKS_CODEX=wired\\n'; else printf 'HOOKS_CODEX=absent\\n'; fi; " +
+            // Match the concrete hook command muxa installs (`muxa hook <agent>`),
+            // not the bare product name: a stray path like the codex config's
+            // `[projects.\"…/muxa\"]` section header, or a comment mentioning muxa,
+            // must not be misread as "hooks wired".
+            "if grep -qsF 'muxa hook claude' \"$HOME/.claude/settings.json\"; then printf 'HOOKS_CLAUDE=wired\\n'; else printf 'HOOKS_CLAUDE=absent\\n'; fi; " +
+            "if grep -qsF 'muxa hook codex' \"$HOME/.codex/config.toml\"; then printf 'HOOKS_CODEX=wired\\n'; else printf 'HOOKS_CODEX=absent\\n'; fi; " +
             "awk '/^\\[notifier\\]/{f=1;next} /^\\[/{f=0} f && /^[ \\t]*enabled[ \\t]*=[ \\t]*true/{print \"NOTIFIER=enabled\"; exit}' " +
             "\"${XDG_CONFIG_HOME:-$HOME/.config}/muxa/config.toml\" 2>/dev/null; true"
         return ["/bin/sh", "-c", script]

@@ -407,23 +407,28 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
                 createIfMissing: createIfMissing
             ))
         case .localDefault:
-            var args = ["-q", "/dev/null", Self.localTmuxExecutablePath(), "-u", "-CC"]
-            args.append(contentsOf: createIfMissing
+            let sessionArgs = createIfMissing
                 ? ["new-session", "-A", "-s", sessionName]
-                : ["attach-session", "-t", sessionName])
-            return ("/usr/bin/script", args)
+                : ["attach-session", "-t", sessionName]
+            // Resolve tmux through the SAME resolver the one-shot command
+            // surface uses (``localTmuxCommand(arguments:)``) so discovery and
+            // attach can never disagree about which tmux runs on a PATH-only
+            // machine (a bare `tmux` is routed through `/usr/bin/env`).
+            let tmux = Self.localTmuxCommand(arguments: ["-u", "-CC"] + sessionArgs)
+            return ("/usr/bin/script", ["-q", "/dev/null", tmux.executablePath] + tmux.arguments)
         case .localAmux:
-            var args = ["-q", "/dev/null", Self.localTmuxExecutablePath()]
             // `-f /dev/null` isolates the amux server from the user's
             // ~/.tmux.conf — without it, plugins like tmux-resurrect restore
             // the user's entire session list onto the amux server on first
             // start (verified empirically). Phase 1 replaces this with a
             // managed amux.conf.
-            args.append(contentsOf: ["-f", "/dev/null", "-L", Self.amuxLocalSocketName, "-u", "-CC"])
-            args.append(contentsOf: createIfMissing
+            let sessionArgs = createIfMissing
                 ? ["new-session", "-A", "-s", sessionName]
-                : ["attach-session", "-t", sessionName])
-            return ("/usr/bin/script", args)
+                : ["attach-session", "-t", sessionName]
+            let tmux = Self.localTmuxCommand(
+                arguments: ["-f", "/dev/null", "-L", Self.amuxLocalSocketName, "-u", "-CC"] + sessionArgs
+            )
+            return ("/usr/bin/script", ["-q", "/dev/null", tmux.executablePath] + tmux.arguments)
         }
     }
 
@@ -447,6 +452,26 @@ struct RemoteTmuxHost: Sendable, Equatable, Identifiable {
             return candidate
         }
         return "tmux"
+    }
+
+    /// Resolves the local tmux binary into a directly-runnable
+    /// `(executablePath, arguments)` pair, routing a PATH-only (bare `tmux`)
+    /// resolution through `/usr/bin/env` so PATH lookup applies.
+    ///
+    /// Both the one-shot command surface (``RemoteTmuxLocalTransport``) and the
+    /// `script(1)`-wrapped control surface
+    /// (``controlProcessInvocation(sessionName:createIfMissing:)``) build their
+    /// tmux invocation from this single resolver, so discovery and attach can
+    /// never disagree about which tmux they run — previously the one-shot path
+    /// wrapped a bare tmux in `/usr/bin/env` while the control path passed the
+    /// bare name straight through, so a PATH-only tmux could resolve differently
+    /// (or fail to exec) between the two surfaces.
+    static func localTmuxCommand(arguments: [String]) -> (executablePath: String, arguments: [String]) {
+        let tmuxPath = localTmuxExecutablePath()
+        if tmuxPath.contains("/") {
+            return (tmuxPath, arguments)
+        }
+        return ("/usr/bin/env", [tmuxPath] + arguments)
     }
 
     /// The app-bundled muxad, when present (`Resources/bin/muxad`, staged by

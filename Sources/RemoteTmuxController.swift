@@ -231,6 +231,19 @@ final class RemoteTmuxController {
         sessionName: String,
         createIfMissing: Bool
     ) async throws -> [String]? {
+        // `sessionName` flows into `has-session -t`, `new-session -s`, and later
+        // `kill-session -t` as a tmux TARGET. tmux target syntax is
+        // `session:window.pane`, so a name containing `:` mis-targets — e.g.
+        // `has-session -t "a:b"` probes session `a` window `b`, and a spurious
+        // match would attach the wrong session. This is purely tmux target-syntax
+        // safety (argv is literal here, so there is no shell-injection surface);
+        // fail fast with a clear error instead of issuing a mis-targeted command.
+        guard !sessionName.contains(":") else {
+            throw RemoteTmuxError.commandFailed(
+                exitCode: -1,
+                stderr: "invalid tmux session name (':' is reserved for session:window addressing): \(sessionName)"
+            )
+        }
         let transport = transport(for: host)
 
         do {

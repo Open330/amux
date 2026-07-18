@@ -377,7 +377,12 @@ extension TerminalController {
         return (value as? NSNumber)?.int64Value
     }
 
+    // Cached formatter: `checkMessages` can serialize up to 200 messages per call, so a
+    // fresh `ISO8601DateFormatter` per timestamp would allocate hundreds of formatters.
+    // `ISO8601DateFormatter.string(from:)` is safe to call concurrently for formatting.
+    private nonisolated(unsafe) static let amuxISO8601Formatter = ISO8601DateFormatter()
+
     private nonisolated static func amuxISO8601(_ date: Date) -> String {
-        ISO8601DateFormatter().string(from: date)
+        amuxISO8601Formatter.string(from: date)
     }
 }

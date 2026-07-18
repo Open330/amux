@@ -5458,7 +5458,7 @@ struct ContentView: View {
                         } ?? Self.commandPaletteSwitcherSubtitle(base: String(localized: "commandPalette.switcher.workspaceLabel", defaultValue: "Workspace"), windowLabel: context.windowLabel),
                         shortcutHint: nil,
                         kindLabel: commandPaletteAmuxSessionSwitcherActive
-                            ? amuxSessionSwitcherPresentation.kindLabel(isOpen: true, agents: agents)
+                            ? amuxSessionSwitcherPresentation.kindLabel(isOpen: true)
                             : String(localized: "commandPalette.kind.workspace", defaultValue: "Workspace"),
                         keywords: workspaceKeywords,
                         dismissOnRun: true,
@@ -5540,11 +5540,26 @@ struct ContentView: View {
 
         if commandPaletteAmuxSessionSwitcherActive {
             let controller = AppDelegate.shared?.remoteTmuxController
+            let agentObservation = AppDelegate.shared?.amuxAgentObservation
             let availableItems = commandPaletteAmuxSessionSwitcher.items.filter { item in
                 guard let controller else { return true }
                 return !controller.unmirroredSessions([item.session], host: item.host).isEmpty
             }
             for item in availableItems {
+                // Re-fetch live agent state at candidate-build time, mirroring the
+                // open/mirrored path above, so a working -> waitingInput transition
+                // reorders and relabels available rows without a manual refresh
+                // (the coordinator only snapshots agents at load time). Fall back to
+                // the loaded snapshot only when the observation hub is unavailable.
+                let liveAgents = agentObservation?.agents(
+                    host: item.host,
+                    inTmuxSession: item.session.name
+                ) ?? item.agents
+                let liveItem = AmuxSessionSwitcherItem(
+                    host: item.host,
+                    session: item.session,
+                    agents: liveAgents
+                )
                 let commandId = "switcher.tmux.available.\(item.id)"
                 let availableCommand = CommandPaletteCommand(
                         id: commandId,
@@ -5556,17 +5571,16 @@ struct ContentView: View {
                         subtitle: amuxSessionSwitcherPresentation.subtitle(
                             host: item.host,
                             session: item.session,
-                            agents: item.agents
+                            agents: liveAgents
                         ),
                         shortcutHint: nil,
                         kindLabel: amuxSessionSwitcherPresentation.kindLabel(
-                            isOpen: false,
-                            agents: item.agents
+                            isOpen: false
                         ),
                         keywords: amuxSessionSwitcherPresentation.searchKeywords(
                             host: item.host,
                             sessionName: item.session.name,
-                            agents: item.agents
+                            agents: liveAgents
                         ),
                         dismissOnRun: true,
                         action: {
@@ -5583,7 +5597,7 @@ struct ContentView: View {
                 amuxCandidates.append(
                     AmuxSessionSwitcherCommandCandidate(
                         command: availableCommand,
-                        item: item,
+                        item: liveItem,
                         isOpen: false,
                         isCurrent: false
                     )

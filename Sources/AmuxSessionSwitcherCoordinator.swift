@@ -1,7 +1,14 @@
 import Foundation
 import Observation
+import OSLog
 
 /// Owns the cancellable, progressive lifecycle of the unified tmux session list.
+///
+/// Consumers observe the `@Observable` state directly (`items`, `loadingHosts`,
+/// `failedHosts`, `hostCount`, `revision`); `revision` bumps on every loading,
+/// success, failure, or cancellation transition so a SwiftUI fingerprint can
+/// re-derive its candidates. There is no separate change stream — production and
+/// tests read the same observable path.
 @MainActor
 @Observable
 final class AmuxSessionSwitcherCoordinator {
@@ -14,43 +21,38 @@ final class AmuxSessionSwitcherCoordinator {
     @ObservationIgnored private let loader: (any AmuxSessionSwitcherLoading)?
     @ObservationIgnored private var hosts: [RemoteTmuxHost] = []
     @ObservationIgnored private var itemsByHostID: [String: [AmuxSessionSwitcherItem]] = [:]
-    @ObservationIgnored private var loadTasksByHostID: [String: Task<Void, Never>] = [:]
+    // `nonisolated(unsafe)` so the nonisolated `deinit` can cancel in-flight
+    // loads. Every other access is main-actor serialized, and by the time deinit
+    // runs no other reference to the coordinator survives, so there is no
+    // concurrent mutation to guard against.
+    @ObservationIgnored private nonisolated(unsafe) var loadTasksByHostID: [String: Task<Void, Never>] = [:]
     @ObservationIgnored private var generation: UInt64 = 0
-    @ObservationIgnored private var changeObservers: [UUID: AsyncStream<AmuxSessionSwitcherSnapshot>.Continuation] = [:]
+
+    nonisolated private static let logger = Logger(
+        subsystem: "com.open330.amux",
+        category: "AmuxSessionSwitcher"
+    )
 
     init(loader: (any AmuxSessionSwitcherLoading)?) {
         self.loader = loader
     }
 
+    deinit {
+        cancelLoadTasks()
+    }
+
     var isLoading: Bool { !loadingHosts.isEmpty }
 
-    var snapshot: AmuxSessionSwitcherSnapshot {
-        AmuxSessionSwitcherSnapshot(
-            items: items,
-            loadingHosts: loadingHosts,
-            failedHosts: failedHosts,
-            hostCount: hostCount,
-            revision: revision
-        )
-    }
-
-    /// Emits an immutable snapshot after each loading, success, failure, or cancellation transition.
-    func changes() -> AsyncStream<AmuxSessionSwitcherSnapshot> {
-        AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
-            let id = UUID()
-            changeObservers[id] = continuation
-            continuation.onTermination = { [weak self] _ in
-                Task { @MainActor in self?.changeObservers[id] = nil }
-            }
-        }
-    }
-
     func start(hosts: [RemoteTmuxHost]) {
-        self.hosts = hosts
+        self.hosts = Self.deduplicated(hosts)
         beginLoading(preservingResults: false)
     }
 
+    /// Reloads the current hosts, keeping already-loaded rows visible. This is a
+    /// no-op when there are no hosts (e.g. after `cancel()` clears them), so a
+    /// stray refresh can never publish an empty list over a live one.
     func refresh() {
+        guard !hosts.isEmpty else { return }
         beginLoading(preservingResults: true)
     }
 
@@ -77,7 +79,9 @@ final class AmuxSessionSwitcherCoordinator {
         } else {
             itemsByHostID = [:]
         }
-        items = AmuxSessionSwitcherItem.ordered(itemsByHostID.values.flatMap { $0 })
+        // ContentView re-sorts every candidate with an isOpen/isCurrent-aware
+        // comparator, so ordering the rows here would just be discarded.
+        items = itemsByHostID.values.flatMap { $0 }
         failedHosts = []
         loadingHosts = hosts
         hostCount = hosts.count
@@ -126,6 +130,9 @@ final class AmuxSessionSwitcherCoordinator {
             failedHosts.removeAll { $0.id == host.id }
         case .failure(let error):
             failedHosts.append(host)
+            Self.logger.error(
+                "session switcher could not list host [\(host.connectionHash, privacy: .public)]: \(String(describing: error), privacy: .public)"
+            )
             #if DEBUG
             cmuxDebugLog(
                 "amux: session switcher could not list "
@@ -134,22 +141,29 @@ final class AmuxSessionSwitcherCoordinator {
             #endif
         }
 
-        items = AmuxSessionSwitcherItem.ordered(itemsByHostID.values.flatMap { $0 })
+        // See `beginLoading`: ContentView owns the final ordering.
+        items = itemsByHostID.values.flatMap { $0 }
         publishChange()
     }
 
-    private func cancelLoadTasks() {
+    private nonisolated func cancelLoadTasks() {
         for task in loadTasksByHostID.values {
             task.cancel()
         }
         loadTasksByHostID = [:]
     }
 
+    /// Removes duplicate hosts (same `id`) while preserving first-seen order, so a
+    /// repeated endpoint can't spawn a second load task whose completion flips
+    /// `isLoading` while a sibling task is still running.
+    private static func deduplicated(_ hosts: [RemoteTmuxHost]) -> [RemoteTmuxHost] {
+        var seen = Set<String>()
+        return hosts.filter { seen.insert($0.id).inserted }
+    }
+
+    /// Bumps `revision` so SwiftUI observers re-derive their session-switcher
+    /// candidates from the coordinator's `@Observable` state.
     private func publishChange() {
         revision &+= 1
-        let snapshot = snapshot
-        for continuation in changeObservers.values {
-            continuation.yield(snapshot)
-        }
     }
 }

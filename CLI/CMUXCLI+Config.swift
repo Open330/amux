@@ -527,33 +527,67 @@ extension CMUXCLI {
         let fileManager = FileManager.default
         let rawHomePath = ProcessInfo.processInfo.environment["HOME"] ?? fileManager.homeDirectoryForCurrentUser.path
         let homePath = URL(fileURLWithPath: rawHomePath).standardizedFileURL.path
+        // Resolve the project root first — the nearest ancestor of the cwd (below
+        // home) that already carries a project config marker (an amux config, or a
+        // legacy cmux config the migration turns into one). Migration is then run
+        // for that single directory only, instead of writing `.amux/`/`amux.json`
+        // into every ancestor on every config lookup.
         var current = URL(fileURLWithPath: fileManager.currentDirectoryPath).standardizedFileURL.path
-        while true {
-            if current == homePath {
-                return nil
-            }
-            try? AmuxPathMigration.migrateProjectData(
-                at: URL(fileURLWithPath: current, isDirectory: true),
-                fileManager: fileManager
-            )
-            let candidates = [
-                ((current as NSString).appendingPathComponent(".amux") as NSString)
-                    .appendingPathComponent("amux.json"),
-                (current as NSString).appendingPathComponent("amux.json"),
-            ]
-            for candidate in candidates {
-                var isDirectory = ObjCBool(false)
-                if fileManager.fileExists(atPath: candidate, isDirectory: &isDirectory),
-                   !isDirectory.boolValue {
-                    return URL(fileURLWithPath: candidate).standardizedFileURL.path
-                }
+        var projectRoot: String?
+        while current != homePath {
+            if directoryHasProjectConfigMarker(current, fileManager: fileManager) {
+                projectRoot = current
+                break
             }
             let parent = (current as NSString).deletingLastPathComponent
             if parent == current {
-                return nil
+                break
             }
             current = parent
         }
+        guard let projectRoot else { return nil }
+        try? AmuxPathMigration.migrateProjectData(
+            at: URL(fileURLWithPath: projectRoot, isDirectory: true),
+            fileManager: fileManager
+        )
+        let candidates = [
+            ((projectRoot as NSString).appendingPathComponent(".amux") as NSString)
+                .appendingPathComponent("amux.json"),
+            (projectRoot as NSString).appendingPathComponent("amux.json"),
+        ]
+        for candidate in candidates {
+            var isDirectory = ObjCBool(false)
+            if fileManager.fileExists(atPath: candidate, isDirectory: &isDirectory),
+               !isDirectory.boolValue {
+                return URL(fileURLWithPath: candidate).standardizedFileURL.path
+            }
+        }
+        return nil
+    }
+
+    /// Whether `directory` already contains a project config file — an amux config
+    /// (`.amux/amux.json` or `amux.json`) or a legacy cmux config
+    /// (`.cmux/cmux.json` or `cmux.json`) that migration converts into one.
+    private func directoryHasProjectConfigMarker(
+        _ directory: String,
+        fileManager: FileManager
+    ) -> Bool {
+        let markers = [
+            ((directory as NSString).appendingPathComponent(".amux") as NSString)
+                .appendingPathComponent("amux.json"),
+            (directory as NSString).appendingPathComponent("amux.json"),
+            ((directory as NSString).appendingPathComponent(".cmux") as NSString)
+                .appendingPathComponent("cmux.json"),
+            (directory as NSString).appendingPathComponent("cmux.json"),
+        ]
+        for marker in markers {
+            var isDirectory = ObjCBool(false)
+            if fileManager.fileExists(atPath: marker, isDirectory: &isDirectory),
+               !isDirectory.boolValue {
+                return true
+            }
+        }
+        return false
     }
 
     private func configDoctorFinding(for target: ConfigDoctorTarget) -> ConfigDoctorFinding {

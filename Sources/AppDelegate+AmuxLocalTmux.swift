@@ -54,7 +54,13 @@ extension AppDelegate {
             workspaceForPane: { [weak self] paneId in
                 self?.remoteTmuxController.localMirrorWorkspace(containingPane: paneId)
             },
-            onTransition: onTransition
+            onTransition: onTransition,
+            // Forget gate episode memory for sessions that vanished from this
+            // daemon's snapshot (a killed agent's key can't linger). The gate
+            // is shared with the remote observers, so we pass only the vanished
+            // delta — never "everything except my live set", which would evict
+            // their live episodes and re-alarm them.
+            onSessionsVanished: { alarmGate.forget(sessionIds: $0) }
         )
         return AmuxAgentObservationHub(
             localService: localService,
@@ -73,7 +79,8 @@ extension AppDelegate {
                         self?.remoteTmuxController.mirrorWorkspace(hostId: hostId, containingPane: paneId)
                     },
                     prepareConnection: { try await forwarder.ensureForward() },
-                    onTransition: onTransition
+                    onTransition: onTransition,
+                    onSessionsVanished: { alarmGate.forget(sessionIds: $0) }
                 )
                 return AmuxAgentObservationHub.RemoteObserver(forwarder: forwarder, service: service)
             }
@@ -153,11 +160,16 @@ extension AppDelegate {
     func amuxInstallMuxadAgent() {
         Task { @MainActor in
             let running = await MuxaClient().isReachable()
-            let agent = AmuxMuxadLaunchAgent()
-            let result = agent.install(
-                muxadPath: RemoteTmuxHost.bundledMuxadPath(),
-                daemonAlreadyRunning: running
-            )
+            let muxadPath = RemoteTmuxHost.bundledMuxadPath()
+            // launchctl bootout+bootstrap blocks on waitUntilExit; run it off
+            // the main actor so this palette command can't freeze the UI
+            // (parity with the onboarding install path).
+            let result = await Task.detached {
+                AmuxMuxadLaunchAgent().install(
+                    muxadPath: muxadPath,
+                    daemonAlreadyRunning: running
+                )
+            }.value
             let alert = NSAlert()
             alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
             switch result {
@@ -188,14 +200,18 @@ extension AppDelegate {
 
     /// Removes the muxad LaunchAgent (does not touch a manually-run muxad).
     func amuxUninstallMuxadAgent() {
-        AmuxMuxadLaunchAgent().uninstall()
-        let alert = NSAlert()
-        alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
-        alert.informativeText = String(
-            localized: "amux.daemon.uninstalled",
-            defaultValue: "Removed amux's background daemon. A muxad you started yourself is left running."
-        )
-        alert.runModal()
+        Task { @MainActor in
+            // uninstall() runs launchctl bootout (blocking waitUntilExit) off
+            // the main actor so the palette command can't freeze the UI.
+            await Task.detached { AmuxMuxadLaunchAgent().uninstall() }.value
+            let alert = NSAlert()
+            alert.messageText = String(localized: "amux.daemon.title", defaultValue: "amux Background Daemon")
+            alert.informativeText = String(
+                localized: "amux.daemon.uninstalled",
+                defaultValue: "Removed amux's background daemon. A muxad you started yourself is left running."
+            )
+            alert.runModal()
+        }
     }
 
     /// Whether ⌘N (the new-terminal-workspace action) creates an amux

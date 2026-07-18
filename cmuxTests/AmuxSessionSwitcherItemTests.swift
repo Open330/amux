@@ -95,6 +95,30 @@ struct AmuxSessionSwitcherItemTests {
         ])
     }
 
+    @Test func mostRecentActivityDateFreeFunctionMatchesInstanceProperty() {
+        let older = agent("older", state: .idle, activity: "2026-07-10T08:00:00Z")
+        let newer = agent("newer", state: .working, activity: "2026-07-10T09:30:00Z")
+        let tracked = item("tracked", id: 1, agents: [older, newer])
+
+        // The allocation-free static returns the newest agent activity date and
+        // matches the instance property it now backs.
+        #expect(AmuxSessionSwitcherItem.mostRecentActivityDate(
+            session: tracked.session,
+            agents: tracked.agents
+        ) == newer.lastActivityDate)
+        #expect(AmuxSessionSwitcherItem.mostRecentActivityDate(
+            session: tracked.session,
+            agents: tracked.agents
+        ) == tracked.mostRecentActivityDate)
+
+        // With no agents it falls back to the session's creation time.
+        let untracked = item("untracked", id: 2, createdUnix: 1_752_135_600)
+        #expect(AmuxSessionSwitcherItem.mostRecentActivityDate(
+            session: untracked.session,
+            agents: untracked.agents
+        ) == Date(timeIntervalSince1970: 1_752_135_600))
+    }
+
     @Test func primaryAgentPrefersLongestWaitingAgent() {
         let active = agent("active", state: .working, activity: "2026-07-10T09:00:00Z")
         let newerWaiting = agent(

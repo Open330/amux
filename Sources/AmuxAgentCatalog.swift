@@ -1,3 +1,4 @@
+import CmuxMuxa
 import Foundation
 
 /// One CLI coding agent amux knows how to detect and launch — the amux
@@ -202,6 +203,31 @@ enum AmuxAgentCatalog {
         entries.first { $0.id == id.lowercased() }
     }
 
+    /// The catalog id backing an observed muxad agent kind (the CLI amux would
+    /// launch for it), or `nil` for a kind amux has no launcher for (an
+    /// unrecognized wire kind).
+    static func catalogId(for kind: MuxaAgentKind) -> String? {
+        switch kind {
+        case .claudeCode: "claude"
+        case .codex: "codex"
+        case .geminiCli: "gemini"
+        case .opencode: "opencode"
+        case .unknown: nil
+        }
+    }
+
+    /// Single source of truth for an observed agent kind's product name: the
+    /// catalog entry's ``AmuxAgentCatalogEntry/displayName`` so every surface
+    /// (launch UI, session switcher, alarm/notification copy) shows one
+    /// spelling. An unknown kind falls back to its raw wire string — still a
+    /// product name, never localized.
+    static func displayName(for kind: MuxaAgentKind) -> String {
+        guard let id = catalogId(for: kind), let entry = entry(id: id) else {
+            return kind.rawValue
+        }
+        return entry.displayName
+    }
+
     /// The `sh` script probing every catalog binary in one shell invocation.
     /// Emits `<binary>=<path>` per hit and `<binary>=` per miss — a stable,
     /// order-preserving format `parseDetectionOutput` reverses.
@@ -255,7 +281,13 @@ enum AmuxAgentCatalog {
 
     /// Runs ``detectionScript()`` under the user's login shell and returns the
     /// resolved binary paths. Off-main (spawns a process and waits).
-    static func detectInstalled() async -> [String: String] {
+    ///
+    /// Bounded by `timeout`: sourcing the login shell (`-l`) runs the user's
+    /// `.zshrc`/`.bash_profile`, so a blocking rc file or a stalled network
+    /// mount could otherwise wedge `readDataToEndOfFile` forever and leak the
+    /// process. Past the deadline the child is terminated and detection
+    /// reports whatever (if anything) it emitted.
+    static func detectInstalled(timeout: Duration = .seconds(10)) async -> [String: String] {
         let script = detectionScript()
         let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
         let process = Process()
@@ -270,9 +302,22 @@ enum AmuxAgentCatalog {
         } catch {
             return [:]
         }
-        let data = await Task.detached {
-            out.fileHandleForReading.readDataToEndOfFile()
-        }.value
+        // The child holds its own dup of the pipe's write end; close the
+        // parent's copy so the read below reaches EOF the moment the child
+        // exits (or is terminated) instead of blocking forever on our own
+        // dangling write fd.
+        try? out.fileHandleForWriting.close()
+
+        let readTask = Task.detached { out.fileHandleForReading.readDataToEndOfFile() }
+        // Watchdog: after the deadline, terminate the child. That closes its
+        // write end and unblocks the read at EOF (with whatever it managed to
+        // emit) rather than hanging every launch surface that awaits us.
+        let watchdog = Task.detached {
+            do { try await Task.sleep(for: timeout) } catch { return }
+            process.terminate()
+        }
+        let data = await readTask.value
+        watchdog.cancel()
         await Task.detached { process.waitUntilExit() }.value
         return parseDetectionOutput(String(decoding: data, as: UTF8.self))
     }

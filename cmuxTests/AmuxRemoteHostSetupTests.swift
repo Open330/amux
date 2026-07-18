@@ -55,4 +55,18 @@ final class AmuxRemoteHostSetupTests: XCTestCase {
         // tmux.conf edits, no service-manager install from amux).
         XCTAssertFalse(script.contains("--preset"))
     }
+
+    // Regression: hook detection must match the concrete command muxa installs
+    // (`muxa hook <agent>`), not the bare product name. A codex config whose
+    // only "muxa" occurrence is a `[projects."…/muxa"]` path header, or a stray
+    // comment mentioning muxa, must NOT be reported as "hooks wired".
+    func testInspectionMatchesConcreteHookMarkers() {
+        let script = AmuxRemoteHostSetup.inspectionArgv.joined(separator: " ")
+        XCTAssertTrue(script.contains("muxa hook claude"))
+        XCTAssertTrue(script.contains("muxa hook codex"))
+        XCTAssertFalse(
+            script.contains("grep -qs muxa \""),
+            "the loose bare-product grep false-positives on unrelated muxa mentions"
+        )
+    }
 }

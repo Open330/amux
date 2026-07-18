@@ -11,17 +11,20 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
     private func agent(
         state: CmuxMuxa.MuxaAgentState,
         kind: CmuxMuxa.MuxaAgentKind = .claudeCode,
+        sessionId: String = "session-1",
         lastNotification: String? = nil,
         lastPrompt: String? = nil,
-        lastResponse: String? = nil
+        lastResponse: String? = nil,
+        stateEnteredAt: String? = nil
     ) -> CmuxMuxa.MuxaAgent {
         CmuxMuxa.MuxaAgent(
             kind: kind,
-            sessionId: "session-1",
+            sessionId: sessionId,
             state: state,
             lastPrompt: lastPrompt,
             lastNotification: lastNotification,
-            lastResponse: lastResponse
+            lastResponse: lastResponse,
+            stateEnteredAt: stateEnteredAt
         )
     }
 
@@ -125,5 +128,95 @@ final class AmuxAgentAlarmPolicyTests: XCTestCase {
 
     func testUnknownAgentKindUsesRawWireName() {
         XCTAssertEqual(AmuxAgentAlarmPolicy.displayName(for: .unknown("aider")), "aider")
+    }
+
+    // MARK: - Unified display name (finding 7)
+
+    func testDisplayNameIsSourcedFromTheCatalog() {
+        // The alarm policy routes display names through the catalog so the
+        // notification copy and the launch surfaces never drift. opencode was
+        // the drifted case ("opencode" here vs. "OpenCode" in the catalog).
+        XCTAssertEqual(AmuxAgentAlarmPolicy.displayName(for: .opencode), "OpenCode")
+        XCTAssertEqual(
+            AmuxAgentAlarmPolicy.displayName(for: .opencode),
+            AmuxAgentCatalog.entry(id: "opencode")?.displayName
+        )
+        XCTAssertEqual(AmuxAgentAlarmPolicy.displayName(for: .claudeCode), "Claude Code")
+        XCTAssertEqual(AmuxAgentAlarmPolicy.displayName(for: .codex), "Codex")
+        XCTAssertEqual(AmuxAgentAlarmPolicy.displayName(for: .geminiCli), "Gemini CLI")
+        XCTAssertEqual(AmuxAgentCatalog.displayName(for: .unknown("aider")), "aider")
+    }
+
+    // MARK: - Gate reconnect behavior (findings 4 & 5)
+
+    @MainActor
+    func testGateAlarmsAgainForNewEpisodeAfterReconnect() async {
+        let gate = AmuxAgentAlarmGate()
+        func waiting(enteredAt: String) -> CmuxMuxa.MuxaTransition {
+            .init(
+                from: .waitingInput,
+                to: .waitingInput,
+                agent: agent(state: .waitingInput, stateEnteredAt: enteredAt)
+            )
+        }
+        // Episode 1: blocked, entered at T1. Alarms once; the reconciler-tick
+        // refresh of the SAME episode is deduped.
+        XCTAssertNotNil(gate.alarm(for: waiting(enteredAt: "2026-07-18T10:00:00Z"), joined: true))
+        XCTAssertNil(gate.alarm(for: waiting(enteredAt: "2026-07-18T10:00:00Z"), joined: true))
+        // Reconnect: while disconnected the agent churned waiting -> working ->
+        // waiting, so the fresh snapshot re-emits waiting with a NEW entry
+        // time. Episode memory that survived the reconnect must not swallow the
+        // genuinely-new episode.
+        XCTAssertNotNil(gate.alarm(for: waiting(enteredAt: "2026-07-18T10:05:00Z"), joined: true))
+        XCTAssertNil(gate.alarm(for: waiting(enteredAt: "2026-07-18T10:05:00Z"), joined: true))
+    }
+
+    @MainActor
+    func testGateForgetsOnlyTheVanishedSessions() async {
+        let gate = AmuxAgentAlarmGate()
+        func waiting(session: String) -> CmuxMuxa.MuxaTransition {
+            .init(
+                from: .working,
+                to: .waitingInput,
+                agent: agent(state: .waitingInput, sessionId: session)
+            )
+        }
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "keep"), joined: true))
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "gone"), joined: true))
+        XCTAssertNil(gate.alarm(for: waiting(session: "keep"), joined: true), "same episode is deduped")
+        // Only "gone" vanished from its daemon's snapshot; forgetting exactly
+        // that delta drops its entry (bounding growth) while "keep" stays deduped.
+        gate.forget(sessionIds: ["gone"])
+        XCTAssertNil(gate.alarm(for: waiting(session: "keep"), joined: true))
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "gone"), joined: true))
+    }
+
+    @MainActor
+    func testSharedGateForgetDoesNotReArmAPeerDaemonsLiveEpisode() async {
+        // The gate is shared by the local service and every remote observer.
+        // When one daemon reports its own vanished delta, another daemon's
+        // still-live episode must survive — otherwise that peer's next
+        // reconciler-tick same-state pass re-alarms (a duplicate notification).
+        // Regression guard for the shared-gate cross-eviction bug: a per-daemon
+        // "keep only my live set" prune would have evicted "remote" here.
+        let gate = AmuxAgentAlarmGate()
+        func waiting(session: String) -> CmuxMuxa.MuxaTransition {
+            .init(
+                from: .working,
+                to: .waitingInput,
+                agent: agent(state: .waitingInput, sessionId: session)
+            )
+        }
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "remote"), joined: true))
+        XCTAssertNotNil(gate.alarm(for: waiting(session: "local"), joined: true))
+        // The local daemon snapshots: "local" is still live, so its vanished
+        // delta is empty — it forgets nothing.
+        gate.forget(sessionIds: [])
+        // The remote daemon's reconciler tick re-emits "remote" as the same
+        // episode: it must stay deduped, not re-alarm.
+        XCTAssertNil(
+            gate.alarm(for: waiting(session: "remote"), joined: true),
+            "a peer daemon's forget must not re-arm this live episode"
+        )
     }
 }

@@ -32,30 +32,41 @@ struct AmuxMuxadLaunchAgent {
     static func plistContents(muxadPath: String) -> String {
         let logPath = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Logs/amux-muxad.log").path
-        // Values are amux-controlled (a bundled binary path + fixed strings),
-        // so a plain plist template is safe — no untrusted interpolation.
+        // `muxadPath` is the bundle's resource path — i.e. wherever the user
+        // placed amux.app — so it can contain XML-special characters (an app
+        // under ".../Apps & Tools/..." is legal). Escape every interpolated
+        // value; an unescaped `&`/`<` would make launchctl reject the plist.
         return """
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
             <key>Label</key>
-            <string>\(label)</string>
+            <string>\(xmlEscaped(label))</string>
             <key>ProgramArguments</key>
             <array>
-                <string>\(muxadPath)</string>
+                <string>\(xmlEscaped(muxadPath))</string>
             </array>
             <key>RunAtLoad</key>
             <true/>
             <key>KeepAlive</key>
             <true/>
             <key>StandardOutPath</key>
-            <string>\(logPath)</string>
+            <string>\(xmlEscaped(logPath))</string>
             <key>StandardErrorPath</key>
-            <string>\(logPath)</string>
+            <string>\(xmlEscaped(logPath))</string>
         </dict>
         </plist>
         """
+    }
+
+    /// Escapes the characters that are not legal in XML element text so an
+    /// interpolated filesystem path can't produce a malformed plist.
+    private static func xmlEscaped(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
     }
 
     /// Outcome of an ``install(muxadPath:daemonAlreadyRunning:)`` attempt.
@@ -88,8 +99,27 @@ struct AmuxMuxadLaunchAgent {
         } catch {
             return .failed("write plist: \(error)")
         }
-        let (ok, err) = Self.runLaunchctl(["bootstrap", Self.guiDomain, plistURL.path])
+        // Idempotency: re-running "Set Up" while the agent is already loaded
+        // must still report success. `launchctl bootstrap` exits non-zero when
+        // the label is already loaded, so bootout any existing instance first
+        // — its own failure (nothing loaded) is expected and ignored, exactly
+        // as ``uninstall()`` does — THEN bootstrap the freshly written plist.
+        let commands = Self.installLaunchctlCommands(plistPath: plistURL.path)
+        _ = Self.runLaunchctl(commands.bootout)
+        let (ok, err) = Self.runLaunchctl(commands.bootstrap)
         return ok ? .installed : .failed(err)
+    }
+
+    /// The ordered launchctl invocations that (re)install the agent: a
+    /// best-effort `bootout` of any already-loaded instance first — so
+    /// re-running "Set Up" is idempotent, since `bootstrap` exits non-zero when
+    /// the label is already loaded — then `bootstrap` of the plist. Pure so the
+    /// bootout-before-bootstrap ordering is unit-testable without launchctl.
+    static func installLaunchctlCommands(plistPath: String) -> (bootout: [String], bootstrap: [String]) {
+        (
+            bootout: ["bootout", "\(guiDomain)/\(label)"],
+            bootstrap: ["bootstrap", guiDomain, plistPath]
+        )
     }
 
     /// Boots the agent out and removes its plist. Safe to call when absent.
@@ -111,14 +141,17 @@ struct AmuxMuxadLaunchAgent {
         process.standardOutput = FileHandle.nullDevice
         do {
             try process.run()
-            process.waitUntilExit()
         } catch {
             return (false, "\(error)")
         }
-        let err = String(
-            decoding: errPipe.fileHandleForReading.readDataToEndOfFile(),
-            as: UTF8.self
-        )
+        // Drain stderr to EOF *before* waiting: reading concurrently with the
+        // still-running process keeps the pipe buffer from filling and
+        // dead-locking a launchctl that writes more stderr than the buffer
+        // holds. EOF arrives when launchctl exits, so `waitUntilExit()` then
+        // returns immediately.
+        let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        let err = String(decoding: errData, as: UTF8.self)
         return (process.terminationStatus == 0, err)
     }
 }

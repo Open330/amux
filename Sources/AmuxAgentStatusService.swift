@@ -30,8 +30,23 @@ final class AmuxAgentStatusService {
     /// resolved to (`nil` when the agent isn't in a mirrored session) — the
     /// alarm/notification seam. Snapshot rows never fire this.
     private let onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)?
+    /// Receives the session ids that VANISHED between the previous successful
+    /// snapshot and the latest one — the seam the composition root uses to
+    /// forget per-session memory that outlives its agent (e.g.
+    /// ``AmuxAgentAlarmGate/forget(sessionIds:)`` for agents that went away
+    /// while blocked, with no `stopped` transition). It passes only this
+    /// daemon's departed delta — never this daemon's live set — because the
+    /// shared alarm gate must not evict another daemon's still-live episodes.
+    /// The service's own ``agentsBySessionId`` is pruned by the wholesale
+    /// snapshot replacement below; this is purely for shared state it doesn't own.
+    private let onSessionsVanished: (@MainActor (Set<String>) -> Void)?
     /// Live agent rows by muxad session id (agent-CLI session, not tmux).
     private var agentsBySessionId: [String: MuxaAgent] = [:]
+    /// Session ids from the previous successful snapshot, so the next snapshot
+    /// can report the vanished delta to ``onSessionsVanished``. Persists across
+    /// a stream drop/reconnect (a disconnect is not a vanish), so a still-blocked
+    /// agent's gate episode survives and its reconnect tick isn't re-alarmed.
+    private var lastSnapshotSessionIds: Set<String> = []
     /// Weakly holds a workspace we wrote a row into.
     private struct WeakWorkspace {
         weak var value: Workspace?
@@ -47,13 +62,15 @@ final class AmuxAgentStatusService {
         workspaceForSession: @escaping @MainActor (String) -> Workspace?,
         workspaceForPane: @escaping @MainActor (Int) -> Workspace?,
         prepareConnection: (@Sendable () async throws -> Void)? = nil,
-        onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)? = nil
+        onTransition: (@MainActor (MuxaTransition, Workspace?) -> Void)? = nil,
+        onSessionsVanished: (@MainActor (Set<String>) -> Void)? = nil
     ) {
         self.client = client
         self.workspaceForSession = workspaceForSession
         self.workspaceForPane = workspaceForPane
         self.prepareConnection = prepareConnection
         self.onTransition = onTransition
+        self.onSessionsVanished = onSessionsVanished
     }
 
     /// Starts the snapshot+subscribe loop (idempotent).
@@ -93,6 +110,16 @@ final class AmuxAgentStatusService {
                     agents.map { ($0.sessionId, $0) },
                     uniquingKeysWith: { _, newer in newer }
                 )
+                // Let shared per-session state (e.g. the alarm gate) forget the
+                // sessions that vanished from THIS daemon since the previous
+                // snapshot — only the delta, so a shared gate never evicts
+                // another daemon's live episodes.
+                let currentSessionIds = Set(agentsBySessionId.keys)
+                let vanished = lastSnapshotSessionIds.subtracting(currentSessionIds)
+                lastSnapshotSessionIds = currentSessionIds
+                if !vanished.isEmpty {
+                    onSessionsVanished?(vanished)
+                }
                 applyToWorkspaces()
                 for try await transition in try await client.transitions() {
                     upsert(transition.agent)
@@ -101,6 +128,16 @@ final class AmuxAgentStatusService {
                 }
             } catch {
                 // muxad not running (or protocol failure): degrade silently.
+            }
+            // The stream just ended — daemon EOF, a crash, or a dropped SSH
+            // forward. The last-known rows are now unverifiable, so drop them
+            // and re-project: a stale `waiting`/`error` badge (and the attend
+            // target that keeps jumping to it) must not outlive a dead daemon
+            // or a pane that vanished without a `stopped` transition. A
+            // successful reconnect repopulates from the fresh snapshot.
+            if !agentsBySessionId.isEmpty {
+                agentsBySessionId.removeAll()
+                applyToWorkspaces()
             }
             await client.disconnect()
             // Reconnect poll: muxad has no launch notification we can
@@ -140,9 +177,12 @@ final class AmuxAgentStatusService {
     /// Like ``attendTarget()`` but carries *when* the winning agent got
     /// blocked, so the observation hub can pick the longest-blocked agent
     /// across several daemons (local + one per remote host).
-    func attendCandidate() -> (workspace: Workspace, tmuxPane: Int?, blockedSince: Date)? {
+    func attendCandidate(now: Date = Date()) -> (workspace: Workspace, tmuxPane: Int?, blockedSince: Date)? {
+        // Skip attention rows gone stale (same cutoff as the badge): a pane
+        // that vanished while blocked without a `stopped` transition must not
+        // keep pulling "attend" back to a dead workspace.
         let blocked = agentsBySessionId.values
-            .filter { $0.state.needsAttention }
+            .filter { $0.state.needsAttention && !Self.isStale($0, staleAfter: Self.attentionStaleAfter, now: now) }
             .sorted { lhs, rhs in
                 let l = lhs.stateEnteredDate ?? lhs.lastActivityDate ?? .distantPast
                 let r = rhs.stateEnteredDate ?? rhs.lastActivityDate ?? .distantPast
@@ -263,14 +303,24 @@ final class AmuxAgentStatusService {
         var updated: [UUID: WeakWorkspace] = [:]
         for (workspaceId, group) in byWorkspace {
             guard let entry = Self.statusEntry(for: group.agents) else { continue }
-            group.workspace.statusEntries[Self.statusEntryKey] = entry
             updated[workspaceId] = WeakWorkspace(value: group.workspace)
+            // Only reassign the `@Published` entry when the *visible* summary
+            // changed. `statusEntry(for:)` stamps a fresh `Date()` on every
+            // call and `SidebarStatusEntry` is `Equatable` including that
+            // timestamp, so an unconditional write would republish on every
+            // transition of any agent and every freshness tick — the
+            // orthogonal-@Published churn that thrashes the sidebar list
+            // (CLAUDE.md snapshot-boundary rule).
+            guard !Self.sameSummary(group.workspace.statusEntries[Self.statusEntryKey], entry) else { continue }
+            group.workspace.statusEntries[Self.statusEntryKey] = entry
             #if DEBUG
             cmuxDebugLog("amux.agentStatus workspace=\(group.workspace.customTitle ?? workspaceId.uuidString) value=\"\(entry.value)\"")
             #endif
         }
         for (workspaceId, weakWorkspace) in workspacesWithEntry where updated[workspaceId] == nil {
-            weakWorkspace.value?.statusEntries[Self.statusEntryKey] = nil
+            guard let workspace = weakWorkspace.value,
+                  workspace.statusEntries[Self.statusEntryKey] != nil else { continue }
+            workspace.statusEntries[Self.statusEntryKey] = nil
         }
         workspacesWithEntry = updated
     }
@@ -278,25 +328,62 @@ final class AmuxAgentStatusService {
     /// How long a silent `working` state stays believable. Past this the
     /// agent is shown as idle: with no fresh activity the "working" claim is
     /// stale (a missed hook or dead CLI), and a perpetual working badge
-    /// teaches the user to ignore the sidebar. Attention states (waiting /
-    /// error) never decay — they stay actionable however old they are.
+    /// teaches the user to ignore the sidebar.
     static let workingStaleAfter: TimeInterval = 30 * 60
 
+    /// How long a silent attention state (`waiting` / `error`) stays
+    /// believable. Attention rows are actionable however old they normally
+    /// get — a genuinely-blocked agent left overnight must still show — but a
+    /// row frozen this long with zero fresh activity is almost always a dead
+    /// pane (a crashed CLI, or a daemon that died without a `stopped`
+    /// transition), so past this cutoff it is dropped rather than
+    /// re-projected forever by the freshness tick. Deliberately far longer
+    /// than ``workingStaleAfter``.
+    static let attentionStaleAfter: TimeInterval = 12 * 60 * 60
+
+    /// Whether `agent`'s current state has gone stale: its freshest evidence
+    /// (last activity, else when it entered the state) is older than
+    /// `staleAfter`. No timestamps at all means no staleness evidence, so the
+    /// agent is never treated as stale — never hide a live agent on missing
+    /// data.
+    private static func isStale(_ agent: MuxaAgent, staleAfter: TimeInterval, now: Date) -> Bool {
+        let freshness = agent.lastActivityDate ?? agent.stateEnteredDate
+        return freshness.map { now.timeIntervalSince($0) > staleAfter } ?? false
+    }
+
+    /// Whether two of our status rows would render identically — every field
+    /// the sidebar shows, ignoring the always-fresh `timestamp`. Gates the
+    /// `@Published` reassignment in ``applyToWorkspaces()`` (see finding note
+    /// there).
+    private static func sameSummary(_ lhs: SidebarStatusEntry?, _ rhs: SidebarStatusEntry) -> Bool {
+        guard let lhs else { return false }
+        return lhs.key == rhs.key
+            && lhs.value == rhs.value
+            && lhs.icon == rhs.icon
+            && lhs.color == rhs.color
+            && lhs.url == rhs.url
+            && lhs.priority == rhs.priority
+            && lhs.format == rhs.format
+    }
+
     /// One summary row for a session's live agents, `nil` when there is
-    /// nothing worth showing (all idle/starting).
+    /// nothing worth showing (all idle/starting/stale).
     static func statusEntry(for agents: [MuxaAgent], now: Date = Date()) -> SidebarStatusEntry? {
         var working = 0, waiting = 0, errors = 0
         for agent in agents {
             switch agent.state {
             case .working:
-                let freshness = agent.lastActivityDate ?? agent.stateEnteredDate
-                let isStale = freshness.map { now.timeIntervalSince($0) > Self.workingStaleAfter } ?? false
-                if !isStale { working += 1 }
-            case .waitingInput, .waitingChoice: waiting += 1
-            case .error: errors += 1
+                if !Self.isStale(agent, staleAfter: Self.workingStaleAfter, now: now) { working += 1 }
+            case .waitingInput, .waitingChoice:
+                if !Self.isStale(agent, staleAfter: Self.attentionStaleAfter, now: now) { waiting += 1 }
+            case .error:
+                if !Self.isStale(agent, staleAfter: Self.attentionStaleAfter, now: now) { errors += 1 }
             case .starting, .idle, .stopped, .unknown: break
             }
         }
+        // Count phrases: the interpolated `Int` makes these keys plural-ready,
+        // so the string catalog can carry per-count variations (`amux.agents.*`
+        // one/other) — the English default is the singular form only.
         var parts: [String] = []
         if errors > 0 {
             parts.append(String(localized: "amux.agents.error", defaultValue: "\(errors) error"))
