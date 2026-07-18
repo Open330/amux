@@ -1233,6 +1233,12 @@ final class RemoteTmuxControlConnection {
     /// ``RemoteTmuxControlPipeWriter/waitForCapacity(_:)`` means a full stdin
     /// budget DEFERS bytes on this await instead of dropping them and reconnecting.
     private var outboundFlushTask: Task<Void, Never>?
+    /// Monotonic id of the current outbound-chain tail. A completing chain task
+    /// clears ``outboundFlushTask`` only when it is STILL the tail (its id still
+    /// matches), which re-enables the synchronous typing fast path once the
+    /// queue drains — without a stale task clobbering a newer one that was
+    /// enqueued during its `await`.
+    private var outboundGeneration: UInt64 = 0
     /// Outstanding bytes queued on ``outboundFlushTask`` that count against the
     /// typed-input cap (paste is user-finite and excluded). Bounds memory when
     /// typed input (key auto-repeat, automation) outruns the pipe's drain rate.
@@ -1261,12 +1267,21 @@ final class RemoteTmuxControlConnection {
             pendingTypedOutboundBytes += byteCount
         }
         let previous = outboundFlushTask
+        outboundGeneration &+= 1
+        let generation = outboundGeneration
         outboundFlushTask = Task { @MainActor [weak self] in
             await previous?.value
             guard let self else { return }
             defer {
                 if bounded {
                     self.pendingTypedOutboundBytes = max(0, self.pendingTypedOutboundBytes - byteCount)
+                }
+                // Re-enable the sync fast path once the chain drains: clear the
+                // tail only if no newer send superseded us during our await. Our
+                // last sendInternal has already enqueued to the serial writer, so
+                // a following fast-path send still lands after it on the wire.
+                if self.outboundGeneration == generation {
+                    self.outboundFlushTask = nil
                 }
             }
             for entry in payload {
