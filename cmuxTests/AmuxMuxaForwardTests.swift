@@ -11,7 +11,7 @@ final class AmuxMuxaForwardTests: XCTestCase {
         let a = RemoteTmuxHost(destination: "alice@gpu-box")
         let b = RemoteTmuxHost(destination: "alice@other-box")
         XCTAssertNotEqual(a.muxaForwardSocketPath, b.muxaForwardSocketPath)
-        XCTAssertTrue(a.muxaForwardSocketPath.contains("/.cmux/ssh/muxa-"))
+        XCTAssertTrue(a.muxaForwardSocketPath.contains("/.amux/ssh/muxa-"))
         XCTAssertTrue(a.muxaForwardSocketPath.hasSuffix("-\(a.connectionHash).sock"))
         XCTAssertTrue(
             RemoteTmuxHost.controlSocketPathFitsUnixLimit(a.muxaForwardSocketPath),
@@ -90,5 +90,34 @@ final class AmuxMuxaForwardTests: XCTestCase {
                 unixSocketPath: NSTemporaryDirectory() + "cmux-test-nonexistent-\(UUID().uuidString).sock"
             )
         )
+    }
+
+    // Regression: tearing down / re-establishing a forward must terminate the
+    // stored ssh spawn handle, not just drop the reference — otherwise a stuck
+    // ssh is orphaned and leaks past app termination. This exercises the shared
+    // helper used by both `stop()` and the `ensureForward()` re-establish path.
+    func testTerminateStoredProcessTerminatesAndClearsHandle() throws {
+        let forwarder = AmuxRemoteMuxaForwarder(host: RemoteTmuxHost(destination: "alice@gpu-box"))
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/bin/sleep")
+        proc.arguments = ["30"]
+        try proc.run()
+        forwarder.setProcessForTesting(proc)
+        XCTAssertTrue(forwarder.hasStoredProcessForTesting())
+
+        forwarder.terminateStoredProcess()
+        XCTAssertFalse(forwarder.hasStoredProcessForTesting(), "handle must be cleared on teardown")
+
+        let deadline = Date().addingTimeInterval(2)
+        while proc.isRunning && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.02)
+        }
+        XCTAssertFalse(proc.isRunning, "a dropped forward's ssh must be terminated, not orphaned")
+    }
+
+    func testStopIsSafeWithNoActiveForward() {
+        let forwarder = AmuxRemoteMuxaForwarder(host: RemoteTmuxHost(destination: "alice@gpu-box"))
+        forwarder.stop()
+        XCTAssertFalse(forwarder.hasStoredProcessForTesting())
     }
 }

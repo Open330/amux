@@ -1,5 +1,6 @@
 import AppKit
 import CmuxMuxa
+import os
 
 /// First-run onboarding for amux's agent integration: installs the opt-in
 /// muxad LaunchAgent and wires the agent CLIs' hooks (via bundled
@@ -76,11 +77,19 @@ struct AmuxOnboarding {
     private func runSetup() {
         Task { @MainActor in
             let running = await MuxaClient().isReachable()
-            let agentResult = AmuxMuxadLaunchAgent().install(
-                muxadPath: RemoteTmuxHost.bundledMuxadPath(),
-                daemonAlreadyRunning: running
-            )
-            let hooksResult = Self.runMuxaInit()
+            let muxadPath = RemoteTmuxHost.bundledMuxadPath()
+            // The launchctl and `muxa init` steps block on `waitUntilExit()`;
+            // running them on the main actor would freeze the setup dialog and
+            // stall the app's socket/CLI. Do the blocking Process work off the
+            // main actor and marshal only the (Sendable) result back for the
+            // summary dialog.
+            let (agentResult, hooksResult) = await Task.detached(priority: .userInitiated) {
+                let agentResult = AmuxMuxadLaunchAgent().install(
+                    muxadPath: muxadPath,
+                    daemonAlreadyRunning: running
+                )
+                return (agentResult, Self.runMuxaInit())
+            }.value
             Self.presentResult(agent: agentResult, hooks: hooksResult)
         }
     }
@@ -99,8 +108,15 @@ struct AmuxOnboarding {
     /// `muxad-launchd` agent — verified via `muxa init --dry-run`.
     static let hookComponents = "claude-hooks,codex-hooks,gemini-hooks,opencode-hooks"
 
+    /// How long `muxa init` may run before the watchdog terminates it.
+    static let muxaInitTimeoutSeconds: TimeInterval = 60
+
     /// Runs bundled `muxa init` to wire agent hooks non-interactively.
-    static func runMuxaInit() -> HooksResult {
+    ///
+    /// `nonisolated` so callers can run it off the main actor (see
+    /// ``runSetup()``); it only spawns a Process and touches no main-actor
+    /// state.
+    nonisolated static func runMuxaInit() -> HooksResult {
         guard let muxa = RemoteTmuxHost.bundledMuxaCliPath() else { return .noBundledCli }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: muxa)
@@ -113,12 +129,33 @@ struct AmuxOnboarding {
         process.standardOutput = FileHandle.nullDevice
         do {
             try process.run()
-            process.waitUntilExit()
         } catch {
             return .failed("\(error)")
         }
+        // Watchdog: `muxa init` can hang (e.g. blocked on input despite
+        // `--yes`), which would wedge setup. Terminate it after the timeout.
+        // The Process/Bool state crosses the timer queue via `nonisolated(unsafe)`
+        // + an `OSAllocatedUnfairLock`, mirroring the forwarder's process-box
+        // carve-out (neither type is `Sendable`).
+        let timedOut = OSAllocatedUnfairLock(initialState: false)
+        nonisolated(unsafe) let watched = process
+        let watchdog = DispatchWorkItem {
+            timedOut.withLock { $0 = true }
+            if watched.isRunning { watched.terminate() }
+        }
+        DispatchQueue.global().asyncAfter(deadline: .now() + muxaInitTimeoutSeconds, execute: watchdog)
+        // Drain stderr to EOF before waiting (see ``runLaunchctl`` in the
+        // launch-agent installer): concurrent draining avoids a pipe-buffer
+        // deadlock, and the read returns when the process exits or the watchdog
+        // terminates it.
+        let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        watchdog.cancel()
+        if timedOut.withLock({ $0 }) {
+            return .failed("muxa init timed out after \(Int(muxaInitTimeoutSeconds))s")
+        }
         if process.terminationStatus == 0 { return .wired }
-        let err = String(decoding: errPipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        let err = String(decoding: errData, as: UTF8.self)
         return .failed(err.isEmpty ? "muxa init exited \(process.terminationStatus)" : err)
     }
 

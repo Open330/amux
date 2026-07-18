@@ -41,4 +41,22 @@ final class AmuxMuxadLaunchAgentTests: XCTestCase {
                 .hasSuffix("Library/LaunchAgents/com.open330.amux.muxad.plist")
         )
     }
+
+    // Regression: re-running "Set Up" while the agent is already loaded must
+    // succeed. `launchctl bootstrap` exits non-zero on an already-loaded label,
+    // so install must bootout first, THEN bootstrap the freshly written plist.
+    func testInstallBootsOutBeforeBootstrapForIdempotency() {
+        let commands = AmuxMuxadLaunchAgent.installLaunchctlCommands(plistPath: "/tmp/x.plist")
+        XCTAssertEqual(commands.bootout.first, "bootout")
+        XCTAssertEqual(commands.bootstrap.first, "bootstrap")
+        // bootout targets this agent's gui/<uid>/<label> — the same target
+        // `uninstall()` removes — so a stale load is cleared before bootstrap.
+        XCTAssertTrue(commands.bootout.last?.hasPrefix("gui/") == true)
+        XCTAssertTrue(
+            commands.bootout.last?.hasSuffix("/\(AmuxMuxadLaunchAgent.label)") == true,
+            "bootout must target the agent label"
+        )
+        XCTAssertTrue(commands.bootstrap.contains(where: { $0.hasPrefix("gui/") }))
+        XCTAssertTrue(commands.bootstrap.contains("/tmp/x.plist"))
+    }
 }
