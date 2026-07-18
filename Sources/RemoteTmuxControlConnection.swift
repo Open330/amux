@@ -1244,6 +1244,23 @@ final class RemoteTmuxControlConnection {
         }
     }
 
+    /// Safety net for a connection released without an explicit ``stop()`` (e.g.
+    /// an owner dropped mid-flight). Best-effort terminates the current spawn's
+    /// child so a live `tmux -CC` / ssh control client is never orphaned.
+    ///
+    /// `deinit` is nonisolated, so this touches only the captured `Process`
+    /// directly (Swift guarantees exclusive access at deinit) and never hops to a
+    /// `@MainActor` method such as ``teardownProcessHandles()``. The normal
+    /// teardown paths (``stop()``, `%exit`, reconnect) already terminate and clear
+    /// `process`, so this fires only when none of them ran.
+    deinit {
+        guard let process else { return }
+        process.terminationHandler = nil
+        if process.isRunning {
+            process.terminate()
+        }
+    }
+
     /// Detaches: terminating ssh kills the control client but leaves the remote
     /// tmux session alive for resume. Permanently ends the connection — no reconnect.
     func stop() {
@@ -1496,6 +1513,12 @@ final class RemoteTmuxControlConnection {
             guard connectionState != .ended else { return }
             connectionState = .ended
             cancelScheduledWork()
+            // Reap this spawn's process and I/O handles too — `%exit` means the
+            // control client is finished, so leaving the child/handles around
+            // (as this case previously did) needlessly held them until dealloc.
+            // `teardownProcessHandles()` leaves `connectionState` untouched, so it
+            // is safe to call here after the `.ended` transition above.
+            teardownProcessHandles()
             observers.notifyExit()
         case let .output(paneId, data):
             paneOutputByteCounts[paneId, default: 0] += data.count
