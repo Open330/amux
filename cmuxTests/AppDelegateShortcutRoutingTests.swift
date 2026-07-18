@@ -1744,6 +1744,16 @@ final class AppDelegateShortcutRoutingTests: XCTestCase {
         let orphanCount = orphanManager.tabs.count
         let remappedCmdT = StoredShortcut(key: "t", command: true, shift: false, option: false, control: false)
 
+        // The remapped Cmd+T prunes the orphan only when its context chooser
+        // finds NO live main window to route to. In the shared test host,
+        // earlier tests may have left live main windows registered, so Cmd+T
+        // would route to one of those and never reach the fallback prune path.
+        // Close them first so the windowless orphan is the sole context.
+        for windowId in existingWindowIds {
+            closeWindow(withId: windowId)
+        }
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.05))
+
         withTemporaryShortcut(action: .newTab, shortcut: remappedCmdT) {
             guard let event = makeKeyDownEvent(
                 key: "t",
@@ -4771,9 +4781,14 @@ final class AppDelegateShortcutRoutingTests: XCTestCase {
             action: .showNotifications,
             shortcut: StoredShortcut(key: "8", command: true, shift: true, option: false, control: false)
         ) {
-            // Avoid unrelated default Cmd+Shift+] handling for this assertion.
+            // Neutralize the default Cmd+Shift+] binding for this assertion:
+            // keyCode 30 is the physical `]` key, which matches `.nextSidebarTab`
+            // (default Cmd+Shift+]) via the ANSI-keycode fallback and would be
+            // consumed — masking whether Shift+8 mis-matched. `.nextSurface`
+            // defaults to Ctrl+Tab (no keyCode-30 collision), so rebinding it
+            // (as this test previously did) neutralized nothing.
             withTemporaryShortcut(
-                action: .nextSurface,
+                action: .nextSidebarTab,
                 shortcut: StoredShortcut(key: "x", command: true, shift: true, option: false, control: false)
             ) {
                 // On some non-US layouts, Shift+RightBracket can produce "*".
