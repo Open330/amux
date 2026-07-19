@@ -5913,3 +5913,118 @@ final class TerminalControllerSocketListenerHealthTests: XCTestCase {
     }
 
 }
+
+/// B-F1 regression coverage: a passive tmux `-CC` mirror surface (manual I/O)
+/// must NOT auto-answer terminal queries it merely observes in tmux `%output`.
+/// tmux is the pane's real terminal and already answers those queries; a second
+/// answer injected by the mirror double-writes stray `^[[…R` / DA / XTVERSION
+/// bytes back into the pane (wrong DSR coords, XTVERSION lying, clipboard echo).
+/// The ghostty fix adds `StreamHandler.suppress_terminal_reports`, set for
+/// `.manual` backends and gated in `messageWriter`, so a mirror emits ZERO bytes
+/// back to the pane for these queries (ghostty `6cc66017`, amux PR #15).
+///
+/// This exercises the REAL libghostty runtime, so it needs a window server and
+/// only runs in the app-hosted `cmuxTests` target — the `CmuxTerminal` package
+/// stubs `ghostty_surface_process_output` as a no-op, which would make a
+/// package-level assertion vacuous. It is NOT part of amux's headless Gitea CI
+/// set; run locally with `-only-testing:cmuxTests/MirrorQuerySuppressionTests`.
+@MainActor
+final class MirrorQuerySuppressionTests: XCTestCase {
+    /// Thread-safe sink for bytes the mirror tries to send BACK to the tmux
+    /// pane. `manualInputHandler` is `@Sendable` and fires off the main actor on
+    /// ghostty's termio thread, so the buffer must be lock-guarded.
+    private final class SendBackRecorder: @unchecked Sendable {
+        private let lock = NSLock()
+        private var bytes = Data()
+        func record(_ data: Data) {
+            lock.lock()
+            defer { lock.unlock() }
+            bytes.append(data)
+        }
+        var captured: Data {
+            lock.lock()
+            defer { lock.unlock() }
+            return bytes
+        }
+    }
+
+    private struct HostedMirror {
+        let surface: TerminalSurface
+        let window: NSWindow
+        let recorder: SendBackRecorder
+    }
+
+    /// Builds a manual-I/O mirror surface (the exact shape
+    /// `Workspace.makeRemoteTmuxPanePanel` uses) hosted in a real window so the
+    /// libghostty runtime goes live, mirroring the proven pattern in
+    /// `GhosttyCommandShiftForwardingTests`/`TerminalOffscreenStartupTests`.
+    private func makeHostedMirror() throws -> HostedMirror {
+        _ = NSApplication.shared
+        let recorder = SendBackRecorder()
+        let surface = TerminalSurface(
+            tabId: UUID(),
+            context: GHOSTTY_SURFACE_CONTEXT_SPLIT,
+            configTemplate: nil,
+            manualIO: true,
+            manualInputHandler: { data in recorder.record(data) }
+        )
+        let hostedView = surface.hostedView
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 240),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        let contentView = try XCTUnwrap(window.contentView)
+        hostedView.frame = contentView.bounds
+        hostedView.autoresizingMask = [.width, .height]
+        contentView.addSubview(hostedView)
+        window.makeKeyAndOrderFront(nil)
+        window.displayIfNeeded()
+        contentView.layoutSubtreeIfNeeded()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        return HostedMirror(surface: surface, window: window, recorder: recorder)
+    }
+
+    func testMirrorSurfaceDoesNotAnswerTerminalQueries() throws {
+        let hosted = try makeHostedMirror()
+        defer {
+            hosted.surface.hostedView.removeFromSuperview()
+            hosted.surface.teardownSurface()
+            hosted.window.orderOut(nil)
+        }
+
+        // The runtime surface MUST be live before we feed it — otherwise
+        // `processRemoteOutput` only buffers the bytes, they never reach the VT
+        // parser, and the emptiness assertion below would pass vacuously even if
+        // the suppression regressed. Fail loudly rather than silently.
+        _ = try XCTUnwrap(
+            hosted.surface.surface,
+            "Manual-I/O mirror surface must reach a live libghostty runtime before feeding %output; without it the query bytes are only buffered and the assertion would be vacuous."
+        )
+
+        // Queries a real terminal answers and tmux forwards verbatim in %output:
+        // DSR cursor-position (ESC[6n → ESC[<r>;<c>R), primary DA (ESC[c), and
+        // XTVERSION (ESC[>q). A passive mirror must answer NONE of them.
+        let queries = Data([
+            0x1b, 0x5b, 0x36, 0x6e, // ESC [ 6 n  — DSR cursor position
+            0x1b, 0x5b, 0x63,       // ESC [ c    — primary device attributes
+            0x1b, 0x5b, 0x3e, 0x71, // ESC [ > q  — XTVERSION
+        ])
+        hosted.surface.processRemoteOutput(queries)
+
+        // Any response is enqueued on the parse thread and drained back through
+        // the manual backend's write callback asynchronously on the termio
+        // thread. Pump the runloop so a regressed build WOULD have delivered the
+        // reply before we assert the recorder stayed empty.
+        RunLoop.current.run(until: Date().addingTimeInterval(0.3))
+
+        let sentBack = hosted.recorder.captured
+        XCTAssertTrue(
+            sentBack.isEmpty,
+            "A passive tmux mirror must not answer terminal queries, but it sent \(sentBack.count) byte(s) back to the pane: "
+                + Array(sentBack).map { String(format: "0x%02x", $0) }.joined(separator: " ")
+                + ". This is the B-F1 double-answer regression (ghostty suppress_terminal_reports)."
+        )
+    }
+}
