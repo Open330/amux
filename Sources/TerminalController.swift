@@ -761,6 +761,39 @@ class TerminalController {
         transport.isProcessDescendant(pid, of: myPid)
     }
 
+    // amux-owned `-L amux` tmux server PID(s). A tmux server daemonizes out of
+    // the app's process tree (its parent becomes launchd), so shells inside
+    // tmux-backed workspaces are NOT descendants of the app and would fail the
+    // cmuxOnly ancestry check — breaking `amux` CLI/agent control from inside the
+    // default (tmux-native) workspaces. amux exclusively owns this server
+    // (`-f /dev/null -L amux`, socket 0600, same UID), so authorizing its
+    // descendants restores "the amux CLI works inside amux terminals" without
+    // widening the socket to unrelated processes (same-UID is already the
+    // boundary). Written by RemoteTmuxController when a local mirror is
+    // (re)established; read on the socket accept thread.
+    private nonisolated let amuxTmuxServerPidsLock = NSLock()
+    nonisolated(unsafe) private var amuxTmuxServerPidsStorage: Set<pid_t> = []
+
+    nonisolated func setAmuxTmuxServerPids(_ pids: Set<pid_t>) {
+        amuxTmuxServerPidsLock.lock()
+        defer { amuxTmuxServerPidsLock.unlock() }
+        amuxTmuxServerPidsStorage = pids
+    }
+
+    private nonisolated func amuxTmuxServerPidsSnapshot() -> Set<pid_t> {
+        amuxTmuxServerPidsLock.lock()
+        defer { amuxTmuxServerPidsLock.unlock() }
+        return amuxTmuxServerPidsStorage
+    }
+
+    /// True when `pid` descends from an amux-owned `-L amux` tmux server, i.e. it
+    /// is a shell (or its child) inside an amux tmux-backed workspace.
+    nonisolated func isAmuxTmuxServerDescendant(_ pid: pid_t) -> Bool {
+        let servers = amuxTmuxServerPidsSnapshot()
+        guard !servers.isEmpty else { return false }
+        return servers.contains { transport.isProcessDescendant(pid, of: $0) }
+    }
+
     private nonisolated static func shouldCaptureSocketListenerFailure(
         message: String,
         stage: String,
@@ -1551,7 +1584,11 @@ class TerminalController {
             // the peer can disconnect), falling back to live lookup.
             let pid = peerPid ?? transport.peerProcessID(of: socket)
             if let pid {
-                guard isDescendant(pid) else {
+                // Allow either a direct descendant of the app OR a descendant of
+                // an amux-owned `-L amux` tmux server (tmux daemonizes out of the
+                // app's process tree, so shells inside tmux-backed workspaces are
+                // not app descendants — see `isAmuxTmuxServerDescendant`).
+                guard isDescendant(pid) || isAmuxTmuxServerDescendant(pid) else {
                     _ = writeSocketResponse(
                         String(
                             localized: "socket.accessDenied.amuxOnly",

@@ -6028,3 +6028,54 @@ final class MirrorQuerySuppressionTests: XCTestCase {
         )
     }
 }
+
+/// Regression coverage for the tmux-native socket-auth fix. A shell inside a
+/// tmux-backed workspace is a child of the daemonized `-L amux` tmux server, not
+/// of amux, so it fails the plain cmuxOnly app-ancestry check. The control socket
+/// must also authorize descendants of the amux-owned tmux server (registered via
+/// `setAmuxTmuxServerPids`) — otherwise the `amux` CLI/agents can't reach amux
+/// from inside its own default (tmux) workspaces. Exercises the descendancy
+/// helper directly; needs no live tmux server or window server.
+@MainActor
+final class AmuxTmuxServerSocketAuthTests: XCTestCase {
+    override func tearDown() {
+        // Never leave a test-only authorization on the shared controller.
+        TerminalController.shared.setAmuxTmuxServerPids([])
+        super.tearDown()
+    }
+
+    func testAmuxTmuxServerDescendantIsAuthorized() throws {
+        let controller = TerminalController.shared
+
+        // A live child process whose parent chain reaches this test host stands in
+        // for a shell whose parent chain reaches a registered tmux-server pid.
+        let child = Process()
+        child.executableURL = URL(fileURLWithPath: "/bin/sleep")
+        child.arguments = ["30"]
+        try child.run()
+        defer { child.terminate() }
+        let childPid = child.processIdentifier
+        let hostPid = pid_t(ProcessInfo.processInfo.processIdentifier)
+
+        // No server registered → a tmux-workspace shell is NOT authorized this way.
+        controller.setAmuxTmuxServerPids([])
+        XCTAssertFalse(
+            controller.isAmuxTmuxServerDescendant(childPid),
+            "With no amux tmux server registered, nothing should be authorized via the tmux-server path."
+        )
+
+        // Register this process as the amux `-L amux` tmux server → its descendant
+        // (the child) is authorized, exactly as a tmux pane shell should be.
+        controller.setAmuxTmuxServerPids([hostPid])
+        XCTAssertTrue(
+            controller.isAmuxTmuxServerDescendant(childPid),
+            "A descendant of a registered amux tmux server pid must be authorized so the amux CLI works inside tmux-backed workspaces."
+        )
+
+        // An unrelated process (launchd, pid 1) must never be authorized this way.
+        XCTAssertFalse(
+            controller.isAmuxTmuxServerDescendant(1),
+            "launchd (pid 1) is not a descendant of the amux tmux server and must stay denied."
+        )
+    }
+}

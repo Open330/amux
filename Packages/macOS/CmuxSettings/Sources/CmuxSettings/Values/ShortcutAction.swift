@@ -25,6 +25,7 @@ public enum ShortcutAction: String, CaseIterable, Sendable, Hashable, SettingCod
     case toggleSidebar
     case newTab
     case newBrowserWorkspace
+    case newShellWorkspace
     case saveLayoutTemplate
     case openFolder
     case reopenPreviousSession
@@ -178,7 +179,7 @@ extension ShortcutAction {
         case .openSettings, .reloadConfiguration, .showHideAllWindows, .globalSearch,
              .newWindow, .closeWindow, .toggleFullScreen, .quit:
             return .app
-        case .toggleSidebar, .newTab, .newBrowserWorkspace, .saveLayoutTemplate, .openFolder, .reopenPreviousSession, .goToWorkspace,
+        case .toggleSidebar, .newTab, .newBrowserWorkspace, .newShellWorkspace, .saveLayoutTemplate, .openFolder, .reopenPreviousSession, .goToWorkspace,
              .commandPalette, .amuxSessionSwitcher, .commandPaletteNext, .commandPalettePrevious, .amuxAttend, .sendFeedback,
              .showNotifications, .jumpToUnread, .toggleUnread, .markOldestUnreadAndJumpNext,
              .focusRightSidebar, .switchRightSidebarToFiles, .switchRightSidebarToFind,
@@ -343,6 +344,8 @@ extension ShortcutAction {
         case .newTab: return "New Workspace"
         case .newBrowserWorkspace:
             return String(localized: "shortcut.newBrowserWorkspace.label", defaultValue: "New Browser Workspace")
+        case .newShellWorkspace:
+            return String(localized: "shortcut.newShellWorkspace.label", defaultValue: "New Shell Workspace")
         case .saveLayoutTemplate:
             return String(localized: "shortcut.saveLayoutTemplate.label", defaultValue: "Save Layout as Template…")
         case .openFolder: return "Open Folder"

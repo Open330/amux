@@ -76,6 +76,7 @@ enum KeyboardShortcutSettings {
         case toggleSidebar
         case newTab
         case newBrowserWorkspace
+        case newShellWorkspace
         case saveLayoutTemplate
         case openFolder
         case reopenPreviousSession
@@ -202,6 +203,7 @@ enum KeyboardShortcutSettings {
             case .toggleSidebar: return String(localized: "shortcut.toggleLeftSidebar.label", defaultValue: "Toggle Left Sidebar")
             case .newTab: return String(localized: "shortcut.newWorkspace.label", defaultValue: "New Workspace")
             case .newBrowserWorkspace: return String(localized: "shortcut.newBrowserWorkspace.label", defaultValue: "New Browser Workspace")
+            case .newShellWorkspace: return String(localized: "shortcut.newShellWorkspace.label", defaultValue: "New Shell Workspace")
             case .saveLayoutTemplate: return String(localized: "shortcut.saveLayoutTemplate.label", defaultValue: "Save Layout as Template…")
             case .openFolder: return String(localized: "shortcut.openFolder.label", defaultValue: "Open Folder")
             case .reopenPreviousSession: return String(localized: "shortcut.reopenPreviousSession.label", defaultValue: "Restore Previous App Launch")
@@ -355,6 +357,11 @@ enum KeyboardShortcutSettings {
                 // (Cmd+Shift+N) without colliding with any cmux default or an
                 // AppKit-reserved keystroke.
                 return StoredShortcut(key: "n", command: true, shift: false, option: true, control: false)
+            case .newShellWorkspace:
+                // Control+Cmd+N: the "plain login shell" escape hatch once tmux-backed
+                // workspaces are the New Workspace (Cmd+N) default. Option+Cmd+N is
+                // taken by New Browser Workspace, so this uses Control instead.
+                return StoredShortcut(key: "n", command: true, shift: false, option: false, control: true)
             case .saveLayoutTemplate:
                 return StoredShortcut(key: "s", command: true, shift: false, option: false, control: true)
             case .openFolder:

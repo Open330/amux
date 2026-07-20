@@ -7239,13 +7239,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         event: NSEvent? = nil,
         debugSource: String = "newWorkspace"
     ) -> Bool {
-        // amux: when opted in, a new terminal workspace is a fresh tmux-backed
-        // session (the "workspace = tmux session" default). Only redirects the
-        // terminal path — the browser workspace action is separate.
+        // amux tmux-native default: a new terminal workspace is a fresh
+        // tmux-backed session (the "workspace = tmux session" default). Only
+        // redirects the terminal path — the browser workspace action is separate.
+        // The plain login-shell escape hatch is New Shell Workspace (⌃⌘N), which
+        // still runs any configured `ui.newWorkspace.action`.
         if amuxNewWorkspaceUsesTmux {
             amuxCreateWorkspace(in: preferredTabManager)
             return true
         }
+        return performNewWorkspaceCreationAction(
+            initialSurface: .terminal,
+            preferredTabManager: preferredTabManager,
+            event: event,
+            debugSource: debugSource
+        )
+    }
+
+    /// The plain login-shell escape hatch once tmux-backed workspaces are the
+    /// ⌘N default. Always creates a plain local terminal workspace, bypassing the
+    /// tmux-backed default, while still honoring a configured `ui.newWorkspace.action`.
+    @discardableResult
+    func performNewShellWorkspaceAction(
+        tabManager preferredTabManager: TabManager? = nil,
+        event: NSEvent? = nil,
+        debugSource: String = "newShellWorkspace"
+    ) -> Bool {
         return performNewWorkspaceCreationAction(
             initialSurface: .terminal,
             preferredTabManager: preferredTabManager,
@@ -13341,6 +13360,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             cmuxDebugLog("shortcut.action name=newBrowserWorkspace \(debugShortcutRouteSnapshot(event: event))")
 #endif
             performNewBrowserWorkspaceAction(event: event, debugSource: "shortcut.optCmdN")
+            return true
+        }
+
+        if matchConfiguredShortcut(event: event, action: .newShellWorkspace) {
+#if DEBUG
+            cmuxDebugLog("shortcut.action name=newShellWorkspace \(debugShortcutRouteSnapshot(event: event))")
+#endif
+            performNewShellWorkspaceAction(event: event, debugSource: "shortcut.ctrlCmdN")
             return true
         }
 

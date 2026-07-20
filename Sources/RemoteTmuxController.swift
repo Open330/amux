@@ -575,8 +575,15 @@ final class RemoteTmuxController {
     @discardableResult
     func createLocalAmuxWorkspace(into tabManager: TabManager) async throws -> String {
         let host = RemoteTmuxHost.amuxLocal()
+        // Seed the socket path on the new session so the INITIAL pane's shell
+        // targets this amux instance (set-environment below only reaches panes
+        // created afterward). Without it, `amux` inside a tmux-backed workspace
+        // falls back to the default socket — a different amux — and is denied.
+        let socketPath = TerminalController.shared.activeSocketPath(
+            preferredPath: SocketControlSettings.socketPath()
+        )
         let result = try await transport(for: host).runTmux(
-            ["new-session", "-d", "-P", "-F", "#{session_name}"]
+            ["new-session", "-d", "-P", "-e", "CMUX_SOCKET_PATH=\(socketPath)", "-F", "#{session_name}"]
         )
         let name = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
         guard result.succeeded, !name.isEmpty else {
@@ -584,6 +591,60 @@ final class RemoteTmuxController {
         }
         try mirrorSession(host: host, sessionName: name, into: tabManager)
         return name
+    }
+
+    /// Refreshes the control-socket auth's set of amux-owned tmux server PIDs so
+    /// shells inside tmux-backed workspaces (whose tmux server daemonizes out of
+    /// the app's process tree) still pass the cmuxOnly ancestry check and can
+    /// reach the `amux` CLI. Best-effort: replaces the set with the current
+    /// `-L amux` server PID; a stale PID from a since-dead server has no live
+    /// descendant, so it self-heals on the next refresh. See
+    /// ``TerminalController/isAmuxTmuxServerDescendant(_:)``.
+    func refreshAmuxTmuxServerAuthorization() async {
+        let host = RemoteTmuxHost.amuxLocal()
+        guard let result = try? await transport(for: host).runTmux(["display-message", "-p", "-F", "#{pid}"]),
+              result.succeeded else { return }
+        let trimmed = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = pid_t(trimmed), value > 0 else { return }
+        TerminalController.shared.setAmuxTmuxServerPids([value])
+    }
+
+    /// The managed socket-control env a shell needs to reach THIS amux instance,
+    /// mirroring the workspace-level subset ghostty terminals get
+    /// (`TerminalSurface.applyManagedCmuxContextEnvironment`). tmux pane shells
+    /// don't inherit that env (the tmux server daemonizes out of the app), so it
+    /// must be set on the tmux session explicitly. Workspace-level only: per-pane
+    /// surface ids are not stable across a session's panes.
+    private func amuxWorkspaceSocketEnvironment(workspaceId: UUID) -> [(key: String, value: String)] {
+        let socketPath = TerminalController.shared.activeSocketPath(
+            preferredPath: SocketControlSettings.socketPath()
+        )
+        return [
+            ("CMUX_SOCKET_PATH", socketPath),
+            ("CMUX_WORKSPACE_ID", workspaceId.uuidString),
+            ("CMUX_TAB_ID", workspaceId.uuidString),
+        ]
+    }
+
+    /// Sets the workspace socket-control env on an amux tmux session so its panes
+    /// (new splits/windows, and shells created after a restored session is
+    /// reattached) target this amux. Also re-points `CMUX_SOCKET_PATH` on
+    /// reattach, when a persisted session outlives the socket it was created
+    /// with. Best-effort; off the hot path.
+    private func applyAmuxWorkspaceSocketEnvironment(
+        host: RemoteTmuxHost,
+        sessionName: String,
+        workspaceId: UUID
+    ) {
+        let entries = amuxWorkspaceSocketEnvironment(workspaceId: workspaceId)
+        let sessionTransport = transport(for: host)
+        Task {
+            for entry in entries {
+                _ = try? await sessionTransport.runTmux(
+                    ["set-environment", "-t", sessionName, entry.key, entry.value]
+                )
+            }
+        }
     }
 
     /// Every session on the amux local server paired with whether it is
@@ -1008,6 +1069,18 @@ final class RemoteTmuxController {
             tabManager: tabManager,
             workspace: workspace
         )
+        // amux-owned local tmux server: authorize its (daemonized) descendants
+        // for the control socket, and seed the session's socket-control env so the
+        // `amux` CLI from inside a tmux-backed workspace targets this amux instead
+        // of falling back to the default socket. Off the hot path; best-effort.
+        if host.kind == .localAmux {
+            Task { await self.refreshAmuxTmuxServerAuthorization() }
+            applyAmuxWorkspaceSocketEnvironment(
+                host: host,
+                sessionName: sessionName,
+                workspaceId: workspace.id
+            )
+        }
         return true
     }
 
