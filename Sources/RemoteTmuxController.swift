@@ -586,6 +586,22 @@ final class RemoteTmuxController {
         return name
     }
 
+    /// Refreshes the control-socket auth's set of amux-owned tmux server PIDs so
+    /// shells inside tmux-backed workspaces (whose tmux server daemonizes out of
+    /// the app's process tree) still pass the cmuxOnly ancestry check and can
+    /// reach the `amux` CLI. Best-effort: replaces the set with the current
+    /// `-L amux` server PID; a stale PID from a since-dead server has no live
+    /// descendant, so it self-heals on the next refresh. See
+    /// ``TerminalController/isAmuxTmuxServerDescendant(_:)``.
+    func refreshAmuxTmuxServerAuthorization() async {
+        let host = RemoteTmuxHost.amuxLocal()
+        guard let result = try? await transport(for: host).runTmux(["display-message", "-p", "-F", "#{pid}"]),
+              result.succeeded else { return }
+        let trimmed = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = pid_t(trimmed), value > 0 else { return }
+        TerminalController.shared.setAmuxTmuxServerPids([value])
+    }
+
     /// Every session on the amux local server paired with whether it is
     /// currently mirrored as a workspace — the data behind the Detached
     /// sidebar section and the attach picker.
@@ -1008,6 +1024,12 @@ final class RemoteTmuxController {
             tabManager: tabManager,
             workspace: workspace
         )
+        // amux-owned local tmux server: authorize its (daemonized) descendants
+        // for the control socket so the `amux` CLI works from inside tmux-backed
+        // workspaces. Off the hot path; best-effort.
+        if host.kind == .localAmux {
+            Task { await self.refreshAmuxTmuxServerAuthorization() }
+        }
         return true
     }
 
