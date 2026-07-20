@@ -215,12 +215,16 @@ extension AppDelegate {
     }
 
     /// Whether ⌘N (the new-terminal-workspace action) creates an amux
-    /// tmux-backed workspace instead of a plain local one. Persisted, default
-    /// off during alpha so the dogfood/default behavior is unchanged until
-    /// opted in. Toggled from the Command Palette.
+    /// tmux-backed workspace instead of a plain local one. This is the amux
+    /// tmux-native default: unless the user has explicitly turned it off (via
+    /// Settings or the Command Palette toggle), a new workspace (⌘N) is a fresh
+    /// `tmux -CC` session. The plain login-shell workspace remains available via
+    /// New Shell Workspace (⌃⌘N) / the palette command.
     static let newWorkspaceTmuxBackedDefaultsKey = "amux.newWorkspace.tmuxBacked"
     var amuxNewWorkspaceUsesTmux: Bool {
-        get { UserDefaults.standard.bool(forKey: Self.newWorkspaceTmuxBackedDefaultsKey) }
+        // Default ON. `object(forKey:)` distinguishes "never set" (→ default true)
+        // from an explicit user override of either value.
+        get { UserDefaults.standard.object(forKey: Self.newWorkspaceTmuxBackedDefaultsKey) as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: Self.newWorkspaceTmuxBackedDefaultsKey) }
     }
 

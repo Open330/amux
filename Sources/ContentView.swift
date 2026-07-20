@@ -6669,6 +6669,14 @@ struct ContentView: View {
         )
         contributions.append(
             CommandPaletteCommandContribution(
+                commandId: "palette.newShellWorkspace",
+                title: constant(String(localized: "command.newShellWorkspace.title", defaultValue: "New Shell Workspace")),
+                subtitle: constant(String(localized: "command.newShellWorkspace.subtitle", defaultValue: "Plain login shell (no tmux)")),
+                keywords: ["create", "new", "shell", "workspace", "plain", "login", "no tmux"]
+            )
+        )
+        contributions.append(
+            CommandPaletteCommandContribution(
                 commandId: "palette.newBrowserWorkspace",
                 title: constant(String(localized: "command.newBrowserWorkspace.title", defaultValue: "New Browser Workspace")),
                 subtitle: constant(String(localized: "command.newBrowserWorkspace.subtitle", defaultValue: "Workspace")),
@@ -7999,6 +8007,12 @@ struct ContentView: View {
             AppDelegate.shared?.performNewWorkspaceAction(
                 tabManager: tabManager,
                 debugSource: "palette.newWorkspace"
+            )
+        }
+        registry.register(commandId: "palette.newShellWorkspace") {
+            AppDelegate.shared?.performNewShellWorkspaceAction(
+                tabManager: tabManager,
+                debugSource: "palette.newShellWorkspace"
             )
         }
         registry.register(commandId: "palette.newBrowserWorkspace") {
@@ -13612,12 +13626,17 @@ private struct SidebarEmptyArea: View {
                 // be polluted with a dragged-in local workspace (move targets don't
                 // exclude dedicated windows), and `contains` would then misroute a
                 // local empty-area double-tap into spawning an unwanted tmux session.
-                if tabManager.selectedTab?.isRemoteTmuxMirror == true {
-                    _ = AppDelegate.shared?.performNewWorkspaceAction(
-                        tabManager: tabManager,
-                        debugSource: "sidebar.emptyArea.remoteTmux"
-                    )
-                } else {
+                // Route through performNewWorkspaceAction so the empty-area
+                // double-tap honors the tmux-native New Workspace default (and a
+                // configured ui.newWorkspace.action) instead of always spawning a
+                // plain local workspace. The mirror case already relied on this to
+                // create a new tmux session rather than an orphan local workspace.
+                if AppDelegate.shared?.performNewWorkspaceAction(
+                    tabManager: tabManager,
+                    debugSource: tabManager.selectedTab?.isRemoteTmuxMirror == true
+                        ? "sidebar.emptyArea.remoteTmux"
+                        : "sidebar.emptyArea"
+                ) != true {
                     tabManager.addWorkspace(placementOverride: .end)
                 }
                 if let selectedId = tabManager.selectedTabId {

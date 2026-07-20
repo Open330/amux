@@ -107,7 +107,24 @@ export const shortcutCategories: ShortcutCategory[] = [
     shortcuts: [
       { id: "toggleSidebar", combos: [["⌘", "B"]], description: { en: "Toggle left sidebar", ja: "左サイドバーを切り替え" } },
       { id: "toggleFileExplorer", combos: [["⌘", "⌥", "B"]], description: { en: "Toggle right sidebar", ja: "右サイドバーを切り替え" } },
-      { id: "newTab", combos: [["⌘", "N"]], description: { en: "New workspace", ja: "新規ワークスペース" } },
+      {
+        id: "newTab",
+        combos: [["⌘", "N"]],
+        description: { en: "New workspace (tmux session)", ja: "新規ワークスペース（tmuxセッション）" },
+        note: {
+          en: "amux is tmux-native: a new workspace is a fresh tmux -CC session by default. Turn it off with the “Toggle: New Workspace Default” command to get a plain shell instead.",
+          ja: "amuxはtmuxネイティブです。新規ワークスペースはデフォルトで新しい tmux -CC セッションになります。「Toggle: New Workspace Default」コマンドでオフにすると通常のシェルになります。",
+        },
+      },
+      {
+        id: "newShellWorkspace",
+        combos: [["⌃", "⌘", "N"]],
+        description: { en: "New shell workspace", ja: "新規シェルワークスペース" },
+        note: {
+          en: "the plain login-shell escape hatch (no tmux), regardless of the tmux-native default",
+          ja: "tmuxネイティブのデフォルトに関係なく、通常のログインシェル（tmuxなし）を開く回避手段です",
+        },
+      },
       {
         id: "newBrowserWorkspace",
         combos: [["⌥", "⌘", "N"]],
